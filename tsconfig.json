@@ -1,0 +1,9 @@
+{
+  "extends": "@tsconfig/node16/tsconfig.json",
+  "compilerOptions": {
+    "lib": ["esnext", "dom"],
+    "outDir": ".homeybuild/",
+    "sourceMap": true,
+    "target": "es2022"
+  }
+}
