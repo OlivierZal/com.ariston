@@ -14,7 +14,7 @@ type APIClass = new (...args: any[]) => {
   api: AxiosInstance
 }
 
-export function getApiErrorMessage(error: AxiosError): string {
+export function getAPIErrorMessage(error: AxiosError): string {
   return error.message
 }
 
@@ -69,7 +69,7 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
       this.error(
         `Error in ${type}:`,
         error.config?.url,
-        getApiErrorMessage(error),
+        getAPIErrorMessage(error),
       )
       await this.setErrorWarning(error)
       return Promise.reject(error)
@@ -79,7 +79,7 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
       if (!this.setWarning) {
         return
       }
-      await this.setWarning(getApiErrorMessage(error))
+      await this.setWarning(getAPIErrorMessage(error))
     }
   }
 }
