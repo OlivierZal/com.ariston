@@ -1,6 +1,6 @@
 import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
 import axios from 'axios'
-import withAPI, { getAPIErrorMessage } from './mixins/withAPI'
+import withAPI, { getErrorMessage } from './mixins/withAPI'
 import type {
   LoginCredentials,
   LoginData,
@@ -10,16 +10,6 @@ import type {
 } from './types'
 
 axios.defaults.baseURL = 'https://www.ariston-net.remotethermo.com/api/v2'
-
-function getErrorMessage(error: unknown): string {
-  let errorMessage = String(error)
-  if (axios.isAxiosError(error)) {
-    errorMessage = getAPIErrorMessage(error)
-  } else if (error instanceof Error) {
-    errorMessage = error.message
-  }
-  return errorMessage
-}
 
 export = class AristonApp extends withAPI(App) {
   #loginTimeout!: NodeJS.Timeout
