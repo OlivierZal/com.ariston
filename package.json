@@ -1,6 +1,6 @@
 {
   "name": "com.ariston",
-  "version": "null",
+  "version": "1.0.0",
   "main": "app.ts",
   "prettier": {
     "semi": false,
