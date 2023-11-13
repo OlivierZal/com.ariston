@@ -1,6 +1,6 @@
 import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
 import axios from 'axios'
-import withAPI, { getErrorMessage } from './mixins/withAPI'
+import withAPI, { getApiErrorMessage } from './mixins/withAPI'
 import type {
   LoginCredentials,
   LoginData,
@@ -8,6 +8,16 @@ import type {
   HomeySettings,
   HomeySettingValue,
 } from './types'
+
+function getErrorMessage(error: unknown): string {
+  let errorMessage = String(error)
+  if (axios.isAxiosError(error)) {
+    errorMessage = getApiErrorMessage(error)
+  } else if (error instanceof Error) {
+    errorMessage = error.message
+  }
+  return errorMessage
+}
 
 axios.defaults.baseURL = 'https://www.ariston-net.remotethermo.com/api/v2'
 
@@ -50,13 +60,7 @@ export = class AristonApp extends withAPI(App) {
       this.refreshLogin(loginCredentials)
       return true
     } catch (error: unknown) {
-      let errorMessage = String(error)
-      if (axios.isAxiosError(error)) {
-        errorMessage = getErrorMessage(error)
-      } else if (error instanceof Error) {
-        errorMessage = error.message
-      }
-      throw new Error(errorMessage)
+      throw new Error(getErrorMessage(error))
     }
   }
 
