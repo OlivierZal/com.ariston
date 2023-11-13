@@ -1,6 +1,6 @@
 import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
 import axios from 'axios'
-import withAPI from './mixins/withAPI'
+import withAPI, { getErrorMessage } from './mixins/withAPI'
 import type {
   LoginCredentials,
   LoginData,
@@ -50,7 +50,13 @@ export = class AristonApp extends withAPI(App) {
       this.refreshLogin(loginCredentials)
       return true
     } catch (error: unknown) {
-      throw new Error(error instanceof Error ? error.message : String(error))
+      let errorMessage = String(error)
+      if (axios.isAxiosError(error)) {
+        errorMessage = getErrorMessage(error)
+      } else if (error instanceof Error) {
+        errorMessage = error.message
+      }
+      throw new Error(errorMessage)
     }
   }
 
