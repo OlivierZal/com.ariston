@@ -30,7 +30,7 @@ export = class AristonApp extends withAPI(App) {
     this.clearLoginRefresh()
     try {
       const { username, password } = loginCredentials
-      if (!password || !password) {
+      if (!username || !password) {
         return false
       }
       const postData: LoginPostData = {
