@@ -65,7 +65,7 @@ export = class AristonApp extends withAPI(App) {
     try {
       await this.login(loginCredentials)
     } catch (error: unknown) {
-      this.error(error instanceof Error ? error.message : error)
+      // Logged by `withAPI`
     }
   }
 
