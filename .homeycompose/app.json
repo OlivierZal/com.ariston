@@ -1,1 +1,39 @@
-{}
+{
+  "id": "com.ariston",
+  "sdk": 3,
+  "brandColor": "#c8102e",
+  "name": {
+    "en": "Ariston"
+  },
+  "description": {
+    "en": "Control"
+  },
+  "category": ["climate"],
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "tags": {
+    "en": ["ariston"]
+  },
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Olivier Zalmanski",
+    "email": "olivier.zalmanski@me.com"
+  },
+  "bugs": {
+    "url": "https://github.com/OlivierZal/com.ariston/issues"
+  },
+  "source": "https://github.com/OlivierZal/com.ariston",
+  "support": "https://github.com/OlivierZal/com.ariston/issues",
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "OlivierZalmanski"
+      }
+    }
+  },
+  "platforms": ["local"]
+}

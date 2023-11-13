@@ -1,0 +1,7 @@
+{
+  "$extends": ["defaults"],
+  "name": {
+    "en": "Nuos"
+  },
+  "capabilities": ["measure_temperature", "onoff", "target_temperature"]
+}
