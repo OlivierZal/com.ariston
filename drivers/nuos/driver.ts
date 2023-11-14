@@ -4,7 +4,7 @@ import type AristonApp from '../../app'
 import withAPI from '../../mixins/withAPI'
 import type { DeviceDetails, LoginCredentials, Plant } from '../../types'
 
-export = class AristonDriver extends withAPI(Driver) {
+export = class NuosDriver extends withAPI(Driver) {
   #app!: AristonApp
 
   // eslint-disable-next-line @typescript-eslint/require-await
