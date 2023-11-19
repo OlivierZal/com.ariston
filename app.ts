@@ -10,6 +10,7 @@ import type {
 } from './types'
 
 axios.defaults.baseURL = 'https://www.ariston-net.remotethermo.com/api/v2'
+axios.defaults.headers.common['Content-Type'] = 'application/json'
 
 export = class AristonApp extends withAPI(App) {
   #loginTimeout!: NodeJS.Timeout

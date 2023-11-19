@@ -8,13 +8,20 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import type { HomeyClass, HomeySettings } from '../types'
+import type { Failure, HomeyClass, HomeySettings } from '../types'
 
 type APIClass = new (...args: any[]) => {
-  api: AxiosInstance
+  readonly api: AxiosInstance
 }
 
 function getAPIErrorMessage(error: AxiosError): string {
+  const { data } = error.response ?? {}
+  if (data !== undefined) {
+    const errorMessage: string = (data as Failure).Message ?? ''
+    if (errorMessage) {
+      return errorMessage
+    }
+  }
   return error.message
 }
 
@@ -76,20 +83,16 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
       type: 'request' | 'response',
       error: AxiosError,
     ): Promise<AxiosError> {
-      this.error(
-        `Error in ${type}:`,
-        error.config?.url,
-        getAPIErrorMessage(error),
-      )
-      await this.setErrorWarning(error)
+      const errorMessage: string = getAPIErrorMessage(error)
+      this.error(`Error in ${type}:`, error.config?.url, errorMessage)
+      await this.setErrorWarning(errorMessage)
       return Promise.reject(error)
     }
 
-    private async setErrorWarning(error: AxiosError): Promise<void> {
-      if (!this.setWarning) {
-        return
+    private async setErrorWarning(warning: string | null): Promise<void> {
+      if (this.setWarning) {
+        await this.setWarning(warning)
       }
-      await this.setWarning(getAPIErrorMessage(error))
     }
   }
 }

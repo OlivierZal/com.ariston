@@ -3,16 +3,18 @@ import type NuosDriver from './driver'
 import type AristonApp from '../../app'
 import withAPI from '../../mixins/withAPI'
 import type {
+  Success,
+  Failure,
   CapabilityValue,
   DeviceDetails,
   PlantData,
   Settings,
 } from '../../types'
 
-const dataMapping: Record<string, string> = {
-  onoff: 'on',
+const pathSuffixMapping: Record<string, string> = {
+  onoff: 'switch',
   measure_temperature: 'waterTemp',
-  target_temperature: 'comfortTemp',
+  target_temperature: 'procReqTemp',
 }
 
 export = class NuosDevice extends withAPI(Device) {
@@ -25,6 +27,7 @@ export = class NuosDevice extends withAPI(Device) {
   #syncTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
+    await this.setWarning(null)
     this.app = this.homey.app as AristonApp
 
     const { id } = this.getData() as DeviceDetails['data']
@@ -97,12 +100,31 @@ export = class NuosDevice extends withAPI(Device) {
     }
   }
 
+  public async setWarning(warning: string | null): Promise<void> {
+    if (warning !== null) {
+      await super.setWarning(warning)
+    }
+    await super.setWarning(null)
+  }
+
   private async onCapability(
     capability: string,
     value: CapabilityValue,
   ): Promise<void> {
     this.clearSync()
-    await this.plantData({ [dataMapping[capability]]: value })
+    switch (capability) {
+      case 'onoff':
+        if ((this.getSetting('always_on') as boolean) && !(value as boolean)) {
+          await this.setWarning(this.homey.__('warnings.always_on'))
+        } else {
+          await this.setPlantData(pathSuffixMapping[capability], value)
+        }
+        break
+      case 'target_temperature':
+        await this.setPlantData(pathSuffixMapping[capability], value)
+        break
+      default:
+    }
   }
 
   private async handleCapabilities(): Promise<void> {
@@ -146,7 +168,7 @@ export = class NuosDevice extends withAPI(Device) {
 
   private async updateCapabilities(): Promise<void> {
     try {
-      const data: PlantData | null = await this.plantData()
+      const data: PlantData | null = await this.getPlantData()
       if (!data) {
         return
       }
@@ -159,15 +181,26 @@ export = class NuosDevice extends withAPI(Device) {
     }
   }
 
-  private async plantData(
-    postData?: Record<string, CapabilityValue>,
-  ): Promise<PlantData | null> {
+  private async getPlantData(): Promise<PlantData | null> {
     try {
-      const { data } = await this.api<PlantData>({
-        method: postData ? 'post' : 'get',
-        url: `/velis/slpPlantData/${this.id}`,
-        data: postData,
-      })
+      const { data } = await this.api.get<PlantData>(
+        `/velis/slpPlantData/${this.id}`,
+      )
+      return data
+    } catch (error: unknown) {
+      return null
+    }
+  }
+
+  private async setPlantData(
+    pathSuffix: string,
+    postData: CapabilityValue,
+  ): Promise<Failure | Success | null> {
+    try {
+      const { data } = await this.api.post<Failure | Success>(
+        `/velis/slpPlantData/${this.id}/${pathSuffix}`,
+        { a: postData },
+      )
       return data
     } catch (error: unknown) {
       return null
