@@ -4,8 +4,8 @@ import type AristonApp from '../../app'
 import withAPI from '../../mixins/withAPI'
 import type {
   CapabilityValue,
+  Data,
   DeviceDetails,
-  PlantData,
   Settings,
 } from '../../types'
 
@@ -111,35 +111,35 @@ export = class NuosDevice extends withAPI(Device) {
     value: CapabilityValue,
   ): Promise<void> {
     this.clearSync()
+    const plantData: Data['data']['plantData'] = {}
+    const viewModel: Data['data']['viewModel'] = {}
     switch (capability) {
       case 'onoff':
         if ((this.getSetting('always_on') as boolean) && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
-          await this.plantData({
-            // @ts-expect-error: `on` is not a valid key
-            data: { plantData: { on: value as boolean } },
-          })
+          plantData.on = this.getCapabilityValue('onoff') as boolean
+          viewModel.on = value as boolean
         }
         break
       case 'operation_mode':
-        await this.plantData({
-          data: {
-            // @ts-expect-error: `on` is not a valid key
-            plantData: {
-              opMode: OperationMode[value as keyof typeof OperationMode],
-            },
-          },
-        })
+        plantData.opMode =
+          OperationMode[
+            this.getCapabilityValue(
+              'operation_mode',
+            ) as keyof typeof OperationMode
+          ]
+        viewModel.opMode = OperationMode[value as keyof typeof OperationMode]
         break
       case 'target_temperature':
-        await this.plantData({
-          // @ts-expect-error: `on` is not a valid key
-          data: { plantData: { comfortTemp: value as number } },
-        })
+        plantData.comfortTemp = this.getCapabilityValue(
+          'target_temperature',
+        ) as number
+        viewModel.comfortTemp = value as number
         break
       default:
     }
+    await this.plantData({ plantData, viewModel })
   }
 
   private async handleCapabilities(): Promise<void> {
@@ -183,11 +183,12 @@ export = class NuosDevice extends withAPI(Device) {
 
   private async updateCapabilities(): Promise<void> {
     try {
-      const data: PlantData | null = await this.plantData()
-      if (!data) {
+      const plantData: Readonly<Required<Data['data']['plantData']>> | null =
+        await this.plantData()
+      if (!plantData) {
         return
       }
-      const { on, opMode, comfortTemp, waterTemp } = data.data.plantData
+      const { on, opMode, comfortTemp, waterTemp } = plantData
       await this.setCapabilityValue('measure_temperature', waterTemp)
       await this.setCapabilityValue('onoff', on)
       await this.setCapabilityValue('operation_mode', OperationMode[opMode])
@@ -198,27 +199,26 @@ export = class NuosDevice extends withAPI(Device) {
   }
 
   private async plantData(
-    postData?: Partial<PlantData>,
-  ): Promise<PlantData | null> {
+    postData?: Data['data'],
+  ): Promise<Readonly<Required<Data['data']['plantData']>> | null> {
+    if (postData && !Object.keys(postData.viewModel).length) {
+      return null
+    }
     try {
-      const method: 'get' | 'post' = postData ? 'post' : 'get'
-      const methodPath: 'GetData' | 'SetData' = postData ? 'SetData' : 'GetData'
-      const url: URL = new URL(
-        `/R2/PlantHomeSlp/${methodPath}/${this.id}`,
-        this.api.defaults.baseURL,
-      )
-      if (!postData) {
-        url.search = new URLSearchParams({
-          fetchSettings: 'true',
-          fetchTimeProg: 'false',
-        }).toString()
-      }
-      const { data } = await this.api<PlantData>({
-        method,
-        url: url.toString(),
+      const { data } = await this.api<Data>({
+        method: postData ? 'post' : 'get',
+        url: `/R2/PlantHomeSlp/${postData ? 'SetData' : 'GetData'}/${this.id}`,
+        params: postData
+          ? undefined
+          : {
+              fetchSettings: 'false',
+              fetchTimeProg: 'false',
+            },
         data: postData,
       })
-      return data
+      return data.data.plantData as Readonly<
+        Required<Data['data']['plantData']>
+      >
     } catch (error: unknown) {
       return null
     }
