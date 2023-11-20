@@ -7,6 +7,8 @@ import type { DeviceDetails, LoginCredentials, Plant } from '../../types'
 export = class NuosDriver extends withAPI(Driver) {
   #app!: AristonApp
 
+  readonly #deviceType = 4
+
   // eslint-disable-next-line @typescript-eslint/require-await
   public async onInit(): Promise<void> {
     this.#app = this.homey.app as AristonApp
@@ -35,14 +37,16 @@ export = class NuosDriver extends withAPI(Driver) {
   private async discoverDevices(): Promise<DeviceDetails[]> {
     try {
       const { data } = await this.api.get<Plant[]>('/api/v2/velis/plants')
-      return data.map(
-        ({ gw, name }): DeviceDetails => ({
-          name,
-          data: {
-            id: gw,
-          },
-        }),
-      )
+      return data
+        .filter(({ wheType }) => wheType === this.#deviceType)
+        .map(
+          ({ gw, name }): DeviceDetails => ({
+            name,
+            data: {
+              id: gw,
+            },
+          }),
+        )
     } catch (error: unknown) {
       return []
     }

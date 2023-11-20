@@ -54,6 +54,7 @@ export interface LoginData {
 export interface Plant {
   readonly gw: string
   readonly name: string
+  readonly wheType: number
 }
 
 export interface Data {
