@@ -6,8 +6,11 @@ import type {
   CapabilityValue,
   Data,
   DeviceDetails,
+  PlantData,
   Settings,
 } from '../../types'
+
+const initialData: Data['data'] = { plantData: {}, viewModel: {} }
 
 enum OperationMode {
   green = 0,
@@ -23,6 +26,8 @@ export = class NuosDevice extends withAPI(Device) {
 
   protected app!: AristonApp
 
+  #data: Data['data'] = initialData
+
   #syncTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
@@ -34,7 +39,7 @@ export = class NuosDevice extends withAPI(Device) {
 
     await this.handleCapabilities()
     this.registerCapabilityListeners()
-    await this.syncFromDevice()
+    await this.sync()
   }
 
   public async onSettings({
@@ -111,35 +116,34 @@ export = class NuosDevice extends withAPI(Device) {
     value: CapabilityValue,
   ): Promise<void> {
     this.clearSync()
-    const plantData: Data['data']['plantData'] = {}
-    const viewModel: Data['data']['viewModel'] = {}
     switch (capability) {
       case 'onoff':
         if ((this.getSetting('always_on') as boolean) && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
-          plantData.on = this.getCapabilityValue('onoff') as boolean
-          viewModel.on = value as boolean
+          this.#data.plantData.on = this.getCapabilityValue('onoff') as boolean
+          this.#data.viewModel.on = value as boolean
         }
         break
       case 'operation_mode':
-        plantData.opMode =
+        this.#data.plantData.opMode =
           OperationMode[
             this.getCapabilityValue(
               'operation_mode',
             ) as keyof typeof OperationMode
           ]
-        viewModel.opMode = OperationMode[value as keyof typeof OperationMode]
+        this.#data.viewModel.opMode =
+          OperationMode[value as keyof typeof OperationMode]
         break
       case 'target_temperature':
-        plantData.comfortTemp = this.getCapabilityValue(
+        this.#data.plantData.comfortTemp = this.getCapabilityValue(
           'target_temperature',
         ) as number
-        viewModel.comfortTemp = value as number
+        this.#data.viewModel.comfortTemp = value as number
         break
       default:
     }
-    await this.plantData({ plantData, viewModel })
+    this.applySyncToDevice()
   }
 
   private async handleCapabilities(): Promise<void> {
@@ -176,57 +180,57 @@ export = class NuosDevice extends withAPI(Device) {
     )
   }
 
-  private async syncFromDevice(): Promise<void> {
-    await this.updateCapabilities()
+  private async sync(plantData?: PlantData | null): Promise<void> {
+    await this.updateCapabilities(plantData ?? null)
     this.applySyncFromDevice()
   }
 
-  private async updateCapabilities(): Promise<void> {
-    try {
-      const plantData: Readonly<Required<Data['data']['plantData']>> | null =
-        await this.plantData()
-      if (!plantData) {
-        return
-      }
-      const { on, opMode, comfortTemp, waterTemp } = plantData
-      await this.setCapabilityValue('measure_temperature', waterTemp)
-      await this.setCapabilityValue('onoff', on)
-      await this.setCapabilityValue('operation_mode', OperationMode[opMode])
-      await this.setCapabilityValue('target_temperature', comfortTemp)
-    } catch (error: unknown) {
-      // Logged by `withAPI`
+  private async updateCapabilities(plantData: PlantData | null): Promise<void> {
+    const newPlantData: PlantData | null = plantData ?? (await this.plantData())
+    if (!newPlantData) {
+      return
     }
+    const { on, opMode, comfortTemp, waterTemp } = newPlantData
+    await this.setCapabilityValue('measure_temperature', waterTemp)
+    await this.setCapabilityValue('onoff', on)
+    await this.setCapabilityValue('operation_mode', OperationMode[opMode])
+    await this.setCapabilityValue('target_temperature', comfortTemp)
   }
 
-  private async plantData(
-    postData?: Data['data'],
-  ): Promise<Readonly<Required<Data['data']['plantData']>> | null> {
-    if (postData && !Object.keys(postData.viewModel).length) {
+  private async plantData(post = false): Promise<PlantData | null> {
+    if (post && !Object.keys(this.#data.viewModel).length) {
       return null
     }
     try {
       const { data } = await this.api<Data>({
-        method: postData ? 'post' : 'get',
-        url: `/R2/PlantHomeSlp/${postData ? 'SetData' : 'GetData'}/${this.id}`,
-        params: postData
+        method: post ? 'post' : 'get',
+        url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.id}`,
+        params: post
           ? undefined
           : {
               fetchSettings: 'false',
               fetchTimeProg: 'false',
             },
-        data: postData,
+        data: post ? this.#data : undefined,
       })
-      return data.data.plantData as Readonly<
-        Required<Data['data']['plantData']>
-      >
+      this.#data = initialData
+      return data.data.plantData as PlantData
     } catch (error: unknown) {
       return null
     }
   }
 
+  private applySyncToDevice(): void {
+    this.#syncTimeout = this.homey.setTimeout(async (): Promise<void> => {
+      const plantData: PlantData | null = await this.plantData(true)
+      await this.sync(plantData)
+    }, 10000)
+    this.log('Next sync in 1 second')
+  }
+
   private applySyncFromDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(async (): Promise<void> => {
-      await this.syncFromDevice()
+      await this.sync()
     }, 60000)
     this.log('Next sync in 1 minute')
   }

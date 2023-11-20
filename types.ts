@@ -72,6 +72,8 @@ export interface Data {
   }
 }
 
+export type PlantData = Readonly<Required<Data['data']['plantData']>>
+
 export interface DeviceDetails {
   readonly data: {
     readonly id: string
