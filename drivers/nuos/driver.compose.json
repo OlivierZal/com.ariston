@@ -3,7 +3,12 @@
   "name": {
     "en": "Nuos"
   },
-  "capabilities": ["measure_temperature", "onoff", "target_temperature"],
+  "capabilities": [
+    "measure_temperature",
+    "onoff",
+    "operation_mode",
+    "target_temperature"
+  ],
   "capabilitiesOptions": {
     "target_temperature": {
       "min": 40,

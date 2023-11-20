@@ -1,0 +1,35 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Operation mode"
+  },
+  "getable": true,
+  "setable": true,
+  "uiComponent": "picker",
+  "values": [
+    {
+      "id": "green",
+      "title": {
+        "en": "Green"
+      }
+    },
+    {
+      "id": "comfort",
+      "title": {
+        "en": "Comfort"
+      }
+    },
+    {
+      "id": "fast",
+      "title": {
+        "en": "Fast"
+      }
+    },
+    {
+      "id": "auto",
+      "title": {
+        "en": "Automatic (i-Memory)"
+      }
+    }
+  ]
+}

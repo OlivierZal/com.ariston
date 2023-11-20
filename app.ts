@@ -1,5 +1,7 @@
 import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
 import axios from 'axios'
+import { wrapper } from 'axios-cookiejar-support'
+import { CookieJar } from 'tough-cookie'
 import withAPI, { getErrorMessage } from './mixins/withAPI'
 import type {
   LoginCredentials,
@@ -9,8 +11,9 @@ import type {
   HomeySettingValue,
 } from './types'
 
-axios.defaults.baseURL = 'https://www.ariston-net.remotethermo.com/api/v2'
-axios.defaults.headers.common['Content-Type'] = 'application/json'
+wrapper(axios)
+axios.defaults.jar = new CookieJar()
+axios.defaults.baseURL = 'https://www.ariston-net.remotethermo.com'
 
 export = class AristonApp extends withAPI(App) {
   #loginTimeout!: NodeJS.Timeout
@@ -35,21 +38,23 @@ export = class AristonApp extends withAPI(App) {
         return false
       }
       const postData: LoginPostData = {
-        usr: username,
-        pwd: password,
+        email: username,
+        password,
+        rememberMe: true,
       }
       const { data } = await this.api.post<LoginData>(
-        '/accounts/login',
+        '/R2/Account/Login',
         postData,
       )
-      const { token } = data
-      this.setSettings({
-        username,
-        password,
-        token,
-      })
-      this.refreshLogin(loginCredentials)
-      return true
+      const { ok } = data
+      if (ok) {
+        this.setSettings({
+          username,
+          password,
+        })
+        this.refreshLogin(loginCredentials)
+      }
+      return ok
     } catch (error: unknown) {
       throw new Error(getErrorMessage(error))
     }

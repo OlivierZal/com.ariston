@@ -3,18 +3,17 @@ import type NuosDriver from './driver'
 import type AristonApp from '../../app'
 import withAPI from '../../mixins/withAPI'
 import type {
-  Success,
-  Failure,
   CapabilityValue,
   DeviceDetails,
   PlantData,
   Settings,
 } from '../../types'
 
-const pathSuffixMapping: Record<string, string> = {
-  onoff: 'switch',
-  measure_temperature: 'waterTemp',
-  target_temperature: 'procReqTemp',
+enum OperationMode {
+  green = 0,
+  comfort = 1,
+  fast = 2,
+  auto = 3,
 }
 
 export = class NuosDevice extends withAPI(Device) {
@@ -117,11 +116,27 @@ export = class NuosDevice extends withAPI(Device) {
         if ((this.getSetting('always_on') as boolean) && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
-          await this.setPlantData(pathSuffixMapping[capability], value)
+          await this.plantData({
+            // @ts-expect-error: `on` is not a valid key
+            data: { plantData: { on: value as boolean } },
+          })
         }
         break
+      case 'operation_mode':
+        await this.plantData({
+          data: {
+            // @ts-expect-error: `on` is not a valid key
+            plantData: {
+              opMode: OperationMode[value as keyof typeof OperationMode],
+            },
+          },
+        })
+        break
       case 'target_temperature':
-        await this.setPlantData(pathSuffixMapping[capability], value)
+        await this.plantData({
+          // @ts-expect-error: `on` is not a valid key
+          data: { plantData: { comfortTemp: value as number } },
+        })
         break
       default:
     }
@@ -168,39 +183,41 @@ export = class NuosDevice extends withAPI(Device) {
 
   private async updateCapabilities(): Promise<void> {
     try {
-      const data: PlantData | null = await this.getPlantData()
+      const data: PlantData | null = await this.plantData()
       if (!data) {
         return
       }
-      const { on, waterTemp, comfortTemp } = data
-      await this.setCapabilityValue('target_temperature', comfortTemp)
+      const { on, opMode, comfortTemp, waterTemp } = data.data.plantData
       await this.setCapabilityValue('measure_temperature', waterTemp)
       await this.setCapabilityValue('onoff', on)
+      await this.setCapabilityValue('operation_mode', OperationMode[opMode])
+      await this.setCapabilityValue('target_temperature', comfortTemp)
     } catch (error: unknown) {
       // Logged by `withAPI`
     }
   }
 
-  private async getPlantData(): Promise<PlantData | null> {
+  private async plantData(
+    postData?: Partial<PlantData>,
+  ): Promise<PlantData | null> {
     try {
-      const { data } = await this.api.get<PlantData>(
-        `/velis/slpPlantData/${this.id}`,
+      const method: 'get' | 'post' = postData ? 'post' : 'get'
+      const methodPath: 'GetData' | 'SetData' = postData ? 'SetData' : 'GetData'
+      const url: URL = new URL(
+        `/R2/PlantHomeSlp/${methodPath}/${this.id}`,
+        this.api.defaults.baseURL,
       )
-      return data
-    } catch (error: unknown) {
-      return null
-    }
-  }
-
-  private async setPlantData(
-    pathSuffix: string,
-    postData: CapabilityValue,
-  ): Promise<Failure | Success | null> {
-    try {
-      const { data } = await this.api.post<Failure | Success>(
-        `/velis/slpPlantData/${this.id}/${pathSuffix}`,
-        { a: postData },
-      )
+      if (!postData) {
+        url.search = new URLSearchParams({
+          fetchSettings: 'true',
+          fetchTimeProg: 'false',
+        }).toString()
+      }
+      const { data } = await this.api<PlantData>({
+        method,
+        url: url.toString(),
+        data: postData,
+      })
       return data
     } catch (error: unknown) {
       return null

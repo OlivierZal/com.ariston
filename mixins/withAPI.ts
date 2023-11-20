@@ -8,20 +8,13 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import type { Failure, HomeyClass, HomeySettings } from '../types'
+import type { HomeyClass } from '../types'
 
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
 }
 
 function getAPIErrorMessage(error: AxiosError): string {
-  const { data } = error.response ?? {}
-  if (data !== undefined) {
-    const errorMessage: string = (data as Failure).Message ?? ''
-    if (errorMessage) {
-      return errorMessage
-    }
-  }
   return error.message
 }
 
@@ -63,15 +56,12 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
     private handleRequest(
       config: InternalAxiosRequestConfig,
     ): InternalAxiosRequestConfig {
-      const updatedConfig: InternalAxiosRequestConfig = { ...config }
-      updatedConfig.headers['ar.authToken'] =
-        (this.homey.settings.get('token') as HomeySettings['token']) ?? ''
       this.log(
         'Sending request:',
-        updatedConfig.url,
-        updatedConfig.method === 'post' ? updatedConfig.data : '',
+        config.url,
+        config.method === 'post' ? config.data : '',
       )
-      return updatedConfig
+      return config
     }
 
     private handleResponse(response: AxiosResponse): AxiosResponse {

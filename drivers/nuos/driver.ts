@@ -34,7 +34,7 @@ export = class NuosDriver extends withAPI(Driver) {
 
   private async discoverDevices(): Promise<DeviceDetails[]> {
     try {
-      const { data } = await this.api.get<Plant[]>('/velis/plants')
+      const { data } = await this.api.get<Plant[]>('/api/v2/velis/plants')
       return data.map(
         ({ gw, name }): DeviceDetails => ({
           name,
