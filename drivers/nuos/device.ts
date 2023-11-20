@@ -1,6 +1,7 @@
 import { Device } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
 import type NuosDriver from './driver'
 import type AristonApp from '../../app'
+import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import type {
   CapabilityValue,
@@ -19,7 +20,8 @@ enum OperationMode {
   auto = 3,
 }
 
-export = class NuosDevice extends withAPI(Device) {
+@addToLogs('getName()')
+class NuosDevice extends withAPI(Device) {
   public declare driver: NuosDriver
 
   public id!: string
@@ -240,3 +242,5 @@ export = class NuosDevice extends withAPI(Device) {
     this.log('Sync has been paused')
   }
 }
+
+export = NuosDevice
