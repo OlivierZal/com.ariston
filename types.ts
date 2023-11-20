@@ -30,6 +30,7 @@ export type SettingValue = ValueOf<Settings>
 interface BaseHomeySettingValue<T> {
   readonly username: T
   readonly password: T
+  readonly expires: T
 }
 
 export type HomeySettings = BaseHomeySettingValue<string | null>

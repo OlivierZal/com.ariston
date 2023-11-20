@@ -11,9 +11,11 @@ import type {
   HomeySettingValue,
 } from './types'
 
+const domain = 'www.ariston-net.remotethermo.com'
+
 wrapper(axios)
 axios.defaults.jar = new CookieJar()
-axios.defaults.baseURL = 'https://www.ariston-net.remotethermo.com'
+axios.defaults.baseURL = `https://${domain}`
 
 export = class AristonApp extends withAPI(App) {
   #loginTimeout!: NodeJS.Timeout
@@ -42,7 +44,7 @@ export = class AristonApp extends withAPI(App) {
         password,
         rememberMe: true,
       }
-      const { data } = await this.api.post<LoginData>(
+      const { data, config } = await this.api.post<LoginData>(
         '/R2/Account/Login',
         postData,
       )
@@ -51,8 +53,13 @@ export = class AristonApp extends withAPI(App) {
         this.setSettings({
           username,
           password,
+          // @ts-expect-error: CookieJar is partially typed
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          expires: (config.jar?.store?.idx?.[domain]?.['/']?.[
+            '.AspNet.ApplicationCookie'
+          ]?.expires ?? null) as HomeySettings['expires'],
         })
-        this.refreshLogin(loginCredentials)
+        await this.refreshLogin()
       }
       return ok
     } catch (error: unknown) {
@@ -60,11 +67,33 @@ export = class AristonApp extends withAPI(App) {
     }
   }
 
-  private refreshLogin(loginCredentials: LoginCredentials): void {
-    this.#loginTimeout = this.homey.setTimeout(async (): Promise<void> => {
-      await this.tryLogin(loginCredentials)
-    }, 86400000)
-    this.log('Login refresh has been scheduled')
+  private async refreshLogin(): Promise<void> {
+    const loginCredentials: LoginCredentials = {
+      username:
+        (this.homey.settings.get('username') as HomeySettings['username']) ??
+        '',
+      password:
+        (this.homey.settings.get('password') as HomeySettings['password']) ??
+        '',
+    }
+    const expires: string | null = this.homey.settings.get(
+      'expires',
+    ) as HomeySettings['expires']
+    if (expires !== null) {
+      const expireAtDate: Date = new Date(expires)
+      expireAtDate.setDate(expireAtDate.getDate() - 1)
+      const ms: number = expireAtDate.getTime() - new Date().getTime()
+      if (ms) {
+        const maxTimeout: number = 2 ** 31 - 1
+        const interval: number = Math.min(ms, maxTimeout)
+        this.#loginTimeout = this.homey.setTimeout(async (): Promise<void> => {
+          await this.tryLogin(loginCredentials)
+        }, interval)
+        this.log('Login refresh has been scheduled')
+        return
+      }
+    }
+    await this.tryLogin(loginCredentials)
   }
 
   private async tryLogin(loginCredentials: LoginCredentials): Promise<void> {
