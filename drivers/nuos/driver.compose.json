@@ -6,10 +6,17 @@
   "capabilities": [
     "measure_temperature",
     "onoff",
+    "onoff.boost",
     "operation_mode",
-    "target_temperature"
+    "target_temperature",
+    "mode"
   ],
   "capabilitiesOptions": {
+    "onoff.boost": {
+      "title": {
+        "en": "Boost"
+      }
+    },
     "target_temperature": {
       "min": 40,
       "max": 65,

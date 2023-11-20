@@ -17,7 +17,7 @@ export type HomeyClass = new (...args: any[]) => Loggable & {
 }
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
-export type CapabilityValue = boolean | number | string
+export type CapabilityValue = boolean | number | string | null
 
 type ValueOf<T> = T[keyof T]
 
@@ -62,14 +62,20 @@ export interface Data {
   readonly data: {
     readonly plantData: {
       on?: boolean
-      waterTemp?: number
+      boostOn?: boolean
       comfortTemp?: number
+      holidayUntil?: string | null
+      mode?: number
       opMode?: number
+      waterTemp?: number
     }
     readonly viewModel: {
       on?: boolean
+      boostOn?: boolean
       comfortTemp?: number
+      holidayUntil?: string | null
       opMode?: number
+      plantMode?: number
     }
   }
 }

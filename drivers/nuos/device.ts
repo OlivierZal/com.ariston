@@ -13,6 +13,11 @@ import type {
 
 const initialData: Data['data'] = { plantData: {}, viewModel: {} }
 
+enum Mode {
+  manual = 1,
+  auto = 2,
+}
+
 enum OperationMode {
   green = 0,
   comfort = 1,
@@ -127,6 +132,12 @@ class NuosDevice extends withAPI(Device) {
           this.#data.viewModel.on = value as boolean
         }
         break
+      case 'onoff.boost':
+        this.#data.plantData.boostOn = this.getCapabilityValue(
+          'onoff.boost',
+        ) as boolean
+        this.#data.viewModel.boostOn = value as boolean
+        break
       case 'operation_mode':
         this.#data.plantData.opMode =
           OperationMode[
@@ -142,6 +153,11 @@ class NuosDevice extends withAPI(Device) {
           'target_temperature',
         ) as number
         this.#data.viewModel.comfortTemp = value as number
+        break
+      case 'mode':
+        this.#data.plantData.mode =
+          Mode[this.getCapabilityValue('mode') as keyof typeof Mode]
+        this.#data.viewModel.plantMode = Mode[value as keyof typeof Mode]
         break
       default:
     }
@@ -192,9 +208,11 @@ class NuosDevice extends withAPI(Device) {
     if (!newPlantData) {
       return
     }
-    const { on, opMode, comfortTemp, waterTemp } = newPlantData
+    const { boostOn, mode, on, opMode, comfortTemp, waterTemp } = newPlantData
     await this.setCapabilityValue('measure_temperature', waterTemp)
+    await this.setCapabilityValue('mode', Mode[mode])
     await this.setCapabilityValue('onoff', on)
+    await this.setCapabilityValue('onoff.boost', boostOn)
     await this.setCapabilityValue('operation_mode', OperationMode[opMode])
     await this.setCapabilityValue('target_temperature', comfortTemp)
   }
@@ -226,7 +244,7 @@ class NuosDevice extends withAPI(Device) {
     this.#syncTimeout = this.homey.setTimeout(async (): Promise<void> => {
       const plantData: PlantData | null = await this.plantData(true)
       await this.sync(plantData)
-    }, 10000)
+    }, 1000)
     this.log('Next sync in 1 second')
   }
 
