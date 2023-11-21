@@ -2,6 +2,7 @@ import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependen
 import axios from 'axios'
 import { wrapper } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
+import { DateTime } from 'luxon'
 import withAPI, { getErrorMessage } from './mixins/withAPI'
 import type {
   LoginCredentials,
@@ -79,19 +80,18 @@ export = class AristonApp extends withAPI(App) {
     const expires: string | null = this.homey.settings.get(
       'expires',
     ) as HomeySettings['expires']
-    if (expires !== null) {
-      const expireAtDate: Date = new Date(expires)
-      expireAtDate.setDate(expireAtDate.getDate() - 1)
-      const ms: number = expireAtDate.getTime() - new Date().getTime()
-      if (ms) {
-        const maxTimeout: number = 2 ** 31 - 1
-        const interval: number = Math.min(ms, maxTimeout)
-        this.#loginTimeout = this.homey.setTimeout(async (): Promise<void> => {
-          await this.tryLogin(loginCredentials)
-        }, interval)
-        this.log('Login refresh has been scheduled')
-        return
-      }
+    const ms: number =
+      expires !== null
+        ? Number(DateTime.fromISO(expires).minus({ days: 1 }).diffNow())
+        : 0
+    if (ms) {
+      const maxTimeout: number = 2 ** 31 - 1
+      const interval: number = Math.min(ms, maxTimeout)
+      this.#loginTimeout = this.homey.setTimeout(async (): Promise<void> => {
+        await this.tryLogin(loginCredentials)
+      }, interval)
+      this.log('Login refresh has been scheduled')
+      return
     }
     await this.tryLogin(loginCredentials)
   }
