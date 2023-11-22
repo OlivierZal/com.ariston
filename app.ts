@@ -3,13 +3,14 @@ import axios from 'axios'
 import { wrapper } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
 import { DateTime } from 'luxon'
-import withAPI, { getErrorMessage } from './mixins/withAPI'
-import type {
-  LoginCredentials,
-  LoginData,
-  LoginPostData,
-  HomeySettings,
-  HomeySettingValue,
+import withAPI from './mixins/withAPI'
+import {
+  loginURL,
+  type LoginCredentials,
+  type LoginData,
+  type LoginPostData,
+  type HomeySettings,
+  type HomeySettingValue,
 } from './types'
 
 const domain = 'www.ariston-net.remotethermo.com'
@@ -22,18 +23,19 @@ export = class AristonApp extends withAPI(App) {
   #loginTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
-    const loginCredentials: LoginCredentials = {
+    await this.login()
+  }
+
+  public async login(
+    loginCredentials: LoginCredentials = {
       username:
         (this.homey.settings.get('username') as HomeySettings['username']) ??
         '',
       password:
         (this.homey.settings.get('password') as HomeySettings['password']) ??
         '',
-    }
-    await this.tryLogin(loginCredentials)
-  }
-
-  public async login(loginCredentials: LoginCredentials): Promise<boolean> {
+    },
+  ): Promise<boolean> {
     this.clearLoginRefresh()
     try {
       const { username, password } = loginCredentials
@@ -46,7 +48,7 @@ export = class AristonApp extends withAPI(App) {
         rememberMe: true,
       }
       const { data, config } = await this.api.post<LoginData>(
-        '/R2/Account/Login',
+        loginURL,
         postData,
       )
       const { ok } = data
@@ -54,7 +56,7 @@ export = class AristonApp extends withAPI(App) {
         this.setSettings({
           username,
           password,
-          // @ts-expect-error: CookieJar is partially typed
+          // @ts-expect-error: `CookieJar` is partially typed
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expires: (config.jar?.store?.idx?.[domain]?.['/']?.[
             '.AspNet.ApplicationCookie'
@@ -64,49 +66,29 @@ export = class AristonApp extends withAPI(App) {
       }
       return ok
     } catch (error: unknown) {
-      throw new Error(getErrorMessage(error))
+      return false
     }
   }
 
   private async refreshLogin(): Promise<void> {
-    const loginCredentials: LoginCredentials = {
-      username:
-        (this.homey.settings.get('username') as HomeySettings['username']) ??
-        '',
-      password:
-        (this.homey.settings.get('password') as HomeySettings['password']) ??
-        '',
-    }
-    const expires: string | null = this.homey.settings.get(
-      'expires',
-    ) as HomeySettings['expires']
-    const ms: number =
-      expires !== null
-        ? Number(DateTime.fromISO(expires).minus({ days: 1 }).diffNow())
-        : 0
-    if (ms) {
+    const expires: string =
+      (this.homey.settings.get('expires') as HomeySettings['expires']) ?? ''
+    const ms = Number(DateTime.fromISO(expires).minus({ days: 1 }).diffNow())
+    if (ms > 0) {
       const maxTimeout: number = 2 ** 31 - 1
-      const interval: number = Math.min(ms, maxTimeout)
-      this.#loginTimeout = this.homey.setTimeout(async (): Promise<void> => {
-        await this.tryLogin(loginCredentials)
-      }, interval)
-      this.log('Login refresh has been scheduled')
+      this.#loginTimeout = this.homey.setTimeout(
+        async (): Promise<void> => {
+          await this.login()
+        },
+        Math.min(ms, maxTimeout),
+      )
       return
     }
-    await this.tryLogin(loginCredentials)
-  }
-
-  private async tryLogin(loginCredentials: LoginCredentials): Promise<void> {
-    try {
-      await this.login(loginCredentials)
-    } catch (error: unknown) {
-      // Logged by `withAPI`
-    }
+    await this.login()
   }
 
   private clearLoginRefresh(): void {
     this.homey.clearTimeout(this.#loginTimeout)
-    this.log('Login refresh has been paused')
   }
 
   private setSettings(settings: Partial<HomeySettings>): void {

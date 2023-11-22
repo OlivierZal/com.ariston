@@ -1,5 +1,7 @@
 import type Homey from 'homey/lib/Homey'
 
+export const loginURL = '/R2/Account/Login'
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 interface Loggable {
   /* eslint-disable @typescript-eslint/method-signature-style */

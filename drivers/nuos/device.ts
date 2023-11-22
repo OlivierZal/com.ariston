@@ -1,4 +1,5 @@
 import { Device } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
+import { Duration } from 'luxon'
 import type NuosDriver from './driver'
 import type AristonApp from '../../app'
 import addToLogs from '../../decorators/addToLogs'
@@ -241,23 +242,26 @@ class NuosDevice extends withAPI(Device) {
   }
 
   private applySyncToDevice(): void {
-    this.#syncTimeout = this.homey.setTimeout(async (): Promise<void> => {
-      const plantData: PlantData | null = await this.plantData(true)
-      await this.sync(plantData)
-    }, 1000)
-    this.log('Next sync in 1 second')
+    this.#syncTimeout = this.homey.setTimeout(
+      async (): Promise<void> => {
+        const plantData: PlantData | null = await this.plantData(true)
+        await this.sync(plantData)
+      },
+      Duration.fromObject({ seconds: 1 }).as('milliseconds'),
+    )
   }
 
   private applySyncFromDevice(): void {
-    this.#syncTimeout = this.homey.setTimeout(async (): Promise<void> => {
-      await this.sync()
-    }, 60000)
-    this.log('Next sync in 1 minute')
+    this.#syncTimeout = this.homey.setTimeout(
+      async (): Promise<void> => {
+        await this.sync()
+      },
+      Duration.fromObject({ minutes: 1 }).as('milliseconds'),
+    )
   }
 
   private clearSync(): void {
     this.homey.clearTimeout(this.#syncTimeout)
-    this.log('Sync has been paused')
   }
 }
 

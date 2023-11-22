@@ -8,7 +8,9 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import type { HomeyClass } from '../types'
+import { Duration } from 'luxon'
+import type AristonApp from '../app'
+import { loginURL, type HomeyClass } from '../types'
 
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
@@ -18,19 +20,13 @@ function getAPIErrorMessage(error: AxiosError): string {
   return error.message
 }
 
-export function getErrorMessage(error: unknown): string {
-  let errorMessage = String(error)
-  if (axios.isAxiosError(error)) {
-    errorMessage = getAPIErrorMessage(error)
-  } else if (error instanceof Error) {
-    errorMessage = error.message
-  }
-  return errorMessage
-}
-
 export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
   return class extends base {
     public api: AxiosInstance = axios.create()
+
+    #retry = true
+
+    readonly #retryTimeout!: NodeJS.Timeout
 
     public constructor(...args: any[]) {
       super(...args)
@@ -45,7 +41,7 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
           this.handleError('request', error),
       )
       this.api.interceptors.response.use(
-        (response: AxiosResponse): AxiosResponse =>
+        async (response: AxiosResponse): Promise<AxiosResponse> =>
           this.handleResponse(response),
         async (error: AxiosError): Promise<AxiosError> =>
           this.handleError('response', error),
@@ -63,8 +59,30 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
       return config
     }
 
-    private handleResponse(response: AxiosResponse): AxiosResponse {
-      this.log('Received response:', response.config.url, response.data)
+    private async handleResponse(
+      response: AxiosResponse,
+    ): Promise<AxiosResponse> {
+      const { config } = response
+      this.log('Received response:', config.url, response.data)
+      const contentType = String(response.headers['content-type'])
+      if (
+        contentType.includes('text/html') &&
+        this.#retry &&
+        config.url !== loginURL
+      ) {
+        this.#retry = false
+        this.homey.clearTimeout(this.#retryTimeout)
+        this.homey.setTimeout(
+          () => {
+            this.#retry = true
+          },
+          Duration.fromObject({ minutes: 1 }).as('milliseconds'),
+        )
+        const loggedIn: boolean = await (this.homey.app as AristonApp).login()
+        if (loggedIn) {
+          return this.api.request(config)
+        }
+      }
       return response
     }
 
