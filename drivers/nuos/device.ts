@@ -15,8 +15,8 @@ import type {
 const initialData: Data['data'] = { plantData: {}, viewModel: {} }
 
 enum Mode {
-  manual = 1,
-  auto = 2,
+  auto = 1,
+  manual = 2,
 }
 
 enum OperationMode {
@@ -209,8 +209,10 @@ class NuosDevice extends withAPI(Device) {
     if (!newPlantData) {
       return
     }
-    const { boostOn, mode, on, opMode, comfortTemp, waterTemp } = newPlantData
+    const { boostOn, comfortTemp, mode, on, opMode, procReqTemp, waterTemp } =
+      newPlantData
     await this.setCapabilityValue('measure_temperature', waterTemp)
+    await this.setCapabilityValue('measure_temperature.required', procReqTemp)
     await this.setCapabilityValue('mode', Mode[mode])
     await this.setCapabilityValue('onoff', on)
     await this.setCapabilityValue('onoff.boost', boostOn)

@@ -68,6 +68,7 @@ export interface Data {
       comfortTemp?: number
       mode?: number
       opMode?: number
+      procReqTemp?: number
       waterTemp?: number
     }
     readonly viewModel: {
