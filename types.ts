@@ -66,7 +66,6 @@ export interface Data {
       on?: boolean
       boostOn?: boolean
       comfortTemp?: number
-      holidayUntil?: string | null
       mode?: number
       opMode?: number
       waterTemp?: number
@@ -75,7 +74,6 @@ export interface Data {
       on?: boolean
       boostOn?: boolean
       comfortTemp?: number
-      holidayUntil?: string | null
       opMode?: number
       plantMode?: number
     }
