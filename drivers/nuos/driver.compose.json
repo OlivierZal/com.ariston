@@ -4,13 +4,13 @@
     "en": "Nuos"
   },
   "capabilities": [
+    "operation_mode",
     "measure_temperature",
     "measure_temperature.required",
+    "mode",
     "onoff",
     "onoff.boost",
-    "operation_mode",
-    "target_temperature",
-    "mode"
+    "target_temperature"
   ],
   "capabilitiesOptions": {
     "measure_temperature.required": {
