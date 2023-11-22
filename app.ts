@@ -22,9 +22,9 @@ axios.defaults.baseURL = `https://${domain}`
 export = class AristonApp extends withAPI(App) {
   public retry = true
 
-  readonly #retryTimeout!: NodeJS.Timeout
-
   #loginTimeout!: NodeJS.Timeout
+
+  readonly #retryTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
     await this.login()
