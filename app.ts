@@ -2,7 +2,7 @@ import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependen
 import axios from 'axios'
 import { wrapper } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
-import { DateTime } from 'luxon'
+import { DateTime, Duration } from 'luxon'
 import withAPI from './mixins/withAPI'
 import {
   loginURL,
@@ -20,6 +20,10 @@ axios.defaults.jar = new CookieJar()
 axios.defaults.baseURL = `https://${domain}`
 
 export = class AristonApp extends withAPI(App) {
+  public retry = true
+
+  readonly #retryTimeout!: NodeJS.Timeout
+
   #loginTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
@@ -68,6 +72,17 @@ export = class AristonApp extends withAPI(App) {
     } catch (error: unknown) {
       return false
     }
+  }
+
+  public handleRetry(): void {
+    this.retry = false
+    this.homey.clearTimeout(this.#retryTimeout)
+    this.homey.setTimeout(
+      () => {
+        this.retry = true
+      },
+      Duration.fromObject({ minutes: 1 }).as('milliseconds'),
+    )
   }
 
   private refreshLogin(): void {

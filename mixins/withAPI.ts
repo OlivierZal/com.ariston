@@ -8,7 +8,6 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import { Duration } from 'luxon'
 import type AristonApp from '../app'
 import { loginURL, type HomeyClass } from '../types'
 
@@ -23,10 +22,6 @@ function getAPIErrorMessage(error: AxiosError): string {
 export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
   return class extends base {
     public api: AxiosInstance = axios.create()
-
-    #retry = true
-
-    readonly #retryTimeout!: NodeJS.Timeout
 
     public constructor(...args: any[]) {
       super(...args)
@@ -65,20 +60,14 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
       const { config } = response
       this.log('Received response:', config.url, response.data)
       const contentType = String(response.headers['content-type'])
+      const app: AristonApp = this.homey.app as AristonApp
       if (
         contentType.includes('text/html') &&
-        this.#retry &&
+        app.retry &&
         config.url !== loginURL
       ) {
-        this.#retry = false
-        this.homey.clearTimeout(this.#retryTimeout)
-        this.homey.setTimeout(
-          () => {
-            this.#retry = true
-          },
-          Duration.fromObject({ minutes: 1 }).as('milliseconds'),
-        )
-        const loggedIn: boolean = await (this.homey.app as AristonApp).login()
+        app.handleRetry()
+        const loggedIn: boolean = await app.login()
         if (loggedIn) {
           return this.api.request(config)
         }
