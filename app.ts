@@ -62,7 +62,7 @@ export = class AristonApp extends withAPI(App) {
             '.AspNet.ApplicationCookie'
           ]?.expires ?? null) as HomeySettings['expires'],
         })
-        await this.refreshLogin()
+        this.refreshLogin()
       }
       return ok
     } catch (error: unknown) {
@@ -70,7 +70,7 @@ export = class AristonApp extends withAPI(App) {
     }
   }
 
-  private async refreshLogin(): Promise<void> {
+  private refreshLogin(): void {
     const expires: string =
       (this.homey.settings.get('expires') as HomeySettings['expires']) ?? ''
     const ms = Number(DateTime.fromISO(expires).minus({ days: 1 }).diffNow())
@@ -82,9 +82,7 @@ export = class AristonApp extends withAPI(App) {
         },
         Math.min(ms, maxTimeout),
       )
-      return
     }
-    await this.login()
   }
 
   private clearLoginRefresh(): void {
