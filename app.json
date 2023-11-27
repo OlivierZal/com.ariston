@@ -1,0 +1,250 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.ariston",
+  "sdk": 3,
+  "brandColor": "#c8102e",
+  "name": {
+    "en": "Ariston"
+  },
+  "description": {
+    "en": "Control"
+  },
+  "category": [
+    "climate"
+  ],
+  "version": "1.0.0",
+  "compatibility": ">=5.0.0",
+  "tags": {
+    "en": [
+      "ariston"
+    ]
+  },
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Olivier Zalmanski",
+    "email": "olivier.zalmanski@me.com"
+  },
+  "bugs": {
+    "url": "https://github.com/OlivierZal/com.ariston/issues"
+  },
+  "source": "https://github.com/OlivierZal/com.ariston",
+  "support": "https://github.com/OlivierZal/com.ariston/issues",
+  "contributing": {
+    "donate": {
+      "paypal": {
+        "username": "OlivierZalmanski"
+      }
+    }
+  },
+  "platforms": [
+    "local"
+  ],
+  "drivers": [
+    {
+      "images": {
+        "large": "/drivers/nuos/assets/images/large.png",
+        "small": "/drivers/nuos/assets/images/small.png"
+      },
+      "icon": "/drivers/nuos/assets/icon.svg",
+      "class": "heater",
+      "pair": [
+        {
+          "id": "login",
+          "template": "login_credentials",
+          "navigation": {
+            "next": "list_devices"
+          },
+          "options": {
+            "logo": "logo.png",
+            "usernameLabel": {
+              "en": "Username",
+              "fr": "Nom d'utilisateur"
+            },
+            "usernamePlaceholder": {
+              "en": "user@domain.com",
+              "fr": "utilisateur@domain.fr"
+            },
+            "passwordLabel": {
+              "en": "Password",
+              "fr": "Mot de passe"
+            },
+            "passwordPlaceholder": {
+              "en": "P4ssw0rd",
+              "fr": "P4ssw0rd"
+            }
+          }
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "repair": [
+        {
+          "id": "login",
+          "template": "login_credentials",
+          "options": {
+            "logo": "logo.png",
+            "usernameLabel": {
+              "en": "Username",
+              "fr": "Nom d'utilisateur"
+            },
+            "usernamePlaceholder": {
+              "en": "user@domain.com",
+              "fr": "utilisateur@domain.fr"
+            },
+            "passwordLabel": {
+              "en": "Password",
+              "fr": "Mot de passe"
+            },
+            "passwordPlaceholder": {
+              "en": "P4ssw0rd",
+              "fr": "P4ssw0rd"
+            }
+          }
+        }
+      ],
+      "name": {
+        "en": "Nuos"
+      },
+      "capabilities": [
+        "operation_mode",
+        "measure_temperature",
+        "measure_temperature.required",
+        "mode",
+        "onoff",
+        "onoff.boost",
+        "target_temperature"
+      ],
+      "capabilitiesOptions": {
+        "measure_temperature.required": {
+          "title": {
+            "en": "Process required temperature"
+          }
+        },
+        "onoff.boost": {
+          "title": {
+            "en": "Boost"
+          }
+        },
+        "target_temperature": {
+          "min": 40,
+          "max": 75,
+          "step": 1
+        }
+      },
+      "id": "nuos",
+      "settings": [
+        {
+          "id": "options",
+          "type": "group",
+          "label": {
+            "en": "Options",
+            "fr": "Options",
+            "nl": "Opties",
+            "sv": "Alternativ",
+            "no": "Alternativer",
+            "da": "Indstillinger",
+            "es": "Opciones"
+          },
+          "children": [
+            {
+              "id": "always_on",
+              "type": "checkbox",
+              "label": {
+                "en": "Disable shutdown from Homey",
+                "fr": "Désactiver l'extinction depuis Homey",
+                "nl": "Schakel uitschakeling van Homey uit",
+                "sv": "Inaktivera avstängning från Homey",
+                "no": "Deaktiver avstenging fra Homey",
+                "da": "Deaktiver slukning fra Homey",
+                "es": "Desactivar apagado desde Homey"
+              },
+              "value": false,
+              "hint": {
+                "en": "This setting prevents the device from being switched off from Homey, it can still be switched off manually (from a remote control or from the physical device)",
+                "fr": "Ce paramètre empêche l'appareil d'être éteint depuis Homey, il peut toujours être éteint manuellement (à partir d'une télécommande ou depuis l'appareil physique)",
+                "nl": "Deze instelling voorkomt dat het apparaat door Homey kan worden uitgeschakeld, het kan nog steeds handmatig worden uitgeschakeld (met een afstandsbediening of vanaf het fysieke apparaat)",
+                "sv": "Detta alternativ förhindrar att enheten stängs av från Homey, den kan fortfarande stängas av manuellt (från en fjärrkontroll eller från det fysiska enheten)",
+                "no": "Denne innstillingen forhindrer at enheten blir skrudd av fra Homey, den kan fortsatt skrus av manuelt (fra en fjernkontroll eller fra den fysiske enheten)",
+                "da": "Denne indstilling forhindrer, at enheden slukkes fra Homey, den kan stadig slukkes manuelt (fra en fjernbetjening eller fra den fysiske enhed)",
+                "es": "Esta configuración evita que el dispositivo se apague desde Homey, todavía se puede apagar manualmente (desde un mando a distancia o desde el dispositivo físico)"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "capabilities": {
+    "mode": {
+      "type": "enum",
+      "title": {
+        "en": "Mode"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "values": [
+        {
+          "id": "auto",
+          "title": {
+            "en": "Automatic"
+          }
+        },
+        {
+          "id": "manual",
+          "title": {
+            "en": "Manual"
+          }
+        }
+      ]
+    },
+    "operation_mode": {
+      "type": "enum",
+      "title": {
+        "en": "Operation mode"
+      },
+      "getable": true,
+      "setable": true,
+      "uiComponent": "picker",
+      "values": [
+        {
+          "id": "green",
+          "title": {
+            "en": "Green"
+          }
+        },
+        {
+          "id": "comfort",
+          "title": {
+            "en": "Comfort"
+          }
+        },
+        {
+          "id": "fast",
+          "title": {
+            "en": "Fast"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Automatic (i-Memory)"
+          }
+        }
+      ]
+    }
+  }
+}
