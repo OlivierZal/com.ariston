@@ -15,12 +15,10 @@ type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
 }
 
-function getAPIErrorMessage(error: AxiosError): string {
-  return error.message
-}
+const getAPIErrorMessage = (error: AxiosError): string => error.message
 
-export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
-  return class extends base {
+const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
+  class extends base {
     public api: AxiosInstance = axios.create()
 
     public constructor(...args: any[]) {
@@ -91,4 +89,5 @@ export default function withAPI<T extends HomeyClass>(base: T): APIClass & T {
       }
     }
   }
-}
+
+export default withAPI
