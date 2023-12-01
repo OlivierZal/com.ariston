@@ -15,12 +15,14 @@
   "capabilitiesOptions": {
     "measure_temperature.required": {
       "title": {
-        "en": "Process required temperature"
+        "en": "Process required temperature",
+        "fr": "Température requise pour le processus"
       }
     },
     "onoff.boost": {
       "title": {
-        "en": "Boost"
+        "en": "Boost",
+        "fr": "Boost"
       }
     },
     "target_temperature": {

@@ -4,10 +4,12 @@
   "sdk": 3,
   "brandColor": "#c8102e",
   "name": {
-    "en": "Ariston"
+    "en": "Ariston",
+    "fr": "Ariston"
   },
   "description": {
-    "en": "Control"
+    "en": "Take control of your water heater",
+    "fr": "Prenez le contrôle de votre ballon d'eau chaude"
   },
   "category": [
     "climate"
@@ -16,7 +18,20 @@
   "compatibility": ">=5.0.0",
   "tags": {
     "en": [
-      "ariston"
+      "ariston",
+      "boiler",
+      "dhw",
+      "domestic hot water",
+      "water heater",
+      "nuos"
+    ],
+    "fr": [
+      "ariston",
+      "ballon d'eau chaude",
+      "chauffe-eau",
+      "ecs",
+      "eau chaude sanitaire",
+      "nuos"
     ]
   },
   "images": {
@@ -130,12 +145,14 @@
       "capabilitiesOptions": {
         "measure_temperature.required": {
           "title": {
-            "en": "Process required temperature"
+            "en": "Process required temperature",
+            "fr": "Température requise pour le processus"
           }
         },
         "onoff.boost": {
           "title": {
-            "en": "Boost"
+            "en": "Boost",
+            "fr": "Boost"
           }
         },
         "target_temperature": {

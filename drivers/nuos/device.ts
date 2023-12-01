@@ -231,7 +231,7 @@ class NuosDevice extends withAPI(Device) {
         params: post
           ? undefined
           : {
-              fetchSettings: 'false',
+              fetchSettings: 'true',
               fetchTimeProg: 'false',
             },
         data: post ? this.#data : undefined,

@@ -4,6 +4,10 @@
 
 ## Introduction
 
+This app integrates Ariston Net into Homey to control the following device:
+
+- Nuos Split Inverter Wi-Fi.
+
 ## Usage
 
 1. You must have a Homey Pro.

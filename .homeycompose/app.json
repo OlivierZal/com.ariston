@@ -3,16 +3,33 @@
   "sdk": 3,
   "brandColor": "#c8102e",
   "name": {
-    "en": "Ariston"
+    "en": "Ariston",
+    "fr": "Ariston"
   },
   "description": {
-    "en": "Control"
+    "en": "Take control of your water heater",
+    "fr": "Prenez le contrôle de votre ballon d'eau chaude"
   },
   "category": ["climate"],
   "version": "1.0.0",
   "compatibility": ">=5.0.0",
   "tags": {
-    "en": ["ariston"]
+    "en": [
+      "ariston",
+      "boiler",
+      "dhw",
+      "domestic hot water",
+      "water heater",
+      "nuos"
+    ],
+    "fr": [
+      "ariston",
+      "ballon d'eau chaude",
+      "chauffe-eau",
+      "ecs",
+      "eau chaude sanitaire",
+      "nuos"
+    ]
   },
   "images": {
     "small": "/assets/images/small.png",

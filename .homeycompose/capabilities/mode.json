@@ -1,7 +1,8 @@
 {
   "type": "enum",
   "title": {
-    "en": "Mode"
+    "en": "Mode",
+    "fr": "Mode"
   },
   "getable": true,
   "setable": true,
@@ -10,13 +11,15 @@
     {
       "id": "auto",
       "title": {
-        "en": "Automatic"
+        "en": "Automatic",
+        "fr": "Automatique"
       }
     },
     {
       "id": "manual",
       "title": {
-        "en": "Manual"
+        "en": "Manual",
+        "fr": "Manuel"
       }
     }
   ]
