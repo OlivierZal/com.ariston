@@ -208,7 +208,8 @@
     "mode": {
       "type": "enum",
       "title": {
-        "en": "Mode"
+        "en": "Mode",
+        "fr": "Mode"
       },
       "getable": true,
       "setable": true,
@@ -217,13 +218,15 @@
         {
           "id": "auto",
           "title": {
-            "en": "Automatic"
+            "en": "Automatic",
+            "fr": "Automatique"
           }
         },
         {
           "id": "manual",
           "title": {
-            "en": "Manual"
+            "en": "Manual",
+            "fr": "Manuel"
           }
         }
       ]
@@ -231,7 +234,8 @@
     "operation_mode": {
       "type": "enum",
       "title": {
-        "en": "Operation mode"
+        "en": "Operation mode",
+        "fr": "Mode opérationnel"
       },
       "getable": true,
       "setable": true,
@@ -240,25 +244,29 @@
         {
           "id": "green",
           "title": {
-            "en": "Green"
+            "en": "Green",
+            "fr": "Éco"
           }
         },
         {
           "id": "comfort",
           "title": {
-            "en": "Comfort"
+            "en": "Comfort",
+            "fr": "Confort"
           }
         },
         {
           "id": "fast",
           "title": {
-            "en": "Fast"
+            "en": "Fast",
+            "fr": "Rapide"
           }
         },
         {
           "id": "auto",
           "title": {
-            "en": "Automatic (i-Memory)"
+            "en": "Automatic (i-Memory)",
+            "fr": "Automatique (i-Memory)"
           }
         }
       ]
