@@ -140,6 +140,8 @@
         "mode",
         "onoff",
         "onoff.boost",
+        "onoff.legionella",
+        "onoff.preheating",
         "target_temperature"
       ],
       "capabilitiesOptions": {
@@ -159,6 +161,34 @@
           "min": 40,
           "max": 75,
           "step": 1
+        },
+        "onoff.legionella": {
+          "title": {
+            "en": "Antilegionella",
+            "fr": "Anti-légionellose"
+          },
+          "insightsTitleTrue": {
+            "en": "Antilegionella turned on",
+            "fr": "Anti-légionellose activé"
+          },
+          "insightsTitleFalse": {
+            "en": "Antilegionella turned off",
+            "fr": "Anti-légionellose désactivé"
+          }
+        },
+        "onoff.preheating": {
+          "title": {
+            "en": "Preheating",
+            "fr": "Préchauffage"
+          },
+          "insightsTitleTrue": {
+            "en": "Preheating turned on",
+            "fr": "Préchauffage activé"
+          },
+          "insightsTitleFalse": {
+            "en": "Preheating turned off",
+            "fr": "Préchauffage désactivé"
+          }
         }
       },
       "id": "nuos",

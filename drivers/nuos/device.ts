@@ -6,13 +6,16 @@ import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import type {
   CapabilityValue,
-  Data,
   DeviceDetails,
-  PlantData,
+  GetData,
+  PostData,
   Settings,
 } from '../../types'
 
-const initialData: Data['data'] = { plantData: {}, viewModel: {} }
+const initialData: PostData = {
+  plantData: {},
+  viewModel: {},
+}
 
 enum Mode {
   auto = 1,
@@ -34,7 +37,7 @@ class NuosDevice extends withAPI(Device) {
 
   protected app!: AristonApp
 
-  #data: Data['data'] = initialData
+  #data: PostData = initialData
 
   #syncTimeout!: NodeJS.Timeout
 
@@ -199,18 +202,20 @@ class NuosDevice extends withAPI(Device) {
     )
   }
 
-  private async sync(plantData?: PlantData | null): Promise<void> {
-    await this.updateCapabilities(plantData ?? null)
+  private async sync(data?: GetData['data'] | null): Promise<void> {
+    await this.updateCapabilities(data ?? null)
     this.applySyncFromDevice()
   }
 
-  private async updateCapabilities(plantData: PlantData | null): Promise<void> {
-    const newPlantData: PlantData | null = plantData ?? (await this.plantData())
-    if (!newPlantData) {
+  private async updateCapabilities(
+    data: GetData['data'] | null,
+  ): Promise<void> {
+    const newData: GetData['data'] | null = data ?? (await this.plant())
+    if (!newData) {
       return
     }
     const { boostOn, comfortTemp, mode, on, opMode, procReqTemp, waterTemp } =
-      newPlantData
+      newData.plantData
     await this.setCapabilityValue('measure_temperature', waterTemp)
     await this.setCapabilityValue('measure_temperature.required', procReqTemp)
     await this.setCapabilityValue('mode', Mode[mode])
@@ -218,14 +223,17 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('onoff.boost', boostOn)
     await this.setCapabilityValue('operation_mode', OperationMode[opMode])
     await this.setCapabilityValue('target_temperature', comfortTemp)
+    const { antilegionellaOnOff, preHeatingOnOff } = newData.plantSettings
+    await this.setCapabilityValue('onoff.legionella', antilegionellaOnOff)
+    await this.setCapabilityValue('onoff.preheating', preHeatingOnOff)
   }
 
-  private async plantData(post = false): Promise<PlantData | null> {
+  private async plant(post = false): Promise<GetData['data'] | null> {
     if (post && !Object.keys(this.#data.viewModel).length) {
       return null
     }
     try {
-      const { data } = await this.api<Data>({
+      const { data } = await this.api<GetData>({
         method: post ? 'post' : 'get',
         url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.id}`,
         params: post
@@ -237,7 +245,7 @@ class NuosDevice extends withAPI(Device) {
         data: post ? this.#data : undefined,
       })
       this.#data = initialData
-      return data.data.plantData as PlantData
+      return data.data
     } catch (error: unknown) {
       return null
     }
@@ -246,7 +254,7 @@ class NuosDevice extends withAPI(Device) {
   private applySyncToDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        const plantData: PlantData | null = await this.plantData(true)
+        const plantData: GetData['data'] | null = await this.plant(true)
         await this.sync(plantData)
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),

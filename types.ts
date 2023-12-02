@@ -60,28 +60,38 @@ export interface Plant {
   readonly wheType: number
 }
 
-export interface Data {
-  readonly data: {
-    readonly plantData: {
-      on?: boolean
-      boostOn?: boolean
-      comfortTemp?: number
-      mode?: number
-      opMode?: number
-      procReqTemp?: number
-      waterTemp?: number
-    }
-    readonly viewModel: {
-      on?: boolean
-      boostOn?: boolean
-      comfortTemp?: number
-      opMode?: number
-      plantMode?: number
-    }
-  }
+interface BaseData {
+  on?: boolean
+  boostOn?: boolean
+  comfortTemp?: number
+  opMode?: number
 }
 
-export type PlantData = Readonly<Required<Data['data']['plantData']>>
+interface PostPlantData extends BaseData {
+  mode?: number
+  procReqTemp?: number
+  waterTemp?: number
+}
+
+interface ViewModel extends BaseData {
+  plantMode?: number
+}
+
+export interface PostData {
+  readonly plantData: PostPlantData
+  readonly viewModel: ViewModel
+}
+
+export interface GetData {
+  readonly data: {
+    readonly plantData: Readonly<Required<PostPlantData>>
+    readonly plantSettings: {
+      readonly antilegionellaOnOff: true
+      readonly preHeatingOnOff: true
+    }
+    readonly viewModel: Readonly<Required<ViewModel>>
+  }
+}
 
 export interface DeviceDetails {
   readonly data: {
