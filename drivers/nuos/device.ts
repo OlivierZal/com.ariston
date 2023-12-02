@@ -218,8 +218,8 @@ class NuosDevice extends withAPI(Device) {
       newData.plantData
     await this.setCapabilityValue('measure_temperature', waterTemp)
     await this.setCapabilityValue('measure_temperature.required', procReqTemp)
-    await this.setCapabilityValue('mode', Mode[mode])
     await this.setCapabilityValue('onoff', on)
+    await this.setCapabilityValue('onoff.auto', (mode as Mode) === Mode.auto)
     await this.setCapabilityValue('onoff.boost', boostOn)
     await this.setCapabilityValue('operation_mode', OperationMode[opMode])
     await this.setCapabilityValue('target_temperature', comfortTemp)

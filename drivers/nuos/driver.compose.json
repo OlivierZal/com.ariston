@@ -4,33 +4,44 @@
     "en": "Nuos"
   },
   "capabilities": [
-    "operation_mode",
-    "measure_temperature",
-    "measure_temperature.required",
-    "mode",
     "onoff",
+    "onoff.auto",
     "onoff.boost",
     "onoff.legionella",
     "onoff.preheating",
-    "target_temperature"
+    "measure_temperature",
+    "measure_temperature.required",
+    "target_temperature",
+    "operation_mode"
   ],
   "capabilitiesOptions": {
-    "measure_temperature.required": {
+    "onoff.auto": {
       "title": {
-        "en": "Process required temperature",
-        "fr": "Température requise pour le processus"
+        "en": "Automatic mode",
+        "fr": "Mode automatique"
+      },
+      "insightsTitleTrue": {
+        "en": "Automatic mode turned on",
+        "fr": "Mode automatique activé"
+      },
+      "insightsTitleFalse": {
+        "en": "Automatic mode turned off",
+        "fr": "Mode automatique désactivé"
       }
     },
     "onoff.boost": {
       "title": {
         "en": "Boost",
         "fr": "Boost"
+      },
+      "insightsTitleTrue": {
+        "en": "Boost turned on",
+        "fr": "Boost activé"
+      },
+      "insightsTitleFalse": {
+        "en": "Boost turned off",
+        "fr": "Boost désactivé"
       }
-    },
-    "target_temperature": {
-      "min": 40,
-      "max": 75,
-      "step": 1
     },
     "onoff.legionella": {
       "title": {
@@ -59,6 +70,17 @@
         "en": "Preheating turned off",
         "fr": "Préchauffage désactivé"
       }
+    },
+    "measure_temperature.required": {
+      "title": {
+        "en": "Process required temperature",
+        "fr": "Température requise pour le processus"
+      }
+    },
+    "target_temperature": {
+      "min": 40,
+      "max": 75,
+      "step": 1
     }
   }
 }
