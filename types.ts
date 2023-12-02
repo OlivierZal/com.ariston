@@ -85,7 +85,7 @@ export interface PostData {
 export interface GetData {
   readonly data: {
     readonly plantData: Readonly<Required<PostPlantData>>
-    readonly plantSettings: {
+    readonly plantSettings?: {
       readonly antilegionellaOnOff: true
       readonly preHeatingOnOff: true
     }

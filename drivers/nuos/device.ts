@@ -223,6 +223,9 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('onoff.boost', boostOn)
     await this.setCapabilityValue('operation_mode', OperationMode[opMode])
     await this.setCapabilityValue('target_temperature', comfortTemp)
+    if (!newData.plantSettings) {
+      return
+    }
     const { antilegionellaOnOff, preHeatingOnOff } = newData.plantSettings
     await this.setCapabilityValue('onoff.legionella', antilegionellaOnOff)
     await this.setCapabilityValue('onoff.preheating', preHeatingOnOff)
