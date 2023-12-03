@@ -2,7 +2,7 @@ import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependen
 import axios from 'axios'
 import { wrapper } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
-import { DateTime, Duration } from 'luxon'
+import { DateTime, Duration, Settings as LuxonSettings } from 'luxon'
 import withAPI from './mixins/withAPI'
 import {
   loginURL,
@@ -27,6 +27,7 @@ export = class AristonApp extends withAPI(App) {
   readonly #retryTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
+    LuxonSettings.defaultZone = this.homey.clock.getTimezone()
     await this.login()
   }
 

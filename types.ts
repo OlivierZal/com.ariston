@@ -64,6 +64,7 @@ interface BaseData {
   on?: boolean
   boostOn?: boolean
   comfortTemp?: number
+  holidayUntil?: string | null
   opMode?: number
 }
 
