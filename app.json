@@ -307,6 +307,10 @@
       "getable": true,
       "setable": true,
       "uiComponent": "picker",
+      "unit": {
+        "en": "days",
+        "fr": "jours"
+      },
       "values": [
         {
           "id": "0",
@@ -523,6 +527,426 @@
           "title": {
             "en": "30 days",
             "fr": "30 jours"
+          }
+        },
+        {
+          "id": "31",
+          "title": {
+            "en": "31 days",
+            "fr": "31 jours"
+          }
+        },
+        {
+          "id": "32",
+          "title": {
+            "en": "32 days",
+            "fr": "32 jours"
+          }
+        },
+        {
+          "id": "33",
+          "title": {
+            "en": "33 days",
+            "fr": "33 jours"
+          }
+        },
+        {
+          "id": "34",
+          "title": {
+            "en": "34 days",
+            "fr": "34 jours"
+          }
+        },
+        {
+          "id": "35",
+          "title": {
+            "en": "35 days",
+            "fr": "35 jours"
+          }
+        },
+        {
+          "id": "36",
+          "title": {
+            "en": "36 days",
+            "fr": "36 jours"
+          }
+        },
+        {
+          "id": "37",
+          "title": {
+            "en": "37 days",
+            "fr": "37 jours"
+          }
+        },
+        {
+          "id": "38",
+          "title": {
+            "en": "38 days",
+            "fr": "38 jours"
+          }
+        },
+        {
+          "id": "39",
+          "title": {
+            "en": "39 days",
+            "fr": "39 jours"
+          }
+        },
+        {
+          "id": "40",
+          "title": {
+            "en": "40 days",
+            "fr": "40 jours"
+          }
+        },
+        {
+          "id": "41",
+          "title": {
+            "en": "41 days",
+            "fr": "41 jours"
+          }
+        },
+        {
+          "id": "42",
+          "title": {
+            "en": "42 days",
+            "fr": "42 jours"
+          }
+        },
+        {
+          "id": "43",
+          "title": {
+            "en": "43 days",
+            "fr": "43 jours"
+          }
+        },
+        {
+          "id": "44",
+          "title": {
+            "en": "44 days",
+            "fr": "44 jours"
+          }
+        },
+        {
+          "id": "45",
+          "title": {
+            "en": "45 days",
+            "fr": "45 jours"
+          }
+        },
+        {
+          "id": "46",
+          "title": {
+            "en": "46 days",
+            "fr": "46 jours"
+          }
+        },
+        {
+          "id": "47",
+          "title": {
+            "en": "47 days",
+            "fr": "47 jours"
+          }
+        },
+        {
+          "id": "48",
+          "title": {
+            "en": "48 days",
+            "fr": "48 jours"
+          }
+        },
+        {
+          "id": "49",
+          "title": {
+            "en": "49 days",
+            "fr": "49 jours"
+          }
+        },
+        {
+          "id": "50",
+          "title": {
+            "en": "50 days",
+            "fr": "50 jours"
+          }
+        },
+        {
+          "id": "51",
+          "title": {
+            "en": "51 days",
+            "fr": "51 jours"
+          }
+        },
+        {
+          "id": "52",
+          "title": {
+            "en": "52 days",
+            "fr": "52 jours"
+          }
+        },
+        {
+          "id": "53",
+          "title": {
+            "en": "53 days",
+            "fr": "53 jours"
+          }
+        },
+        {
+          "id": "54",
+          "title": {
+            "en": "54 days",
+            "fr": "54 jours"
+          }
+        },
+        {
+          "id": "55",
+          "title": {
+            "en": "55 days",
+            "fr": "55 jours"
+          }
+        },
+        {
+          "id": "56",
+          "title": {
+            "en": "56 days",
+            "fr": "56 jours"
+          }
+        },
+        {
+          "id": "57",
+          "title": {
+            "en": "57 days",
+            "fr": "57 jours"
+          }
+        },
+        {
+          "id": "58",
+          "title": {
+            "en": "58 days",
+            "fr": "58 jours"
+          }
+        },
+        {
+          "id": "59",
+          "title": {
+            "en": "59 days",
+            "fr": "59 jours"
+          }
+        },
+        {
+          "id": "60",
+          "title": {
+            "en": "60 days",
+            "fr": "60 jours"
+          }
+        },
+        {
+          "id": "61",
+          "title": {
+            "en": "61 days",
+            "fr": "61 jours"
+          }
+        },
+        {
+          "id": "62",
+          "title": {
+            "en": "62 days",
+            "fr": "62 jours"
+          }
+        },
+        {
+          "id": "63",
+          "title": {
+            "en": "63 days",
+            "fr": "63 jours"
+          }
+        },
+        {
+          "id": "64",
+          "title": {
+            "en": "64 days",
+            "fr": "64 jours"
+          }
+        },
+        {
+          "id": "65",
+          "title": {
+            "en": "65 days",
+            "fr": "65 jours"
+          }
+        },
+        {
+          "id": "66",
+          "title": {
+            "en": "66 days",
+            "fr": "66 jours"
+          }
+        },
+        {
+          "id": "67",
+          "title": {
+            "en": "67 days",
+            "fr": "67 jours"
+          }
+        },
+        {
+          "id": "68",
+          "title": {
+            "en": "68 days",
+            "fr": "68 jours"
+          }
+        },
+        {
+          "id": "69",
+          "title": {
+            "en": "69 days",
+            "fr": "69 jours"
+          }
+        },
+        {
+          "id": "70",
+          "title": {
+            "en": "70 days",
+            "fr": "70 jours"
+          }
+        },
+        {
+          "id": "71",
+          "title": {
+            "en": "71 days",
+            "fr": "71 jours"
+          }
+        },
+        {
+          "id": "72",
+          "title": {
+            "en": "72 days",
+            "fr": "72 jours"
+          }
+        },
+        {
+          "id": "73",
+          "title": {
+            "en": "73 days",
+            "fr": "73 jours"
+          }
+        },
+        {
+          "id": "74",
+          "title": {
+            "en": "74 days",
+            "fr": "74 jours"
+          }
+        },
+        {
+          "id": "75",
+          "title": {
+            "en": "75 days",
+            "fr": "75 jours"
+          }
+        },
+        {
+          "id": "76",
+          "title": {
+            "en": "76 days",
+            "fr": "76 jours"
+          }
+        },
+        {
+          "id": "77",
+          "title": {
+            "en": "77 days",
+            "fr": "77 jours"
+          }
+        },
+        {
+          "id": "78",
+          "title": {
+            "en": "78 days",
+            "fr": "78 jours"
+          }
+        },
+        {
+          "id": "79",
+          "title": {
+            "en": "79 days",
+            "fr": "79 jours"
+          }
+        },
+        {
+          "id": "80",
+          "title": {
+            "en": "80 days",
+            "fr": "80 jours"
+          }
+        },
+        {
+          "id": "81",
+          "title": {
+            "en": "81 days",
+            "fr": "81 jours"
+          }
+        },
+        {
+          "id": "82",
+          "title": {
+            "en": "82 days",
+            "fr": "82 jours"
+          }
+        },
+        {
+          "id": "83",
+          "title": {
+            "en": "83 days",
+            "fr": "83 jours"
+          }
+        },
+        {
+          "id": "84",
+          "title": {
+            "en": "84 days",
+            "fr": "84 jours"
+          }
+        },
+        {
+          "id": "85",
+          "title": {
+            "en": "85 days",
+            "fr": "85 jours"
+          }
+        },
+        {
+          "id": "86",
+          "title": {
+            "en": "86 days",
+            "fr": "86 jours"
+          }
+        },
+        {
+          "id": "87",
+          "title": {
+            "en": "87 days",
+            "fr": "87 jours"
+          }
+        },
+        {
+          "id": "88",
+          "title": {
+            "en": "88 days",
+            "fr": "88 jours"
+          }
+        },
+        {
+          "id": "89",
+          "title": {
+            "en": "89 days",
+            "fr": "89 jours"
+          }
+        },
+        {
+          "id": "90",
+          "title": {
+            "en": "90 days",
+            "fr": "90 jours"
           }
         }
       ]
