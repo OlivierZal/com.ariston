@@ -307,10 +307,6 @@
       "getable": true,
       "setable": true,
       "uiComponent": "picker",
-      "unit": {
-        "en": "days",
-        "fr": "jours"
-      },
       "values": [
         {
           "id": "0",
