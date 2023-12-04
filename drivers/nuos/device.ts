@@ -1,5 +1,5 @@
 import { Device } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
-import { Duration } from 'luxon'
+import { DateTime, Duration } from 'luxon'
 import type NuosDriver from './driver'
 import type AristonApp from '../../app'
 import addToLogs from '../../decorators/addToLogs'
@@ -22,11 +22,29 @@ enum Mode {
   manual = 2,
 }
 
+const convertToMode = (value: boolean): Mode =>
+  value ? Mode.auto : Mode.manual
+
 enum OperationMode {
   green = 0,
   comfort = 1,
   fast = 2,
   auto = 3,
+}
+
+const convertToOperationMode = (
+  value: keyof typeof OperationMode,
+): OperationMode => OperationMode[value]
+
+const convertToVacationDays = (value: string): string | null => {
+  const days = Number(value)
+  return days > 0
+    ? DateTime.now()
+        .plus({
+          days,
+        })
+        .toISODate()
+    : null
 }
 
 @addToLogs('getName()')
@@ -136,6 +154,12 @@ class NuosDevice extends withAPI(Device) {
           this.#data.viewModel.on = value as boolean
         }
         break
+      case 'onoff.auto':
+        this.#data.plantData.mode = convertToMode(
+          this.getCapabilityValue('mode') as boolean,
+        )
+        this.#data.viewModel.plantMode = convertToMode(value as boolean)
+        break
       case 'onoff.boost':
         this.#data.plantData.boostOn = this.getCapabilityValue(
           'onoff.boost',
@@ -143,14 +167,14 @@ class NuosDevice extends withAPI(Device) {
         this.#data.viewModel.boostOn = value as boolean
         break
       case 'operation_mode':
-        this.#data.plantData.opMode =
-          OperationMode[
-            this.getCapabilityValue(
-              'operation_mode',
-            ) as keyof typeof OperationMode
-          ]
-        this.#data.viewModel.opMode =
-          OperationMode[value as keyof typeof OperationMode]
+        this.#data.plantData.opMode = convertToOperationMode(
+          this.getCapabilityValue(
+            'operation_mode',
+          ) as keyof typeof OperationMode,
+        )
+        this.#data.viewModel.opMode = convertToOperationMode(
+          value as keyof typeof OperationMode,
+        )
         break
       case 'target_temperature':
         this.#data.plantData.comfortTemp = this.getCapabilityValue(
@@ -158,10 +182,13 @@ class NuosDevice extends withAPI(Device) {
         ) as number
         this.#data.viewModel.comfortTemp = value as number
         break
-      case 'mode':
-        this.#data.plantData.mode =
-          Mode[this.getCapabilityValue('mode') as keyof typeof Mode]
-        this.#data.viewModel.plantMode = Mode[value as keyof typeof Mode]
+      case 'vacation':
+        this.#data.plantData.holidayUntil = convertToVacationDays(
+          this.getCapabilityValue('vacation') as string,
+        )
+        this.#data.viewModel.holidayUntil = convertToVacationDays(
+          value as string,
+        )
         break
       default:
     }
@@ -214,8 +241,16 @@ class NuosDevice extends withAPI(Device) {
     if (!newData) {
       return
     }
-    const { boostOn, comfortTemp, mode, on, opMode, procReqTemp, waterTemp } =
-      newData.plantData
+    const {
+      boostOn,
+      comfortTemp,
+      holidayUntil,
+      mode,
+      on,
+      opMode,
+      procReqTemp,
+      waterTemp,
+    } = newData.plantData
     await this.setCapabilityValue('measure_temperature', waterTemp)
     await this.setCapabilityValue('measure_temperature.required', procReqTemp)
     await this.setCapabilityValue('onoff', on)
@@ -223,6 +258,16 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('onoff.boost', boostOn)
     await this.setCapabilityValue('operation_mode', OperationMode[opMode])
     await this.setCapabilityValue('target_temperature', comfortTemp)
+    await this.setCapabilityValue(
+      'vacation',
+      String(
+        holidayUntil !== null
+          ? Math.ceil(
+              Number(DateTime.fromISO(holidayUntil).diffNow('days').days),
+            )
+          : 0,
+      ),
+    )
     if (!newData.plantSettings) {
       return
     }
