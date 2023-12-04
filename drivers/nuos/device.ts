@@ -36,7 +36,7 @@ const convertToOperationMode = (
   value: keyof typeof OperationMode,
 ): OperationMode => OperationMode[value]
 
-const convertToDate = (value: string): string | null => {
+const convertToVacationDate = (value: string): string | null => {
   const days = Number(value)
   return days > 0
     ? DateTime.now()
@@ -178,8 +178,12 @@ class NuosDevice extends withAPI(Device) {
         this.#data.viewModel.comfortTemp = value as number
         break
       case 'vacation':
-        this.#data.plantData.holidayUntil = convertToDate(oldValue as string)
-        this.#data.viewModel.holidayUntil = convertToDate(value as string)
+        this.#data.plantData.holidayUntil = convertToVacationDate(
+          oldValue as string,
+        )
+        this.#data.viewModel.holidayUntil = convertToVacationDate(
+          value as string,
+        )
         break
       default:
     }
