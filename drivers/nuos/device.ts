@@ -145,46 +145,41 @@ class NuosDevice extends withAPI(Device) {
     value: CapabilityValue,
   ): Promise<void> {
     this.clearSync()
+    const oldValue: CapabilityValue = this.getCapabilityValue(
+      capability,
+    ) as CapabilityValue
     switch (capability) {
       case 'onoff':
         if ((this.getSetting('always_on') as boolean) && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
-          this.#data.plantData.on = this.getCapabilityValue('onoff') as boolean
+          this.#data.plantData.on = oldValue as boolean
           this.#data.viewModel.on = value as boolean
         }
         break
       case 'onoff.auto':
-        this.#data.plantData.mode = convertToMode(
-          this.getCapabilityValue('mode') as boolean,
-        )
+        this.#data.plantData.mode = convertToMode(oldValue as boolean)
         this.#data.viewModel.plantMode = convertToMode(value as boolean)
         break
       case 'onoff.boost':
-        this.#data.plantData.boostOn = this.getCapabilityValue(
-          'onoff.boost',
-        ) as boolean
+        this.#data.plantData.boostOn = oldValue as boolean
         this.#data.viewModel.boostOn = value as boolean
         break
       case 'operation_mode':
         this.#data.plantData.opMode = convertToOperationMode(
-          this.getCapabilityValue(
-            'operation_mode',
-          ) as keyof typeof OperationMode,
+          oldValue as keyof typeof OperationMode,
         )
         this.#data.viewModel.opMode = convertToOperationMode(
           value as keyof typeof OperationMode,
         )
         break
       case 'target_temperature':
-        this.#data.plantData.comfortTemp = this.getCapabilityValue(
-          'target_temperature',
-        ) as number
+        this.#data.plantData.comfortTemp = oldValue as number
         this.#data.viewModel.comfortTemp = value as number
         break
       case 'vacation':
         this.#data.plantData.holidayUntil = convertToVacationDays(
-          this.getCapabilityValue('vacation') as string,
+          oldValue as string,
         )
         this.#data.viewModel.holidayUntil = convertToVacationDays(
           value as string,
