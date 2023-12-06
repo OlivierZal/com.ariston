@@ -8,7 +8,9 @@ import type {
   CapabilityValue,
   DeviceDetails,
   GetData,
+  GetSettings,
   PostData,
+  PostSettings,
   Settings,
 } from '../../types'
 
@@ -56,6 +58,8 @@ class NuosDevice extends withAPI(Device) {
   protected app!: AristonApp
 
   #data: PostData = initialData
+
+  #settings: PostSettings = {}
 
   #syncTimeout!: NodeJS.Timeout
 
@@ -165,6 +169,18 @@ class NuosDevice extends withAPI(Device) {
         this.#data.plantData.boostOn = oldValue as boolean
         this.#data.viewModel.boostOn = value as boolean
         break
+      case 'onoff.legionella':
+        this.#settings.SlpAntilegionellaOnOff = {
+          old: Number(oldValue) as 0 | 1,
+          new: Number(value) as 0 | 1,
+        }
+        break
+      case 'onoff.preheating':
+        this.#settings.SlpPreHeatingOnOff = {
+          old: Number(oldValue) as 0 | 1,
+          new: Number(value) as 0 | 1,
+        }
+        break
       case 'operation_mode':
         this.#data.plantData.opMode = convertToOperationMode(
           oldValue as keyof typeof OperationMode,
@@ -224,15 +240,13 @@ class NuosDevice extends withAPI(Device) {
     )
   }
 
-  private async sync(data?: GetData['data'] | null): Promise<void> {
-    await this.updateCapabilities(data ?? null)
+  private async sync(post = false): Promise<void> {
+    await this.updateCapabilities(post)
     this.applySyncFromDevice()
   }
 
-  private async updateCapabilities(
-    data: GetData['data'] | null,
-  ): Promise<void> {
-    const newData: GetData['data'] | null = data ?? (await this.plant())
+  private async updateCapabilities(post: boolean): Promise<void> {
+    const newData: GetData['data'] | null = await this.plant(post)
     if (!newData) {
       return
     }
@@ -294,11 +308,42 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
+  private async updateSettings(): Promise<boolean> {
+    if (!Object.keys(this.#settings).length) {
+      return false
+    }
+    try {
+      const { data } = await this.api.post<GetSettings>(
+        `/api/v2/velis/slpPlantData/${this.id}/PlantSettingsR2/PlantHomeSlp`,
+        this.#settings,
+      )
+      const { success } = data
+      if (success) {
+        if (this.#settings.SlpAntilegionellaOnOff) {
+          await this.setCapabilityValue(
+            'onoff.legionella',
+            this.#settings.SlpAntilegionellaOnOff.new,
+          )
+        }
+        if (this.#settings.SlpPreHeatingOnOff) {
+          await this.setCapabilityValue(
+            'onoff.preheating',
+            this.#settings.SlpPreHeatingOnOff.new,
+          )
+        }
+        this.#settings = {}
+      }
+      return success
+    } catch (error: unknown) {
+      return false
+    }
+  }
+
   private applySyncToDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        const plantData: GetData['data'] | null = await this.plant(true)
-        await this.sync(plantData)
+        await this.updateSettings()
+        await this.sync(true)
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),
     )

@@ -94,6 +94,20 @@ export interface GetData {
   }
 }
 
+interface BasePostSettings {
+  readonly new: 0 | 1
+  readonly old: 0 | 1
+}
+
+export interface PostSettings {
+  SlpAntilegionellaOnOff?: BasePostSettings
+  SlpPreHeatingOnOff?: BasePostSettings
+}
+
+export interface GetSettings {
+  readonly success: boolean
+}
+
 export interface DeviceDetails {
   readonly data: {
     readonly id: string
