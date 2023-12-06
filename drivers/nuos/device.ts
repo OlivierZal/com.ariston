@@ -314,7 +314,7 @@ class NuosDevice extends withAPI(Device) {
     }
     try {
       const { data } = await this.api.post<GetSettings>(
-        `/api/v2/velis/slpPlantData/${this.id}/PlantSettingsR2/PlantHomeSlp`,
+        `/api/v2/velis/slpPlantData/${this.id}/PlantSettings`,
         this.#settings,
       )
       const { success } = data
@@ -322,13 +322,13 @@ class NuosDevice extends withAPI(Device) {
         if (this.#settings.SlpAntilegionellaOnOff) {
           await this.setCapabilityValue(
             'onoff.legionella',
-            this.#settings.SlpAntilegionellaOnOff.new,
+            Boolean(this.#settings.SlpAntilegionellaOnOff.new),
           )
         }
         if (this.#settings.SlpPreHeatingOnOff) {
           await this.setCapabilityValue(
             'onoff.preheating',
-            this.#settings.SlpPreHeatingOnOff.new,
+            Boolean(this.#settings.SlpPreHeatingOnOff.new),
           )
         }
         this.#settings = {}
