@@ -2,10 +2,12 @@
   @typescript-eslint/no-explicit-any,
   @typescript-eslint/no-unsafe-argument
 */
-import type { LogClass } from '../types'
+import type { SimpleClass } from 'homey'
 
-const addToLogs = <T extends LogClass>(...logs: string[]) =>
-  function actualDecorator(target: T, context: ClassDecoratorContext<T>): T {
+const addToLogs = <T extends new (...args: any[]) => SimpleClass>(
+  ...logs: string[]
+) =>
+  function actualDecorator(target: T, context: ClassDecoratorContext): T {
     class LogsDecorator extends target {
       public error(...args: any[]): void {
         this.commonLog('error', ...args)
