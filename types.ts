@@ -70,8 +70,6 @@ interface BaseData {
 
 interface PostPlantData extends BaseData {
   mode?: number
-  procReqTemp?: number
-  waterTemp?: number
 }
 
 interface ViewModel extends BaseData {
@@ -85,7 +83,10 @@ export interface PostData {
 
 export interface GetData {
   readonly data: {
-    readonly plantData: Readonly<Required<PostPlantData>>
+    readonly plantData: Readonly<Required<PostPlantData>> & {
+      readonly procReqTemp: number
+      readonly waterTemp: number
+    }
     readonly plantSettings?: {
       readonly antilegionellaOnOff: true
       readonly preHeatingOnOff: true
