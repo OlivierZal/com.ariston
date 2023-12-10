@@ -406,11 +406,8 @@ class NuosDevice extends withAPI(Device) {
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
-    /* eslint-disable-next-line
-      @typescript-eslint/no-explicit-any,
-      @typescript-eslint/no-unsafe-assignment
-    */
-    const options: any = this.getCapabilityOptions('target_temperature')
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const options = this.getCapabilityOptions('target_temperature')
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     if (min === options.min && max === options.max) {
       return
