@@ -340,8 +340,8 @@
     "vacation": {
       "type": "enum",
       "title": {
-        "en": "Vacation",
-        "fr": "Vacances"
+        "en": "Vacation (remaining days)",
+        "fr": "Vacances (jours restants)"
       },
       "getable": true,
       "setable": true,
