@@ -413,7 +413,7 @@ class NuosDevice extends withAPI(Device) {
     if (min === options.min && max === options.max) {
       return
     }
-    await this.setCapabilityOptions('target_temperature', { min, max })
+    await this.setCapabilityOptions('target_temperature', { min, max, step: 1 })
     await this.setWarning(this.homey.__('warnings.settings'))
   }
 }
