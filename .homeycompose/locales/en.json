@@ -1,5 +1,6 @@
 {
   "warnings": {
-    "always_on": "Shutdown from Homey has been disabled."
+    "always_on": "Shutdown from Homey has been disabled.",
+    "settings": "Exit the device and return to update your settings."
   }
 }

@@ -253,6 +253,45 @@
               }
             }
           ]
+        },
+        {
+          "type": "group",
+          "label": {
+            "en": "Temperature range",
+            "fr": "Plage de température"
+          },
+          "children": [
+            {
+              "id": "min",
+              "type": "number",
+              "label": {
+                "en": "Minimum temperature",
+                "fr": "Température minimale"
+              },
+              "value": 40,
+              "min": 40,
+              "max": 50,
+              "units": {
+                "en": "°C",
+                "fr": "°C"
+              }
+            },
+            {
+              "id": "max",
+              "type": "number",
+              "label": {
+                "en": "Maximum temperature",
+                "fr": "Température maximale"
+              },
+              "value": 3,
+              "min": 65,
+              "max": 75,
+              "units": {
+                "en": "°C",
+                "fr": "°C"
+              }
+            }
+          ]
         }
       ]
     }

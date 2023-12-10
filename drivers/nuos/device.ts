@@ -11,6 +11,7 @@ import type {
   GetSettings,
   PostData,
   PostSettings,
+  SettingValue,
   Settings,
 } from '../../types'
 
@@ -89,6 +90,17 @@ class NuosDevice extends withAPI(Device) {
     ) {
       await this.triggerCapabilityListener('onoff', true)
     }
+
+    if (changedKeys.includes('min') && newSettings.min !== undefined) {
+      this.#settings.SlpMinSetpointTemperature = { new: newSettings.min }
+    }
+    if (changedKeys.includes('max') && newSettings.max !== undefined) {
+      this.#settings.SlpMaxSetpointTemperature = { new: newSettings.max }
+    }
+    if (Object.keys(this.#settings).length) {
+      await this.updateSettings()
+      await this.updateTargetTemperatureMinMax(newSettings)
+    }
   }
 
   public onDeleted(): void {
@@ -134,6 +146,26 @@ class NuosDevice extends withAPI(Device) {
       this.log('Capability', capability, 'is', value)
     } catch (error: unknown) {
       this.error(error instanceof Error ? error.message : error)
+    }
+  }
+
+  public async setSettings(settings: Settings): Promise<void> {
+    const newSettings: Settings = Object.fromEntries(
+      Object.entries(settings).filter(
+        ([key, value]: [string, SettingValue]) =>
+          value !== this.getSetting(key),
+      ),
+    )
+    if (!Object.keys(newSettings).length) {
+      return
+    }
+    await super.setSettings(newSettings)
+    if (
+      ['min', 'max'].some((key: string) =>
+        Object.keys(newSettings).includes(key),
+      )
+    ) {
+      await this.updateTargetTemperatureMinMax()
     }
   }
 
@@ -250,6 +282,20 @@ class NuosDevice extends withAPI(Device) {
     if (!newData) {
       return
     }
+    if (newData.plantSettings) {
+      const {
+        antilegionellaOnOff,
+        preHeatingOnOff,
+        minSetpointTemp,
+        maxSetpointTemp,
+      } = newData.plantSettings
+      await this.setCapabilityValue('onoff.legionella', antilegionellaOnOff)
+      await this.setCapabilityValue('onoff.preheating', preHeatingOnOff)
+      await this.setSettings({
+        min: minSetpointTemp.value,
+        max: maxSetpointTemp.value,
+      })
+    }
     const {
       boostOn,
       comfortTemp,
@@ -277,12 +323,6 @@ class NuosDevice extends withAPI(Device) {
           : 0,
       ),
     )
-    if (!newData.plantSettings) {
-      return
-    }
-    const { antilegionellaOnOff, preHeatingOnOff } = newData.plantSettings
-    await this.setCapabilityValue('onoff.legionella', antilegionellaOnOff)
-    await this.setCapabilityValue('onoff.preheating', preHeatingOnOff)
   }
 
   private async plant(post = false): Promise<GetData['data'] | null> {
@@ -360,6 +400,26 @@ class NuosDevice extends withAPI(Device) {
 
   private clearSync(): void {
     this.homey.clearTimeout(this.#syncTimeout)
+  }
+
+  private async updateTargetTemperatureMinMax(
+    settings: Settings = this.getSettings() as Settings,
+  ): Promise<void> {
+    const { min, max } = settings
+    /* eslint-disable-next-line
+      @typescript-eslint/no-explicit-any,
+      @typescript-eslint/no-unsafe-assignment
+    */
+    const options: any = this.getCapabilityOptions('target_temperature')
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    if (min === options.min && max === options.max) {
+      return
+    }
+    await this.setCapabilityOptions('target_temperature', {
+      min,
+      max,
+    })
+    await this.setWarning(this.homey.__('warnings.settings'))
   }
 }
 

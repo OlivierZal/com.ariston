@@ -15,6 +15,8 @@ type ValueOf<T> = T[keyof T]
 
 export interface Settings {
   readonly always_on?: boolean
+  readonly min?: number
+  readonly max?: number
 }
 
 export type SettingValue = ValueOf<Settings>
@@ -80,19 +82,26 @@ export interface GetData {
     readonly plantSettings?: {
       readonly antilegionellaOnOff: true
       readonly preHeatingOnOff: true
+      readonly minSetpointTemp: { value: number }
+      readonly maxSetpointTemp: { value: number }
     }
     readonly viewModel: Readonly<Required<ViewModel>>
   }
 }
 
-interface BasePostSettings {
-  readonly new: 0 | 1
-  readonly old: 0 | 1
+interface BasePostSettings<T> {
+  readonly new: T
+}
+
+interface BasePostSettingsWithOld<T> extends BasePostSettings<T> {
+  readonly old: T
 }
 
 export interface PostSettings {
-  SlpAntilegionellaOnOff?: BasePostSettings
-  SlpPreHeatingOnOff?: BasePostSettings
+  SlpAntilegionellaOnOff?: BasePostSettingsWithOld<0 | 1>
+  SlpPreHeatingOnOff?: BasePostSettingsWithOld<0 | 1>
+  SlpMinSetpointTemperature?: BasePostSettings<number>
+  SlpMaxSetpointTemperature?: BasePostSettings<number>
 }
 
 export interface GetSettings {
