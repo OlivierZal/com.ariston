@@ -90,7 +90,6 @@ class NuosDevice extends withAPI(Device) {
     ) {
       await this.triggerCapabilityListener('onoff', true)
     }
-
     if (changedKeys.includes('min') && newSettings.min !== undefined) {
       this.#settings.SlpMinSetpointTemperature = { new: newSettings.min }
     }
@@ -99,7 +98,9 @@ class NuosDevice extends withAPI(Device) {
     }
     if (Object.keys(this.#settings).length) {
       await this.updateSettings()
-      await this.updateTargetTemperatureMinMax(newSettings)
+      if (changedKeys.some((key: string) => ['min', 'max'].includes(key))) {
+        await this.updateTargetTemperatureMinMax(newSettings)
+      }
     }
   }
 
