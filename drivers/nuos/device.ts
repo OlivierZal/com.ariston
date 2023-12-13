@@ -6,6 +6,7 @@ import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import type {
   CapabilityValue,
+  CapabilityOptions,
   DeviceDetails,
   GetData,
   GetSettings,
@@ -407,13 +408,17 @@ class NuosDevice extends withAPI(Device) {
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const options = this.getCapabilityOptions('target_temperature')
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const options: CapabilityOptions = this.getCapabilityOptions(
+      'target_temperature',
+    ) as CapabilityOptions
     if (min === options.min && max === options.max) {
       return
     }
-    await this.setCapabilityOptions('target_temperature', { min, max, step: 1 })
+    await this.setCapabilityOptions('target_temperature', {
+      ...options,
+      min,
+      max,
+    })
     await this.setWarning(this.homey.__('warnings.settings'))
   }
 }

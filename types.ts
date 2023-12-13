@@ -9,6 +9,11 @@ export type HomeyClass = new (...args: any[]) => SimpleClass & {
   readonly setWarning?: (warning: string | null) => Promise<void>
 }
 
+export type CapabilityOptions = object & {
+  readonly min: number
+  readonly max: number
+}
+
 export type CapabilityValue = boolean | number | string | null
 
 type ValueOf<T> = T[keyof T]
