@@ -39,14 +39,7 @@ export = class NuosDriver extends withAPI(Driver) {
       const { data } = await this.api.get<Plant[]>('/api/v2/velis/plants')
       return data
         .filter(({ wheType }) => wheType === this.#deviceType)
-        .map(
-          ({ gw, name }): DeviceDetails => ({
-            name,
-            data: {
-              id: gw,
-            },
-          }),
-        )
+        .map(({ gw, name }): DeviceDetails => ({ name, data: { id: gw } }))
     } catch (error: unknown) {
       return []
     }

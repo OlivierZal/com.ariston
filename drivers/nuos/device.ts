@@ -16,10 +16,7 @@ import type {
   Settings,
 } from '../../types'
 
-const initialData: PostData = {
-  plantData: {},
-  viewModel: {},
-}
+const initialData: PostData = { plantData: {}, viewModel: {} }
 
 enum Mode {
   auto = 1,
@@ -42,13 +39,7 @@ const convertToOperationMode = (
 
 const convertToVacationDate = (value: string): string | null => {
   const days = Number(value)
-  return days > 0
-    ? DateTime.now()
-        .plus({
-          days,
-        })
-        .toISODate()
-    : null
+  return days > 0 ? DateTime.now().plus({ days }).toISODate() : null
 }
 
 @addToLogs('getName()')
@@ -337,10 +328,7 @@ class NuosDevice extends withAPI(Device) {
         url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.id}`,
         params: post
           ? undefined
-          : {
-              fetchSettings: 'true',
-              fetchTimeProg: 'false',
-            },
+          : { fetchSettings: 'true', fetchTimeProg: 'false' },
         data: post ? this.#data : undefined,
       })
       this.#data = initialData

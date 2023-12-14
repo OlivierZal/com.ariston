@@ -114,8 +114,6 @@ export interface GetSettings {
 }
 
 export interface DeviceDetails {
-  readonly data: {
-    readonly id: string
-  }
+  readonly data: { readonly id: string }
   readonly name: string
 }
