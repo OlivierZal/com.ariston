@@ -8,12 +8,14 @@ import type {
   CapabilityValue,
   CapabilityOptions,
   DeviceDetails,
+  DonutData,
   GetData,
   GetSettings,
   PostData,
   PostSettings,
   SettingValue,
   Settings,
+  ReportData,
 } from '../../types'
 
 const initialData: PostData = { plantData: {}, viewModel: {} }
@@ -66,6 +68,14 @@ class NuosDevice extends withAPI(Device) {
     await this.handleCapabilities()
     this.registerCapabilityListeners()
     await this.sync()
+
+    await this.plantMetering()
+    this.homey.setInterval(
+      async (): Promise<void> => {
+        await this.plantMetering()
+      },
+      Duration.fromObject({ minutes: 1 }).as('milliseconds'),
+    )
   }
 
   public async onSettings({
@@ -408,6 +418,26 @@ class NuosDevice extends withAPI(Device) {
       max,
     })
     await this.setWarning(this.homey.__('warnings.settings'))
+  }
+
+  private async plantMetering(): Promise<void> {
+    try {
+      const { data } = await this.api.post<ReportData>(
+        `/R2/PlantMetering/GetData/${this.id}`,
+      )
+      const energy: DonutData[] = data.data.asKwhRaw.donutData.filter(
+        ({ tab, period }) =>
+          tab === 'ConsumedElectricity' && period === 'CurrentDay',
+      )
+      const energyConsumed: number =
+        energy.find(({ series }) => series === 'DhwResistor')?.value ?? 0
+      const energyProduced: number =
+        energy.find(({ series }) => series === 'DhwHp')?.value ?? 0
+      await this.setCapabilityValue('meter_power', energyConsumed)
+      await this.setCapabilityValue('meter_power.produced', energyProduced)
+    } catch (error: unknown) {
+      this.error(error instanceof Error ? error.message : error)
+    }
   }
 }
 

@@ -10,10 +10,12 @@
     "onoff.legionella",
     "onoff.preheating",
     "measure_temperature",
-    "measure_temperature.required",
     "target_temperature",
     "operation_mode",
-    "vacation"
+    "vacation",
+    "meter_power",
+    "meter_power.produced",
+    "measure_temperature.required"
   ],
   "capabilitiesOptions": {
     "onoff.auto": {
@@ -76,6 +78,12 @@
       "title": {
         "en": "Process required temperature",
         "fr": "Température requise pour le processus"
+      }
+    },
+    "meter_power.produced": {
+      "title": {
+        "en": "Produced energy",
+        "fr": "Énergie produite"
       }
     },
     "target_temperature": {
