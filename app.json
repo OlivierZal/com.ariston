@@ -220,13 +220,13 @@
         "measure_power.hp": {
           "title": {
             "en": "Power - heat pump",
-            "fr": "Power - pompe à chaleur"
+            "fr": "Puissance - pompe à chaleur"
           }
         },
         "measure_power.resistor": {
           "title": {
             "en": "Power - resistor",
-            "fr": "Power - résistance"
+            "fr": "Puissance - résistance"
           }
         },
         "meter_power.hp": {

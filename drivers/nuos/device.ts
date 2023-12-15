@@ -447,9 +447,11 @@ class NuosDevice extends withAPI(Device) {
 
       const hour: number = DateTime.now().hour
       const getPower = (energyData: HistogramData | undefined): number =>
-        (energyData?.items.find(
+        ((energyData?.items.find(
           ({ x }) => Number(x) <= hour && hour < Number(x) + 2,
-        )?.y ?? 0) / 2
+        )?.y ?? 0) *
+          1000) /
+        2
       const powerHp = getPower(energyHpData)
       const powerResistor = getPower(energyResistorData)
       await this.setCapabilityValue('measure_power', powerHp + powerResistor)
