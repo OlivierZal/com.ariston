@@ -144,7 +144,8 @@
         "operation_mode",
         "vacation",
         "meter_power",
-        "meter_power.produced",
+        "meter_power.hp",
+        "meter_power.resistor",
         "measure_temperature.required"
       ],
       "capabilitiesOptions": {
@@ -210,10 +211,16 @@
             "fr": "Température requise pour le processus"
           }
         },
-        "meter_power.produced": {
+        "meter_power.hp": {
           "title": {
-            "en": "Produced energy",
-            "fr": "Énergie produite"
+            "en": "Energy - heat pump",
+            "fr": "Énergie - pompe à chaleur"
+          }
+        },
+        "meter_power.resistor": {
+          "title": {
+            "en": "Energy - resistor",
+            "fr": "Énergie - résistance"
           }
         },
         "target_temperature": {

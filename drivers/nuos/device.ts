@@ -8,9 +8,9 @@ import type {
   CapabilityValue,
   CapabilityOptions,
   DeviceDetails,
-  DonutData,
   GetData,
   GetSettings,
+  HistogramData,
   PostData,
   PostSettings,
   SettingValue,
@@ -425,16 +425,27 @@ class NuosDevice extends withAPI(Device) {
       const { data } = await this.api.post<ReportData>(
         `/R2/PlantMetering/GetData/${this.id}`,
       )
-      const energy: DonutData[] = data.data.asKwhRaw.donutData.filter(
-        ({ tab, period }) =>
-          tab === 'ConsumedElectricity' && period === 'CurrentDay',
-      )
-      const energyConsumed: number =
-        energy.find(({ series }) => series === 'DhwResistor')?.value ?? 0
-      const energyProduced: number =
-        energy.find(({ series }) => series === 'DhwHp')?.value ?? 0
-      await this.setCapabilityValue('meter_power', energyConsumed)
-      await this.setCapabilityValue('meter_power.produced', energyProduced)
+      const energyData: HistogramData[] =
+        data.data.asKwhRaw.histogramData.filter(
+          ({ tab, period }) =>
+            tab === 'ConsumedElectricity' && period === 'CurrentDay',
+        )
+
+      const getEnergyData = (seriesName: HistogramData['series']): number => {
+        const energySeriesData: HistogramData | undefined = energyData.find(
+          ({ series }) => series === seriesName,
+        )
+        return energySeriesData
+          ? energySeriesData.items.reduce((acc, { y }) => acc + y, 0)
+          : 0
+      }
+
+      const energyHp = getEnergyData('DhwHp')
+      const energyResistor = getEnergyData('DhwResistor')
+
+      await this.setCapabilityValue('meter_power', energyHp + energyResistor)
+      await this.setCapabilityValue('meter_power.hp', energyHp)
+      await this.setCapabilityValue('meter_power.resistor', energyResistor)
     } catch (error: unknown) {
       this.error(error instanceof Error ? error.message : error)
     }

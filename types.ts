@@ -118,41 +118,31 @@ export interface DeviceDetails {
   readonly name: string
 }
 
-interface BaseReportData {
+export interface HistogramData {
   readonly tab: string
   readonly period: string
   readonly series: 'DhwHp' | 'DhwResistor'
-}
-
-export interface DonutData extends BaseReportData {
-  readonly value: number
-}
-
-interface HistogramItem {
-  readonly x:
-    | '00'
-    | '02'
-    | '04'
-    | '06'
-    | '08'
-    | '10'
-    | '12'
-    | '14'
-    | '16'
-    | '18'
-    | '20'
-    | '22'
-  readonly y: number
-}
-
-interface HistogramData extends BaseReportData {
-  readonly items: readonly HistogramItem[]
+  readonly items: readonly {
+    readonly x:
+      | '00'
+      | '02'
+      | '04'
+      | '06'
+      | '08'
+      | '10'
+      | '12'
+      | '14'
+      | '16'
+      | '18'
+      | '20'
+      | '22'
+    readonly y: number
+  }[]
 }
 
 export interface ReportData {
   readonly data: {
     readonly asKwhRaw: {
-      readonly donutData: readonly DonutData[]
       readonly histogramData: readonly HistogramData[]
     }
   }
