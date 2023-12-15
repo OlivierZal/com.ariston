@@ -13,6 +13,9 @@
     "target_temperature",
     "operation_mode",
     "vacation",
+    "measure_power",
+    "measure_power.hp",
+    "measure_power.resistor",
     "meter_power",
     "meter_power.hp",
     "meter_power.resistor",
@@ -79,6 +82,21 @@
       "title": {
         "en": "Process required temperature",
         "fr": "Température requise pour le processus"
+      }
+    },
+    "measure_power": {
+      "approximated": true
+    },
+    "measure_power.hp": {
+      "title": {
+        "en": "Power - heat pump",
+        "fr": "Puissance - pompe à chaleur"
+      }
+    },
+    "measure_power.resistor": {
+      "title": {
+        "en": "Power - resistor",
+        "fr": "Puissance - résistance"
       }
     },
     "meter_power.hp": {

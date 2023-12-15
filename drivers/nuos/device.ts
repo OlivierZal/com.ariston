@@ -425,27 +425,36 @@ class NuosDevice extends withAPI(Device) {
       const { data } = await this.api.post<ReportData>(
         `/R2/PlantMetering/GetData/${this.id}`,
       )
-      const energyData: HistogramData[] =
+      const histogramData: HistogramData[] =
         data.data.asKwhRaw.histogramData.filter(
           ({ tab, period }) =>
             tab === 'ConsumedElectricity' && period === 'CurrentDay',
         )
+      const getEnergyData = (
+        seriesName: HistogramData['series'],
+      ): HistogramData | undefined =>
+        histogramData.find(({ series }) => series === seriesName)
+      const energyHpData = getEnergyData('DhwHp')
+      const energyResistorData = getEnergyData('DhwResistor')
 
-      const getEnergyData = (seriesName: HistogramData['series']): number => {
-        const energySeriesData: HistogramData | undefined = energyData.find(
-          ({ series }) => series === seriesName,
-        )
-        return energySeriesData
-          ? energySeriesData.items.reduce((acc, { y }) => acc + y, 0)
-          : 0
-      }
-
-      const energyHp = getEnergyData('DhwHp')
-      const energyResistor = getEnergyData('DhwResistor')
-
+      const getEnergy = (energyData: HistogramData | undefined): number =>
+        energyData ? energyData.items.reduce((acc, { y }) => acc + y, 0) : 0
+      const energyHp = getEnergy(energyHpData)
+      const energyResistor = getEnergy(energyResistorData)
       await this.setCapabilityValue('meter_power', energyHp + energyResistor)
       await this.setCapabilityValue('meter_power.hp', energyHp)
       await this.setCapabilityValue('meter_power.resistor', energyResistor)
+
+      const hour: number = DateTime.now().hour
+      const getPower = (energyData: HistogramData | undefined): number =>
+        (energyData?.items.find(
+          ({ x }) => Number(x) <= hour && hour < Number(x) + 2,
+        )?.y ?? 0) / 2
+      const powerHp = getPower(energyHpData)
+      const powerResistor = getPower(energyResistorData)
+      await this.setCapabilityValue('measure_power', powerHp + powerResistor)
+      await this.setCapabilityValue('measure_power.hp', powerHp)
+      await this.setCapabilityValue('measure_power.resistor', powerResistor)
     } catch (error: unknown) {
       this.error(error instanceof Error ? error.message : error)
     }
