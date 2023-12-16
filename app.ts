@@ -89,7 +89,10 @@ export = class AristonApp extends withAPI(App) {
   private refreshLogin(): void {
     const expires: string =
       (this.homey.settings.get('expires') as HomeySettings['expires']) ?? ''
-    const ms = Number(DateTime.fromISO(expires).minus({ days: 1 }).diffNow())
+    const ms: number = DateTime.fromISO(expires)
+      .minus({ days: 1 })
+      .diffNow()
+      .as('milliseconds')
     if (ms > 0) {
       const maxTimeout: number = 2 ** 31 - 1
       this.#loginTimeout = this.homey.setTimeout(
