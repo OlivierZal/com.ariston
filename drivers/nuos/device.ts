@@ -70,11 +70,22 @@ class NuosDevice extends withAPI(Device) {
     await this.sync()
 
     await this.plantMetering()
-    this.homey.setInterval(
+    const now: DateTime = DateTime.now()
+    this.homey.setTimeout(
       async (): Promise<void> => {
         await this.plantMetering()
+        this.homey.setInterval(
+          async (): Promise<void> => {
+            await this.plantMetering()
+          },
+          Duration.fromObject({ hours: 2 }).as('milliseconds'),
+        )
       },
-      Duration.fromObject({ minutes: 1 }).as('milliseconds'),
+      now
+        .plus({ hour: now.hour % 2 === 0 ? 2 : 1 })
+        .set({ minute: 1, second: 0, millisecond: 0 })
+        .diffNow()
+        .as('milliseconds'),
     )
   }
 
