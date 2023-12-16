@@ -82,7 +82,7 @@ class NuosDevice extends withAPI(Device) {
         )
       },
       now
-        .plus({ hour: now.hour % 2 ? 2 : 1 })
+        .plus({ hour: now.hour % 2 ? 1 : 2 })
         .set({ minute: 1, second: 0, millisecond: 0 })
         .diffNow()
         .as('milliseconds'),
