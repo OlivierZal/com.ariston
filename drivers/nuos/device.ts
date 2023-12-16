@@ -373,13 +373,13 @@ class NuosDevice extends withAPI(Device) {
         if (this.#settings.SlpAntilegionellaOnOff) {
           await this.setCapabilityValue(
             'onoff.legionella',
-            Boolean(this.#settings.SlpAntilegionellaOnOff.new),
+            !!this.#settings.SlpAntilegionellaOnOff.new,
           )
         }
         if (this.#settings.SlpPreHeatingOnOff) {
           await this.setCapabilityValue(
             'onoff.preheating',
-            Boolean(this.#settings.SlpPreHeatingOnOff.new),
+            !!this.#settings.SlpPreHeatingOnOff.new,
           )
         }
         this.#settings = {}
