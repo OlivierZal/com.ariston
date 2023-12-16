@@ -41,7 +41,7 @@ const convertToOperationMode = (
 
 const convertToVacationDate = (value: string): string | null => {
   const days = Number(value)
-  return days > 0 ? DateTime.now().plus({ days }).toISODate() : null
+  return days ? DateTime.now().plus({ days }).toISODate() : null
 }
 
 @addToLogs('getName()')
