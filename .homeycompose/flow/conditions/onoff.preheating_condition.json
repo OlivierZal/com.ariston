@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "The preheating is turned !{{on|off}}",
+    "fr": "Le préchauffage est !{{activé|désactivé}}"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}

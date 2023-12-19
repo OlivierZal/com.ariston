@@ -1,0 +1,37 @@
+{
+  "title": {
+    "en": "Turn on / off the automatic mode",
+    "fr": "Activer / désactiver le mode automatique"
+  },
+  "titleFormatted": {
+    "en": "Turn [[onoff]] the automatic mode",
+    "fr": "[[onoff]] le mode automatique"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    },
+    {
+      "name": "onoff",
+      "type": "dropdown",
+      "values": [
+        {
+          "id": "true",
+          "title": {
+            "en": "on",
+            "fr": "Activer"
+          }
+        },
+        {
+          "id": "false",
+          "title": {
+            "en": "off",
+            "fr": "Désactiver"
+          }
+        }
+      ]
+    }
+  ]
+}

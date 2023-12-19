@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Boost turned off",
+    "fr": "Boost désactivé"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}

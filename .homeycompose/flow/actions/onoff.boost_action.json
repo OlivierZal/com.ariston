@@ -1,0 +1,37 @@
+{
+  "title": {
+    "en": "Turn on / off the boost",
+    "fr": "Activer / désactiver le boost"
+  },
+  "titleFormatted": {
+    "en": "Turn [[onoff]] the boost",
+    "fr": "[[onoff]] le boost"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    },
+    {
+      "name": "onoff",
+      "type": "dropdown",
+      "values": [
+        {
+          "id": "true",
+          "title": {
+            "en": "on",
+            "fr": "Activer"
+          }
+        },
+        {
+          "id": "false",
+          "title": {
+            "en": "off",
+            "fr": "Désactiver"
+          }
+        }
+      ]
+    }
+  ]
+}

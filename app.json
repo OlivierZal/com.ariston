@@ -63,6 +63,118 @@
     "triggers": [
       {
         "title": {
+          "en": "Automatic mode turned off",
+          "fr": "Mode automatique désactivé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.auto_false"
+      },
+      {
+        "title": {
+          "en": "Automatic mode turned on",
+          "fr": "Mode automatique activé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.auto_true"
+      },
+      {
+        "title": {
+          "en": "Boost turned off",
+          "fr": "Boost désactivé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.boost_false"
+      },
+      {
+        "title": {
+          "en": "Boost turned on",
+          "fr": "Boost activé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.boost_true"
+      },
+      {
+        "title": {
+          "en": "Antilegionella turned off",
+          "fr": "Anti-légionellose désactivé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.legionella_false"
+      },
+      {
+        "title": {
+          "en": "Antilegionella turned on",
+          "fr": "Anti-légionellose activé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.legionella_true"
+      },
+      {
+        "title": {
+          "en": "Preheating turned off",
+          "fr": "Préchauffage désactivé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.preheating_false"
+      },
+      {
+        "title": {
+          "en": "Preheating turned on",
+          "fr": "Préchauffage activé"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.preheating_true"
+      },
+      {
+        "title": {
           "en": "The operation mode has changed",
           "fr": "Le mode opérationnel a été modifié"
         },
@@ -90,6 +202,62 @@
       }
     ],
     "conditions": [
+      {
+        "title": {
+          "en": "The automatic mode is turned !{{on|off}}",
+          "fr": "Le mode automatique est !{{activé|désactivé}}"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.auto_condition"
+      },
+      {
+        "title": {
+          "en": "The boost is turned !{{on|off}}",
+          "fr": "Le boost est !{{activé|désactivé}}"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.boost_condition"
+      },
+      {
+        "title": {
+          "en": "The antilegionella is turned !{{on|off}}",
+          "fr": "L'anti-légionellose est !{{activé|désactivé}}"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.legionella_condition"
+      },
+      {
+        "title": {
+          "en": "The preheating is turned !{{on|off}}",
+          "fr": "Le préchauffage est !{{activé|désactivé}}"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "onoff.preheating_condition"
+      },
       {
         "title": {
           "en": "The operation mode !{{is|is not}}",
@@ -144,6 +312,158 @@
       }
     ],
     "actions": [
+      {
+        "title": {
+          "en": "Turn on / off the automatic mode",
+          "fr": "Activer / désactiver le mode automatique"
+        },
+        "titleFormatted": {
+          "en": "Turn [[onoff]] the automatic mode",
+          "fr": "[[onoff]] le mode automatique"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          },
+          {
+            "name": "onoff",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "true",
+                "title": {
+                  "en": "on",
+                  "fr": "Activer"
+                }
+              },
+              {
+                "id": "false",
+                "title": {
+                  "en": "off",
+                  "fr": "Désactiver"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "onoff.auto_action"
+      },
+      {
+        "title": {
+          "en": "Turn on / off the boost",
+          "fr": "Activer / désactiver le boost"
+        },
+        "titleFormatted": {
+          "en": "Turn [[onoff]] the boost",
+          "fr": "[[onoff]] le boost"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          },
+          {
+            "name": "onoff",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "true",
+                "title": {
+                  "en": "on",
+                  "fr": "Activer"
+                }
+              },
+              {
+                "id": "false",
+                "title": {
+                  "en": "off",
+                  "fr": "Désactiver"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "onoff.boost_action"
+      },
+      {
+        "title": {
+          "en": "Turn on / off the antilegionella",
+          "fr": "Activer / désactiver l'anti-légionellose"
+        },
+        "titleFormatted": {
+          "en": "Turn [[onoff]] the antilegionella",
+          "fr": "[[onoff]] l'anti-légionellose"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          },
+          {
+            "name": "onoff",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "true",
+                "title": {
+                  "en": "on",
+                  "fr": "Activer"
+                }
+              },
+              {
+                "id": "false",
+                "title": {
+                  "en": "off",
+                  "fr": "Désactiver"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "onoff.legionella_action"
+      },
+      {
+        "title": {
+          "en": "Turn on / off the preheating",
+          "fr": "Activer / désactiver le préchauffage"
+        },
+        "titleFormatted": {
+          "en": "Turn [[onoff]] the preheating",
+          "fr": "[[onoff]] le préchauffage"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          },
+          {
+            "name": "onoff",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "true",
+                "title": {
+                  "en": "on",
+                  "fr": "Activer"
+                }
+              },
+              {
+                "id": "false",
+                "title": {
+                  "en": "off",
+                  "fr": "Désactiver"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "onoff.preheating_action"
+      },
       {
         "title": {
           "en": "Set the operation mode",

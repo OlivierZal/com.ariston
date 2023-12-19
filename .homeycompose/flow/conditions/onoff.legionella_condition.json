@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "The antilegionella is turned !{{on|off}}",
+    "fr": "L'anti-légionellose est !{{activé|désactivé}}"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}

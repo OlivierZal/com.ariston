@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Automatic mode turned off",
+    "fr": "Mode automatique désactivé"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Antilegionella turned on",
+    "fr": "Anti-légionellose activé"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "title": {
+    "en": "Preheating turned off",
+    "fr": "Préchauffage désactivé"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}
