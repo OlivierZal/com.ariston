@@ -1,0 +1,26 @@
+{
+  "title": {
+    "en": "The operation mode has changed",
+    "fr": "Le mode opérationnel a été modifié"
+  },
+  "tokens": [
+    {
+      "name": "operation_mode",
+      "type": "string",
+      "title": {
+        "en": "Operation mode",
+        "fr": "Mode opérationnel"
+      },
+      "example": {
+        "en": "comfort"
+      }
+    }
+  ],
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    }
+  ]
+}

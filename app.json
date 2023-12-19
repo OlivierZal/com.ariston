@@ -59,6 +59,145 @@
   "platforms": [
     "local"
   ],
+  "flow": {
+    "triggers": [
+      {
+        "title": {
+          "en": "The operation mode has changed",
+          "fr": "Le mode opérationnel a été modifié"
+        },
+        "tokens": [
+          {
+            "name": "operation_mode",
+            "type": "string",
+            "title": {
+              "en": "Operation mode",
+              "fr": "Mode opérationnel"
+            },
+            "example": {
+              "en": "comfort"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          }
+        ],
+        "id": "operation_mode_changed"
+      }
+    ],
+    "conditions": [
+      {
+        "title": {
+          "en": "The operation mode !{{is|is not}}",
+          "fr": "Le mode opérationnel !{{est|n'est pas}}"
+        },
+        "titleFormatted": {
+          "en": "The operation mode !{{is|is not}} [[operation_mode]]",
+          "fr": "Le mode opérationnel !{{est|n'est pas}} [[operation_mode]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          },
+          {
+            "name": "operation_mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "green",
+                "title": {
+                  "en": "Green",
+                  "fr": "Éco"
+                }
+              },
+              {
+                "id": "comfort",
+                "title": {
+                  "en": "Comfort",
+                  "fr": "Confort"
+                }
+              },
+              {
+                "id": "fast",
+                "title": {
+                  "en": "Fast",
+                  "fr": "Rapide"
+                }
+              },
+              {
+                "id": "auto",
+                "title": {
+                  "en": "Automatic (i-Memory)",
+                  "fr": "Automatique (i-Memory)"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "operation_mode_condition"
+      }
+    ],
+    "actions": [
+      {
+        "title": {
+          "en": "Set the operation mode",
+          "fr": "Définir le mode opérationnel"
+        },
+        "titleFormatted": {
+          "en": "Set the operation mode to [[operation_mode]]",
+          "fr": "Définir le mode opérationnel à [[operation_mode]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=nuos"
+          },
+          {
+            "name": "operation_mode",
+            "type": "dropdown",
+            "values": [
+              {
+                "id": "green",
+                "title": {
+                  "en": "Green",
+                  "fr": "Éco"
+                }
+              },
+              {
+                "id": "comfort",
+                "title": {
+                  "en": "Comfort",
+                  "fr": "Confort"
+                }
+              },
+              {
+                "id": "fast",
+                "title": {
+                  "en": "Fast",
+                  "fr": "Rapide"
+                }
+              },
+              {
+                "id": "auto",
+                "title": {
+                  "en": "Automatic (i-Memory)",
+                  "fr": "Automatique (i-Memory)"
+                }
+              }
+            ]
+          }
+        ],
+        "id": "operation_mode_action"
+      }
+    ]
+  },
   "drivers": [
     {
       "images": {

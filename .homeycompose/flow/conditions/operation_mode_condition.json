@@ -1,0 +1,51 @@
+{
+  "title": {
+    "en": "The operation mode !{{is|is not}}",
+    "fr": "Le mode opérationnel !{{est|n'est pas}}"
+  },
+  "titleFormatted": {
+    "en": "The operation mode !{{is|is not}} [[operation_mode]]",
+    "fr": "Le mode opérationnel !{{est|n'est pas}} [[operation_mode]]"
+  },
+  "args": [
+    {
+      "type": "device",
+      "name": "device",
+      "filter": "driver_id=nuos"
+    },
+    {
+      "name": "operation_mode",
+      "type": "dropdown",
+      "values": [
+        {
+          "id": "green",
+          "title": {
+            "en": "Green",
+            "fr": "Éco"
+          }
+        },
+        {
+          "id": "comfort",
+          "title": {
+            "en": "Comfort",
+            "fr": "Confort"
+          }
+        },
+        {
+          "id": "fast",
+          "title": {
+            "en": "Fast",
+            "fr": "Rapide"
+          }
+        },
+        {
+          "id": "auto",
+          "title": {
+            "en": "Automatic (i-Memory)",
+            "fr": "Automatique (i-Memory)"
+          }
+        }
+      ]
+    }
+  ]
+}

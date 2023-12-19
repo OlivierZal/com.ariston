@@ -4,18 +4,19 @@ import type NuosDriver from './driver'
 import type AristonApp from '../../app'
 import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
-import type {
-  CapabilityValue,
-  CapabilityOptions,
-  DeviceDetails,
-  GetData,
-  GetSettings,
-  HistogramData,
-  PostData,
-  PostSettings,
-  SettingValue,
-  Settings,
-  ReportData,
+import {
+  OperationMode,
+  type CapabilityValue,
+  type CapabilityOptions,
+  type DeviceDetails,
+  type GetData,
+  type GetSettings,
+  type HistogramData,
+  type PostData,
+  type PostSettings,
+  type SettingValue,
+  type Settings,
+  type ReportData,
 } from '../../types'
 
 const initialData: PostData = { plantData: {}, viewModel: {} }
@@ -27,13 +28,6 @@ enum Mode {
 
 const convertToMode = (value: boolean): Mode =>
   value ? Mode.auto : Mode.manual
-
-enum OperationMode {
-  green = 0,
-  comfort = 1,
-  fast = 2,
-  auto = 3,
-}
 
 const convertToOperationMode = (
   value: keyof typeof OperationMode,

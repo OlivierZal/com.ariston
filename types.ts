@@ -1,5 +1,6 @@
 import type { SimpleClass } from 'homey'
 import type Homey from 'homey/lib/Homey'
+import type NuosDevice from './drivers/nuos/device'
 
 export const loginURL = '/R2/Account/Login'
 
@@ -7,6 +8,13 @@ export const loginURL = '/R2/Account/Login'
 export type HomeyClass = new (...args: any[]) => SimpleClass & {
   readonly homey: Homey
   readonly setWarning?: (warning: string | null) => Promise<void>
+}
+
+export enum OperationMode {
+  green = 0,
+  comfort = 1,
+  fast = 2,
+  auto = 3,
 }
 
 export type CapabilityOptions = object & {
@@ -146,4 +154,9 @@ export interface ReportData {
       readonly histogramData: readonly HistogramData[]
     }
   }
+}
+
+export interface FlowArgs {
+  readonly device: NuosDevice
+  readonly operation_mode: OperationMode
 }
