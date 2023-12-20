@@ -314,12 +314,12 @@
     "actions": [
       {
         "title": {
-          "en": "Turn on / off the automatic mode",
-          "fr": "Activer / désactiver le mode automatique"
+          "en": "Set the automatic mode",
+          "fr": "Définir le mode automatique"
         },
         "titleFormatted": {
-          "en": "Turn [[onoff]] the automatic mode",
-          "fr": "[[onoff]] le mode automatique"
+          "en": "Set the automatic mode to [[onoff]]",
+          "fr": "Définir le mode automatique à [[onoff]]"
         },
         "args": [
           {
@@ -329,35 +329,23 @@
           },
           {
             "name": "onoff",
-            "type": "dropdown",
-            "values": [
-              {
-                "id": "true",
-                "title": {
-                  "en": "on",
-                  "fr": "Activer"
-                }
-              },
-              {
-                "id": "false",
-                "title": {
-                  "en": "off",
-                  "fr": "Désactiver"
-                }
-              }
-            ]
+            "type": "checkbox",
+            "title": {
+              "en": "Automatic mode",
+              "fr": "Mode automatique"
+            }
           }
         ],
         "id": "onoff.auto_action"
       },
       {
         "title": {
-          "en": "Turn on / off the boost",
-          "fr": "Activer / désactiver le boost"
+          "en": "Set the boost",
+          "fr": "Définir le boost"
         },
         "titleFormatted": {
-          "en": "Turn [[onoff]] the boost",
-          "fr": "[[onoff]] le boost"
+          "en": "Set the boost to [[onoff]]",
+          "fr": "Définir le boost à [[onoff]]"
         },
         "args": [
           {
@@ -367,35 +355,23 @@
           },
           {
             "name": "onoff",
-            "type": "dropdown",
-            "values": [
-              {
-                "id": "true",
-                "title": {
-                  "en": "on",
-                  "fr": "Activer"
-                }
-              },
-              {
-                "id": "false",
-                "title": {
-                  "en": "off",
-                  "fr": "Désactiver"
-                }
-              }
-            ]
+            "type": "checkbox",
+            "title": {
+              "en": "Boost",
+              "fr": "Boost"
+            }
           }
         ],
         "id": "onoff.boost_action"
       },
       {
         "title": {
-          "en": "Turn on / off the antilegionella",
-          "fr": "Activer / désactiver l'anti-légionellose"
+          "en": "Set the antilegionella",
+          "fr": "Définir l'anti-légionellose"
         },
         "titleFormatted": {
-          "en": "Turn [[onoff]] the antilegionella",
-          "fr": "[[onoff]] l'anti-légionellose"
+          "en": "Set the antilegionella to [[onoff]]",
+          "fr": "Définir l'anti-légionellose à [[onoff]]"
         },
         "args": [
           {
@@ -405,35 +381,23 @@
           },
           {
             "name": "onoff",
-            "type": "dropdown",
-            "values": [
-              {
-                "id": "true",
-                "title": {
-                  "en": "on",
-                  "fr": "Activer"
-                }
-              },
-              {
-                "id": "false",
-                "title": {
-                  "en": "off",
-                  "fr": "Désactiver"
-                }
-              }
-            ]
+            "type": "checkbox",
+            "title": {
+              "en": "Antilegionella",
+              "fr": "Anti-légionellose"
+            }
           }
         ],
         "id": "onoff.legionella_action"
       },
       {
         "title": {
-          "en": "Turn on / off the preheating",
-          "fr": "Activer / désactiver le préchauffage"
+          "en": "Set the preheating",
+          "fr": "Définir le préchauffage"
         },
         "titleFormatted": {
-          "en": "Turn [[onoff]] the preheating",
-          "fr": "[[onoff]] le préchauffage"
+          "en": "Set the preheating to [[onoff]]",
+          "fr": "Définir le préchauffage à [[onoff]]"
         },
         "args": [
           {
@@ -443,23 +407,11 @@
           },
           {
             "name": "onoff",
-            "type": "dropdown",
-            "values": [
-              {
-                "id": "true",
-                "title": {
-                  "en": "on",
-                  "fr": "Activer"
-                }
-              },
-              {
-                "id": "false",
-                "title": {
-                  "en": "off",
-                  "fr": "Désactiver"
-                }
-              }
-            ]
+            "type": "checkbox",
+            "title": {
+              "en": "Preheating",
+              "fr": "Préchauffage"
+            }
           }
         ],
         "id": "onoff.preheating_action"

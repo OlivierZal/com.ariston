@@ -83,7 +83,7 @@ export = class NuosDriver extends withAPI(Driver) {
             .registerRunListener(async (args: FlowArgs): Promise<void> => {
               await args.device.triggerCapabilityListener(
                 capability,
-                args.onoff === 'true',
+                args.onoff,
               )
             })
         }

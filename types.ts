@@ -158,6 +158,6 @@ export interface ReportData {
 
 export interface FlowArgs {
   readonly device: NuosDevice
-  readonly onoff: 'false' | 'true'
+  readonly onoff: boolean
   readonly operation_mode: OperationMode
 }

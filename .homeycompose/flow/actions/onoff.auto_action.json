@@ -1,11 +1,11 @@
 {
   "title": {
-    "en": "Turn on / off the automatic mode",
-    "fr": "Activer / désactiver le mode automatique"
+    "en": "Set the automatic mode",
+    "fr": "Définir le mode automatique"
   },
   "titleFormatted": {
-    "en": "Turn [[onoff]] the automatic mode",
-    "fr": "[[onoff]] le mode automatique"
+    "en": "Set the automatic mode to [[onoff]]",
+    "fr": "Définir le mode automatique à [[onoff]]"
   },
   "args": [
     {
@@ -15,23 +15,11 @@
     },
     {
       "name": "onoff",
-      "type": "dropdown",
-      "values": [
-        {
-          "id": "true",
-          "title": {
-            "en": "on",
-            "fr": "Activer"
-          }
-        },
-        {
-          "id": "false",
-          "title": {
-            "en": "off",
-            "fr": "Désactiver"
-          }
-        }
-      ]
+      "type": "checkbox",
+      "title": {
+        "en": "Automatic mode",
+        "fr": "Mode automatique"
+      }
     }
   ]
 }

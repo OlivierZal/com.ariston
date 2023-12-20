@@ -1,11 +1,11 @@
 {
   "title": {
-    "en": "Turn on / off the antilegionella",
-    "fr": "Activer / désactiver l'anti-légionellose"
+    "en": "Set the antilegionella",
+    "fr": "Définir l'anti-légionellose"
   },
   "titleFormatted": {
-    "en": "Turn [[onoff]] the antilegionella",
-    "fr": "[[onoff]] l'anti-légionellose"
+    "en": "Set the antilegionella to [[onoff]]",
+    "fr": "Définir l'anti-légionellose à [[onoff]]"
   },
   "args": [
     {
@@ -15,23 +15,11 @@
     },
     {
       "name": "onoff",
-      "type": "dropdown",
-      "values": [
-        {
-          "id": "true",
-          "title": {
-            "en": "on",
-            "fr": "Activer"
-          }
-        },
-        {
-          "id": "false",
-          "title": {
-            "en": "off",
-            "fr": "Désactiver"
-          }
-        }
-      ]
+      "type": "checkbox",
+      "title": {
+        "en": "Antilegionella",
+        "fr": "Anti-légionellose"
+      }
     }
   ]
 }

@@ -1,11 +1,11 @@
 {
   "title": {
-    "en": "Turn on / off the boost",
-    "fr": "Activer / désactiver le boost"
+    "en": "Set the boost",
+    "fr": "Définir le boost"
   },
   "titleFormatted": {
-    "en": "Turn [[onoff]] the boost",
-    "fr": "[[onoff]] le boost"
+    "en": "Set the boost to [[onoff]]",
+    "fr": "Définir le boost à [[onoff]]"
   },
   "args": [
     {
@@ -15,23 +15,11 @@
     },
     {
       "name": "onoff",
-      "type": "dropdown",
-      "values": [
-        {
-          "id": "true",
-          "title": {
-            "en": "on",
-            "fr": "Activer"
-          }
-        },
-        {
-          "id": "false",
-          "title": {
-            "en": "off",
-            "fr": "Désactiver"
-          }
-        }
-      ]
+      "type": "checkbox",
+      "title": {
+        "en": "Boost",
+        "fr": "Boost"
+      }
     }
   ]
 }
