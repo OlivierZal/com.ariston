@@ -1,7 +1,8 @@
 {
   "$extends": ["defaults"],
   "name": {
-    "en": "Nuos"
+    "en": "Nuos",
+    "fr": "Nuos"
   },
   "capabilities": [
     "onoff",
