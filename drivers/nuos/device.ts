@@ -443,7 +443,9 @@ class NuosDevice extends withAPI(Device) {
       const energyResistorData = getEnergyData('DhwResistor')
 
       const getEnergy = (energyData: HistogramData | undefined): number =>
-        energyData ? energyData.items.reduce((acc, { y }) => acc + y, 0) : 0
+        energyData
+          ? energyData.items.reduce<number>((acc, { y }) => acc + y, 0)
+          : 0
       const energyHp = getEnergy(energyHpData)
       const energyResistor = getEnergy(energyResistorData)
       await this.setCapabilityValue('meter_power', energyHp + energyResistor)
