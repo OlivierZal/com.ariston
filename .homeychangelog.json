@@ -1,5 +1,8 @@
 {
   "1.0.0": {
     "en": "New app to control Ariston devices: Nuos."
+  },
+  "2.0.0": {
+    "en": "Added flows."
   }
 }
