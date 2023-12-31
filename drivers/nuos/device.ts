@@ -95,13 +95,9 @@ class NuosDevice extends withAPI(Device) {
           ),
         )
       },
+      const hours: number = now.hour % ENERGY_REFRESH_INTERVAL
       now
-        .plus({
-          hours:
-            now.hour % ENERGY_REFRESH_INTERVAL
-              ? ENERGY_REFRESH_INTERVAL - 1
-              : ENERGY_REFRESH_INTERVAL,
-        })
+        .plus({ hours: hours ? hours : ENERGY_REFRESH_INTERVAL })
         .set({ minute: 1, second: 0, millisecond: 0 })
         .diffNow()
         .as('milliseconds'),
