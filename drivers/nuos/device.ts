@@ -32,10 +32,6 @@ const K_MULTIPLIER = 1000
 const convertToMode = (value: boolean): Mode =>
   value ? Mode.auto : Mode.manual
 
-const convertToOperationMode = (
-  value: keyof typeof OperationMode,
-): OperationMode => OperationMode[value]
-
 const convertToVacationDate = (days: number): string | null =>
   days ? DateTime.now().plus({ days }).toISODate() : null
 
@@ -242,12 +238,10 @@ class NuosDevice extends withAPI(Device) {
         }
         break
       case 'operation_mode':
-        this.#data.plantData.opMode = convertToOperationMode(
-          oldValue as keyof typeof OperationMode,
-        )
-        this.#data.viewModel.opMode = convertToOperationMode(
-          value as keyof typeof OperationMode,
-        )
+        this.#data.plantData.opMode =
+          OperationMode[oldValue as keyof typeof OperationMode]
+        this.#data.viewModel.opMode =
+          OperationMode[value as keyof typeof OperationMode]
         break
       case 'target_temperature':
         this.#data.plantData.comfortTemp = oldValue as number
