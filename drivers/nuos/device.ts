@@ -6,7 +6,6 @@ import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import {
   OperationMode,
-  type Switch,
   type CapabilityValue,
   type CapabilityOptions,
   type DeviceDetails,
@@ -15,9 +14,10 @@ import {
   type HistogramData,
   type PostData,
   type PostSettings,
+  type ReportData,
   type SettingValue,
   type Settings,
-  type ReportData,
+  type Switch,
 } from '../../types'
 
 enum Mode {
