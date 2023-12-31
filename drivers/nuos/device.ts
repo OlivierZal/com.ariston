@@ -25,9 +25,7 @@ enum Mode {
   manual = 2,
 }
 
-const ENERGY_REFRESH_INTERVAL: number = Duration.fromObject({ hour: 2 }).as(
-  'hour',
-)
+const ENERGY_REFRESH_INTERVAL = 2
 const INITIAL_DATA: PostData = { plantData: {}, viewModel: {} }
 const K_MULTIPLIER = 1000
 
