@@ -9,15 +9,20 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import type AristonApp from '../app'
-import { loginURL, type HomeyClass } from '../types'
+import type { HomeyClass } from '../types'
 
-type APIClass = new (...args: any[]) => { readonly api: AxiosInstance }
+type APIClass = new (...args: any[]) => {
+  readonly api: AxiosInstance
+  readonly loginURL: string
+}
 
 const getAPIErrorMessage = (error: AxiosError): string => error.message
 
 const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
   class extends base {
-    public api: AxiosInstance = axios.create()
+    public readonly api: AxiosInstance = axios.create()
+
+    public readonly loginURL: string = '/R2/Account/Login'
 
     public constructor(...args: any[]) {
       super(...args)
@@ -60,7 +65,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       if (
         contentType.includes('text/html') &&
         app.retry &&
-        config.url !== loginURL
+        config.url !== this.loginURL
       ) {
         app.handleRetry()
         const loggedIn: boolean = await app.login()

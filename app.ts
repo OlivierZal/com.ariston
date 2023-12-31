@@ -4,13 +4,12 @@ import { wrapper } from 'axios-cookiejar-support'
 import { CookieJar } from 'tough-cookie'
 import { DateTime, Duration, Settings as LuxonSettings } from 'luxon'
 import withAPI from './mixins/withAPI'
-import {
-  loginURL,
-  type LoginCredentials,
-  type LoginData,
-  type LoginPostData,
-  type HomeySettings,
-  type HomeySettingValue,
+import type {
+  LoginCredentials,
+  LoginData,
+  LoginPostData,
+  HomeySettings,
+  HomeySettingValue,
 } from './types'
 
 const DOMAIN = 'www.ariston-net.remotethermo.com'
@@ -54,7 +53,7 @@ export = class AristonApp extends withAPI(App) {
         rememberMe: true,
       }
       const { data, config } = await this.api.post<LoginData>(
-        loginURL,
+        this.loginURL,
         postData,
       )
       const { ok } = data

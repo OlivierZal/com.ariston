@@ -2,8 +2,6 @@ import type { SimpleClass } from 'homey'
 import type Homey from 'homey/lib/Homey'
 import type NuosDevice from './drivers/nuos/device'
 
-export const loginURL = '/R2/Account/Login'
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type HomeyClass = new (...args: any[]) => SimpleClass & {
   readonly homey: Homey
