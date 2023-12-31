@@ -47,10 +47,10 @@ const getEnergy = (energyData: HistogramData | undefined): number =>
 const getPower = (energyData: HistogramData | undefined): number => {
   const hour: number = DateTime.now().hour
   return (
-    ((energyData?.items.find(
-      ({ x }) =>
-        Number(x) <= hour && hour < Number(x) + ENERGY_REFRESH_INTERVAL,
-    )?.y ?? 0) *
+    ((energyData?.items.find(({ x }) => {
+      const xNumber = Number(x)
+      return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_INTERVAL
+    })?.y ?? 0) *
       K_MULTIPLIER) /
     ENERGY_REFRESH_INTERVAL
   )
