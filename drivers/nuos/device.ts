@@ -36,10 +36,8 @@ const convertToOperationMode = (
   value: keyof typeof OperationMode,
 ): OperationMode => OperationMode[value]
 
-const convertToVacationDate = (value: string): string | null => {
-  const days = Number(value)
-  return days ? DateTime.now().plus({ days }).toISODate() : null
-}
+const convertToVacationDate = (days: number): string | null =>
+  days ? DateTime.now().plus({ days }).toISODate() : null
 
 const getEnergy = (energyData: HistogramData | undefined): number =>
   energyData ? energyData.items.reduce<number>((acc, { y }) => acc + y, 0) : 0
@@ -257,11 +255,9 @@ class NuosDevice extends withAPI(Device) {
         break
       case 'vacation':
         this.#data.plantData.holidayUntil = convertToVacationDate(
-          oldValue as string,
+          Number(oldValue),
         )
-        this.#data.viewModel.holidayUntil = convertToVacationDate(
-          value as string,
-        )
+        this.#data.viewModel.holidayUntil = convertToVacationDate(Number(value))
         break
       default:
     }
