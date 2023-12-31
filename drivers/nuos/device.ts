@@ -83,7 +83,6 @@ class NuosDevice extends withAPI(Device) {
 
     await this.plantMetering()
     const now: DateTime = DateTime.now()
-    const hours: number = now.hour % ENERGY_REFRESH_INTERVAL
     this.homey.setTimeout(
       async (): Promise<void> => {
         await this.plantMetering()
@@ -97,7 +96,7 @@ class NuosDevice extends withAPI(Device) {
         )
       },
       now
-        .plus({ hours: hours || ENERGY_REFRESH_INTERVAL })
+        .plus({ hours: now.hour % ENERGY_REFRESH_INTERVAL || ENERGY_REFRESH_INTERVAL })
         .set({ minute: 1, second: 0, millisecond: 0 })
         .diffNow()
         .as('milliseconds'),
