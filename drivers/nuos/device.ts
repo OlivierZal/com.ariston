@@ -35,6 +35,18 @@ const convertToMode = (value: boolean): Mode =>
 const convertToVacationDate = (days: number): string | null =>
   days ? DateTime.now().plus({ days }).toISODate() : null
 
+const getEnergyData = (
+  data: ReportData,
+  seriesName: HistogramData['series'],
+): HistogramData | undefined => {
+  const histogramData: HistogramData[] =
+    data.data.asKwhRaw.histogramData.filter(
+      ({ tab, period }) =>
+        tab === 'ConsumedElectricity' && period === 'CurrentDay',
+    )
+  return histogramData.find(({ series }) => series === seriesName)
+}
+
 const getEnergy = (energyData: HistogramData | undefined): number =>
   energyData ? energyData.items.reduce<number>((acc, { y }) => acc + y, 0) : 0
 
@@ -442,17 +454,8 @@ class NuosDevice extends withAPI(Device) {
       const { data } = await this.api.post<ReportData>(
         `/R2/PlantMetering/GetData/${this.id}`,
       )
-      const histogramData: HistogramData[] =
-        data.data.asKwhRaw.histogramData.filter(
-          ({ tab, period }) =>
-            tab === 'ConsumedElectricity' && period === 'CurrentDay',
-        )
-      const getEnergyData = (
-        seriesName: HistogramData['series'],
-      ): HistogramData | undefined =>
-        histogramData.find(({ series }) => series === seriesName)
-      const energyHpData = getEnergyData('DhwHp')
-      const energyResistorData = getEnergyData('DhwResistor')
+      const energyHpData = getEnergyData(data, 'DhwHp')
+      const energyResistorData = getEnergyData(data, 'DhwResistor')
 
       const energyHp = getEnergy(energyHpData)
       const energyResistor = getEnergy(energyResistorData)
