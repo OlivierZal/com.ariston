@@ -17,6 +17,11 @@ export enum OperationMode {
   auto = 3,
 }
 
+export enum Switch {
+  off = 0,
+  on = 1,
+}
+
 export type CapabilityOptions = object & {
   readonly min: number
   readonly max: number
@@ -111,8 +116,8 @@ interface BasePostSettingsWithOld<T> extends BasePostSettings<T> {
 }
 
 export interface PostSettings {
-  SlpAntilegionellaOnOff?: BasePostSettingsWithOld<0 | 1>
-  SlpPreHeatingOnOff?: BasePostSettingsWithOld<0 | 1>
+  SlpAntilegionellaOnOff?: BasePostSettingsWithOld<Switch>
+  SlpPreHeatingOnOff?: BasePostSettingsWithOld<Switch>
   SlpMinSetpointTemperature?: BasePostSettings<number>
   SlpMaxSetpointTemperature?: BasePostSettings<number>
 }

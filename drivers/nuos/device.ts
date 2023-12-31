@@ -6,6 +6,7 @@ import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import {
   OperationMode,
+  type Switch,
   type CapabilityValue,
   type CapabilityOptions,
   type DeviceDetails,
@@ -19,12 +20,16 @@ import {
   type ReportData,
 } from '../../types'
 
-const initialData: PostData = { plantData: {}, viewModel: {} }
-
 enum Mode {
   auto = 1,
   manual = 2,
 }
+
+const ENERGY_REFRESH_INTERVAL: number = Duration.fromObject({ hour: 2 }).as(
+  'hour',
+)
+const INITIAL_DATA: PostData = { plantData: {}, viewModel: {} }
+const K_MULTIPLIER = 1000
 
 const convertToMode = (value: boolean): Mode =>
   value ? Mode.auto : Mode.manual
@@ -38,6 +43,21 @@ const convertToVacationDate = (value: string): string | null => {
   return days ? DateTime.now().plus({ days }).toISODate() : null
 }
 
+const getEnergy = (energyData: HistogramData | undefined): number =>
+  energyData ? energyData.items.reduce<number>((acc, { y }) => acc + y, 0) : 0
+
+const getPower = (energyData: HistogramData | undefined): number => {
+  const hour: number = DateTime.now().hour
+  return (
+    ((energyData?.items.find(
+      ({ x }) =>
+        Number(x) <= hour && hour < Number(x) + ENERGY_REFRESH_INTERVAL,
+    )?.y ?? 0) *
+      K_MULTIPLIER) /
+    ENERGY_REFRESH_INTERVAL
+  )
+}
+
 @addToLogs('getName()')
 class NuosDevice extends withAPI(Device) {
   public declare driver: NuosDriver
@@ -46,7 +66,7 @@ class NuosDevice extends withAPI(Device) {
 
   protected app!: AristonApp
 
-  #data: PostData = initialData
+  #data: PostData = INITIAL_DATA
 
   #settings: PostSettings = {}
 
@@ -72,11 +92,18 @@ class NuosDevice extends withAPI(Device) {
           async (): Promise<void> => {
             await this.plantMetering()
           },
-          Duration.fromObject({ hours: 2 }).as('milliseconds'),
+          Duration.fromObject({ hours: ENERGY_REFRESH_INTERVAL }).as(
+            'milliseconds',
+          ),
         )
       },
       now
-        .plus({ hours: now.hour % 2 ? 1 : 2 })
+        .plus({
+          hours:
+            now.hour % ENERGY_REFRESH_INTERVAL
+              ? ENERGY_REFRESH_INTERVAL - 1
+              : ENERGY_REFRESH_INTERVAL,
+        })
         .set({ minute: 1, second: 0, millisecond: 0 })
         .diffNow()
         .as('milliseconds'),
@@ -211,14 +238,14 @@ class NuosDevice extends withAPI(Device) {
         break
       case 'onoff.legionella':
         this.#settings.SlpAntilegionellaOnOff = {
-          old: Number(oldValue) as 0 | 1,
-          new: Number(value) as 0 | 1,
+          old: Number(oldValue) as Switch,
+          new: Number(value) as Switch,
         }
         break
       case 'onoff.preheating':
         this.#settings.SlpPreHeatingOnOff = {
-          old: Number(oldValue) as 0 | 1,
-          new: Number(value) as 0 | 1,
+          old: Number(oldValue) as Switch,
+          new: Number(value) as Switch,
         }
         break
       case 'operation_mode':
@@ -346,7 +373,7 @@ class NuosDevice extends withAPI(Device) {
           : { fetchSettings: 'true', fetchTimeProg: 'false' },
         data: post ? this.#data : undefined,
       })
-      this.#data = initialData
+      this.#data = INITIAL_DATA
       return data.data
     } catch (error: unknown) {
       return null
@@ -367,13 +394,13 @@ class NuosDevice extends withAPI(Device) {
         if (this.#settings.SlpAntilegionellaOnOff) {
           await this.setCapabilityValue(
             'onoff.legionella',
-            !!this.#settings.SlpAntilegionellaOnOff.new,
+            Boolean(this.#settings.SlpAntilegionellaOnOff.new),
           )
         }
         if (this.#settings.SlpPreHeatingOnOff) {
           await this.setCapabilityValue(
             'onoff.preheating',
-            !!this.#settings.SlpPreHeatingOnOff.new,
+            Boolean(this.#settings.SlpPreHeatingOnOff.new),
           )
         }
         this.#settings = {}
@@ -442,23 +469,12 @@ class NuosDevice extends withAPI(Device) {
       const energyHpData = getEnergyData('DhwHp')
       const energyResistorData = getEnergyData('DhwResistor')
 
-      const getEnergy = (energyData: HistogramData | undefined): number =>
-        energyData
-          ? energyData.items.reduce<number>((acc, { y }) => acc + y, 0)
-          : 0
       const energyHp = getEnergy(energyHpData)
       const energyResistor = getEnergy(energyResistorData)
       await this.setCapabilityValue('meter_power', energyHp + energyResistor)
       await this.setCapabilityValue('meter_power.hp', energyHp)
       await this.setCapabilityValue('meter_power.resistor', energyResistor)
 
-      const hour: number = DateTime.now().hour
-      const getPower = (energyData: HistogramData | undefined): number =>
-        ((energyData?.items.find(
-          ({ x }) => Number(x) <= hour && hour < Number(x) + 2,
-        )?.y ?? 0) *
-          1000) /
-        2
       const powerHp = getPower(energyHpData)
       const powerResistor = getPower(energyResistorData)
       await this.setCapabilityValue('measure_power', powerHp + powerResistor)

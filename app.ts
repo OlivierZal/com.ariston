@@ -13,11 +13,12 @@ import {
   type HomeySettingValue,
 } from './types'
 
-const domain = 'www.ariston-net.remotethermo.com'
+const DOMAIN = 'www.ariston-net.remotethermo.com'
+const MAX_INT32: number = 2 ** 31 - 1
 
 wrapper(axios)
 axios.defaults.jar = new CookieJar()
-axios.defaults.baseURL = `https://${domain}`
+axios.defaults.baseURL = `https://${DOMAIN}`
 
 export = class AristonApp extends withAPI(App) {
   public retry = true
@@ -63,7 +64,7 @@ export = class AristonApp extends withAPI(App) {
           password,
           // @ts-expect-error: `CookieJar` is partially typed
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          expires: (config.jar?.store?.idx?.[domain]?.['/']?.[
+          expires: (config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
             '.AspNet.ApplicationCookie'
           ]?.expires ?? null) as HomeySettings['expires'],
         })
@@ -94,12 +95,11 @@ export = class AristonApp extends withAPI(App) {
       .diffNow()
       .as('milliseconds')
     if (ms > 0) {
-      const maxTimeout: number = 2 ** 31 - 1
       this.#loginTimeout = this.homey.setTimeout(
         async (): Promise<void> => {
           await this.login()
         },
-        Math.min(ms, maxTimeout),
+        Math.min(ms, MAX_INT32),
       )
     }
   }
