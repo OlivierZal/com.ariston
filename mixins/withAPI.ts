@@ -9,11 +9,14 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import type AristonApp from '../app'
-import type { HomeyClass } from '../types'
+import type { HomeyClass, HomeySettings } from '../types'
 
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
   readonly loginURL: string
+  readonly getHomeySetting: <K extends keyof HomeySettings>(
+    setting: K,
+  ) => HomeySettings[K]
 }
 
 const getAPIErrorMessage = (error: AxiosError): string => error.message
@@ -27,6 +30,12 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     public constructor(...args: any[]) {
       super(...args)
       this.setupAxiosInterceptors()
+    }
+
+    public getHomeySetting<K extends keyof HomeySettings>(
+      setting: K,
+    ): HomeySettings[K] {
+      return this.homey.settings.get(setting) as HomeySettings[K]
     }
 
     private setupAxiosInterceptors(): void {

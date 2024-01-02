@@ -33,12 +33,8 @@ export = class AristonApp extends withAPI(App) {
 
   public async login(
     loginCredentials: LoginCredentials = {
-      username:
-        (this.homey.settings.get('username') as HomeySettings['username']) ??
-        '',
-      password:
-        (this.homey.settings.get('password') as HomeySettings['password']) ??
-        '',
+      username: this.getHomeySetting('username') ?? '',
+      password: this.getHomeySetting('password') ?? '',
     },
   ): Promise<boolean> {
     this.clearLoginRefresh()
@@ -87,8 +83,7 @@ export = class AristonApp extends withAPI(App) {
   }
 
   private refreshLogin(): void {
-    const expires: string =
-      (this.homey.settings.get('expires') as HomeySettings['expires']) ?? ''
+    const expires: string = this.getHomeySetting('expires') ?? ''
     const ms: number = DateTime.fromISO(expires)
       .minus({ days: 1 })
       .diffNow()
@@ -111,7 +106,7 @@ export = class AristonApp extends withAPI(App) {
     Object.entries(settings)
       .filter(
         ([setting, value]: [string, HomeySettingValue]) =>
-          value !== this.homey.settings.get(setting),
+          value !== this.getHomeySetting(setting as keyof HomeySettings),
       )
       .forEach(([setting, value]: [string, HomeySettingValue]): void => {
         this.homey.settings.set(setting, value)
