@@ -25,12 +25,31 @@ export enum Switch {
   on = 1,
 }
 
+export interface Capabilities {
+  readonly measure_temperature: number
+  readonly 'measure_temperature.required': number
+  readonly meter_power: number
+  readonly 'meter_power.hp': number
+  readonly 'meter_power.resistor': number
+  readonly measure_power: number
+  readonly 'measure_power.hp': number
+  readonly 'measure_power.resistor': number
+  readonly onoff: boolean
+  readonly 'onoff.auto': boolean
+  readonly 'onoff.boost': boolean
+  readonly 'onoff.legionella': boolean
+  readonly 'onoff.preheating': boolean
+  readonly operation_mode: keyof typeof OperationMode
+  readonly target_temperature: number
+  readonly vacation: string
+}
+
+export type CapabilityKey = keyof Capabilities
+
 export type CapabilityOptions = object & {
   readonly min: number
   readonly max: number
 }
-
-export type CapabilityValue = boolean | number | string | null
 
 type ValueOf<T> = T[keyof T]
 
@@ -171,5 +190,5 @@ export interface ReportData {
 export interface FlowArgs {
   readonly device: NuosDevice
   readonly onoff: boolean
-  readonly operation_mode: OperationMode
+  readonly operation_mode: keyof typeof OperationMode
 }

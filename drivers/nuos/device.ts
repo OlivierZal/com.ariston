@@ -7,7 +7,8 @@ import withAPI from '../../mixins/withAPI'
 import {
   Mode,
   OperationMode,
-  type CapabilityValue,
+  type CapabilityKey,
+  type Capabilities,
   type CapabilityOptions,
   type DeviceDetails,
   type GetData,
@@ -118,7 +119,7 @@ class NuosDevice extends withAPI(Device) {
     if (
       changedKeys.includes('always_on') &&
       newSettings.always_on === true &&
-      !(this.getCapabilityValue('onoff') as boolean)
+      !this.getCapabilityValue('onoff')
     ) {
       await this.triggerCapabilityListener('onoff', true)
     }
@@ -164,9 +165,15 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public async setCapabilityValue(
-    capability: string,
-    value: CapabilityValue,
+  public getCapabilityValue<K extends CapabilityKey>(
+    capability: K,
+  ): Capabilities[K] {
+    return super.getCapabilityValue(capability) as Capabilities[K]
+  }
+
+  public async setCapabilityValue<K extends CapabilityKey>(
+    capability: K,
+    value: Capabilities[K],
   ): Promise<void> {
     if (
       !this.hasCapability(capability) ||
@@ -213,14 +220,12 @@ class NuosDevice extends withAPI(Device) {
     await super.setWarning(null)
   }
 
-  private async onCapability(
-    capability: string,
-    value: CapabilityValue,
+  private async onCapability<K extends CapabilityKey>(
+    capability: K,
+    value: Capabilities[K],
   ): Promise<void> {
     this.clearSync()
-    const oldValue: CapabilityValue = this.getCapabilityValue(
-      capability,
-    ) as CapabilityValue
+    const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
         if (this.getSetting('always_on') === true && !(value as boolean)) {
@@ -291,13 +296,13 @@ class NuosDevice extends withAPI(Device) {
       }, Promise.resolve())
   }
 
-  private registerCapabilityListeners(): void {
+  private registerCapabilityListeners<K extends CapabilityKey>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    ;(this.driver.manifest.capabilities as string[]).forEach(
-      (capability: string): void => {
+    ;(this.driver.manifest.capabilities as K[]).forEach(
+      (capability: K): void => {
         this.registerCapabilityListener(
           capability,
-          async (value: CapabilityValue): Promise<void> => {
+          async (value: Capabilities[K]): Promise<void> => {
             await this.onCapability(capability, value)
           },
         )
@@ -344,7 +349,10 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('onoff', on)
     await this.setCapabilityValue('onoff.auto', (mode as Mode) === Mode.auto)
     await this.setCapabilityValue('onoff.boost', boostOn)
-    await this.setCapabilityValue('operation_mode', OperationMode[opMode])
+    await this.setCapabilityValue(
+      'operation_mode',
+      OperationMode[opMode] as keyof typeof OperationMode,
+    )
     await this.setCapabilityValue('target_temperature', comfortTemp)
     await this.setCapabilityValue(
       'vacation',
