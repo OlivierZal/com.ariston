@@ -8,6 +8,11 @@ export type HomeyClass = new (...args: any[]) => SimpleClass & {
   readonly setWarning?: (warning: string | null) => Promise<void>
 }
 
+export enum Mode {
+  auto = 1,
+  manual = 2,
+}
+
 export enum OperationMode {
   green = 0,
   comfort = 1,

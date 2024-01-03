@@ -5,6 +5,7 @@ import type AristonApp from '../../app'
 import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import {
+  Mode,
   OperationMode,
   type CapabilityValue,
   type CapabilityOptions,
@@ -19,11 +20,6 @@ import {
   type Settings,
   type Switch,
 } from '../../types'
-
-enum Mode {
-  auto = 1,
-  manual = 2,
-}
 
 const ENERGY_REFRESH_INTERVAL = 2 // hours
 const INITIAL_DATA: PostData = { plantData: {}, viewModel: {} }
@@ -120,7 +116,7 @@ class NuosDevice extends withAPI(Device) {
   }): Promise<void> {
     if (
       changedKeys.includes('always_on') &&
-      newSettings.always_on === true &&
+      (newSettings.always_on ?? false) &&
       !(this.getCapabilityValue('onoff') as boolean)
     ) {
       await this.triggerCapabilityListener('onoff', true)
