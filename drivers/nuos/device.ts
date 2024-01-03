@@ -189,7 +189,7 @@ class NuosDevice extends withAPI(Device) {
     const newSettings: Settings = Object.fromEntries(
       Object.entries(settings).filter(
         ([key, value]: [string, SettingValue]) =>
-          value !== this.getSetting(key),
+          value !== this.getSetting(key as keyof Settings),
       ),
     )
     if (!Object.keys(newSettings).length) {
@@ -203,6 +203,10 @@ class NuosDevice extends withAPI(Device) {
     ) {
       await this.updateTargetTemperatureMinMax()
     }
+  }
+
+  public getSetting<K extends keyof Settings>(setting: K): Settings[K] {
+    return super.getSetting(setting) as Settings[K]
   }
 
   public async setWarning(warning: string | null): Promise<void> {
@@ -222,7 +226,7 @@ class NuosDevice extends withAPI(Device) {
     ) as CapabilityValue
     switch (capability) {
       case 'onoff':
-        if ((this.getSetting('always_on') as boolean) && !(value as boolean)) {
+        if ((this.getSetting('always_on') ?? false) && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
           this.#data.plantData.on = oldValue as boolean
