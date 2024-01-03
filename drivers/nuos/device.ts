@@ -16,8 +16,9 @@ import {
   type PostData,
   type PostSettings,
   type ReportData,
-  type SettingValue,
+  type SettingKey,
   type Settings,
+  type SettingValue,
   type Switch,
 } from '../../types'
 
@@ -185,7 +186,7 @@ class NuosDevice extends withAPI(Device) {
     const newSettings: Settings = Object.fromEntries(
       Object.entries(settings).filter(
         ([key, value]: [string, SettingValue]) =>
-          value !== this.getSetting(key as keyof Settings),
+          value !== this.getSetting(key as SettingKey),
       ),
     )
     if (!Object.keys(newSettings).length) {
@@ -201,7 +202,7 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getSetting<K extends keyof Settings>(setting: K): Settings[K] {
+  public getSetting<K extends SettingKey>(setting: K): Settings[K] {
     return super.getSetting(setting) as Settings[K]
   }
 

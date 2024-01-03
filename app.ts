@@ -8,6 +8,7 @@ import type {
   LoginCredentials,
   LoginData,
   LoginPostData,
+  HomeySettingKey,
   HomeySettings,
   HomeySettingValue,
 } from './types'
@@ -106,7 +107,7 @@ export = class AristonApp extends withAPI(App) {
     Object.entries(settings)
       .filter(
         ([setting, value]: [string, HomeySettingValue]) =>
-          value !== this.getHomeySetting(setting as keyof HomeySettings),
+          value !== this.getHomeySetting(setting as HomeySettingKey),
       )
       .forEach(([setting, value]: [string, HomeySettingValue]): void => {
         this.homey.settings.set(setting, value)

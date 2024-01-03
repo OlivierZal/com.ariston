@@ -40,6 +40,8 @@ export interface Settings {
   readonly max?: number
 }
 
+export type SettingKey = keyof Settings
+
 export type SettingValue = ValueOf<Settings>
 
 interface BaseHomeySettingValue<T> {
@@ -47,6 +49,8 @@ interface BaseHomeySettingValue<T> {
   readonly password: T
   readonly expires: T
 }
+
+export type HomeySettingKey = keyof HomeySettings
 
 export type HomeySettings = BaseHomeySettingValue<string | null>
 

@@ -9,12 +9,12 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import type AristonApp from '../app'
-import type { HomeyClass, HomeySettings } from '../types'
+import type { HomeyClass, HomeySettingKey, HomeySettings } from '../types'
 
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
   readonly loginURL: string
-  readonly getHomeySetting: <K extends keyof HomeySettings>(
+  readonly getHomeySetting: <K extends HomeySettingKey>(
     setting: K,
   ) => HomeySettings[K]
 }
@@ -32,7 +32,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       this.setupAxiosInterceptors()
     }
 
-    public getHomeySetting<K extends keyof HomeySettings>(
+    public getHomeySetting<K extends HomeySettingKey>(
       setting: K,
     ): HomeySettings[K] {
       return this.homey.settings.get(setting) as HomeySettings[K]
