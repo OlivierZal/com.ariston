@@ -4,5 +4,8 @@
   },
   "2.0.0": {
     "en": "Added flows."
+  },
+  "3.0.0": {
+    "en": "Improved types."
   }
 }
