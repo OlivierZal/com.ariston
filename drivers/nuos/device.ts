@@ -116,7 +116,7 @@ class NuosDevice extends withAPI(Device) {
   }): Promise<void> {
     if (
       changedKeys.includes('always_on') &&
-      (newSettings.always_on ?? false) &&
+      newSettings.always_on === true &&
       !(this.getCapabilityValue('onoff') as boolean)
     ) {
       await this.triggerCapabilityListener('onoff', true)
@@ -222,7 +222,7 @@ class NuosDevice extends withAPI(Device) {
     ) as CapabilityValue
     switch (capability) {
       case 'onoff':
-        if ((this.getSetting('always_on') ?? false) && !(value as boolean)) {
+        if (this.getSetting('always_on') === true && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
           this.#data.plantData.on = oldValue as boolean
