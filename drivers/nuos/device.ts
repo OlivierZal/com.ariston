@@ -144,26 +144,14 @@ class NuosDevice extends withAPI(Device) {
   }
 
   public async addCapability(capability: string): Promise<void> {
-    if (this.hasCapability(capability)) {
-      return
-    }
-    try {
+    if (!this.hasCapability(capability)) {
       await super.addCapability(capability)
-      this.log('Adding capability', capability)
-    } catch (error: unknown) {
-      this.error(error instanceof Error ? error.message : error)
     }
   }
 
   public async removeCapability(capability: string): Promise<void> {
-    if (!this.hasCapability(capability)) {
-      return
-    }
-    try {
+    if (this.hasCapability(capability)) {
       await super.removeCapability(capability)
-      this.log('Removing capability', capability)
-    } catch (error: unknown) {
-      this.error(error instanceof Error ? error.message : error)
     }
   }
 
@@ -177,18 +165,7 @@ class NuosDevice extends withAPI(Device) {
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
-    if (
-      !this.hasCapability(capability) ||
-      value === this.getCapabilityValue(capability)
-    ) {
-      return
-    }
-    try {
-      await super.setCapabilityValue(capability, value)
-      this.log('Capability', capability, 'is', value)
-    } catch (error: unknown) {
-      this.error(error instanceof Error ? error.message : error)
-    }
+    await super.setCapabilityValue(capability, value)
   }
 
   public getSetting<K extends SettingKey>(setting: K): Settings[K] {
