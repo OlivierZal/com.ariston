@@ -10,7 +10,6 @@ import type {
   LoginPostData,
   HomeySettingKey,
   HomeySettings,
-  HomeySettingValue,
 } from './types'
 
 const DOMAIN = 'www.ariston-net.remotethermo.com'
@@ -118,7 +117,7 @@ export = class AristonApp extends withAPI(App) {
 
   private setHomeySetting<K extends HomeySettingKey>(
     setting: K,
-    value: HomeySettingValue,
+    value: HomeySettings[K],
   ): void {
     this.homey.settings.set(setting, value)
   }
