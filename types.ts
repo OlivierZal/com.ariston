@@ -101,15 +101,15 @@ interface BaseData {
   boostOn?: boolean
   comfortTemp?: number
   holidayUntil?: string | null
-  opMode?: number
+  opMode?: OperationMode
 }
 
 interface PostPlantData extends BaseData {
-  mode?: number
+  mode?: Mode
 }
 
 interface ViewModel extends BaseData {
-  plantMode?: number
+  plantMode?: Mode
 }
 
 export interface PostData {
@@ -124,8 +124,8 @@ export interface GetData {
       readonly waterTemp: number
     }
     readonly plantSettings?: {
-      readonly antilegionellaOnOff: true
-      readonly preHeatingOnOff: true
+      readonly antilegionellaOnOff: boolean
+      readonly preHeatingOnOff: boolean
       readonly minSetpointTemp: { value: number }
       readonly maxSetpointTemp: { value: number }
     }
