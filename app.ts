@@ -55,7 +55,7 @@ export = class AristonApp extends withAPI(App) {
       )
       const { ok } = data
       if (ok) {
-        this.setSettings({
+        this.setHomeySettings({
           username,
           password,
           // @ts-expect-error: `CookieJar` is partially typed
@@ -103,14 +103,23 @@ export = class AristonApp extends withAPI(App) {
     this.homey.clearTimeout(this.#loginTimeout)
   }
 
-  private setSettings(settings: Partial<HomeySettings>): void {
+  private setHomeySettings<K extends HomeySettingKey>(
+    settings: Partial<HomeySettings>,
+  ): void {
     Object.entries(settings)
       .filter(
         ([setting, value]: [string, HomeySettingValue]) =>
           value !== this.getHomeySetting(setting as HomeySettingKey),
       )
       .forEach(([setting, value]: [string, HomeySettingValue]): void => {
-        this.homey.settings.set(setting, value)
+        this.setHomeySetting(setting as K, value)
       })
+  }
+
+  private setHomeySetting<K extends HomeySettingKey>(
+    setting: K,
+    value: HomeySettingValue,
+  ): void {
+    this.homey.settings.set(setting, value)
   }
 }
