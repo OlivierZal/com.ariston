@@ -79,6 +79,8 @@ export type HomeySettingKey = keyof HomeySettings
 
 export type HomeySettings = BaseHomeySettingValue<string | null>
 
+export type HomeySettingValue = ValueOf<HomeySettings>
+
 export interface LoginCredentials {
   readonly username: string
   readonly password: string
