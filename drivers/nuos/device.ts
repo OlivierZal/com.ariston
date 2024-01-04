@@ -165,7 +165,10 @@ class NuosDevice extends withAPI(Device) {
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
-    await super.setCapabilityValue(capability, value)
+    if (value !== this.getCapabilityValue(capability)) {
+      await super.setCapabilityValue(capability, value)
+      this.log('Capability', capability, 'is', value)
+    }
   }
 
   public getSetting<K extends SettingKey>(setting: K): Settings[K] {
