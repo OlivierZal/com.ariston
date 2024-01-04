@@ -108,10 +108,10 @@ export = class AristonApp extends withAPI(App) {
   ): void {
     Object.entries(settings)
       .filter(
-        ([setting, value]: [string, HomeySettingValue]) =>
-          value !== this.getHomeySetting(setting as HomeySettingKey),
+        ([setting, value]: [string, HomeySettings[K]]) =>
+          value !== this.getHomeySetting(setting as K),
       )
-      .forEach(([setting, value]: [string, HomeySettingValue]): void => {
+      .forEach(([setting, value]: [string, HomeySettings[K]]): void => {
         this.setHomeySetting(setting as K, value)
       })
   }
