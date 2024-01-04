@@ -9,8 +9,8 @@ import {
   OperationMode,
   type Capabilities,
   type CapabilityKey,
-  type CapabilityOptionKey,
-  type CapabilityOptions,
+  type CapabilityOptionsEntries,
+  type CapabilityOptionsKey,
   type DeviceDetails,
   type GetData,
   type GetSettings,
@@ -215,15 +215,15 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getCapabilityOptions<K extends CapabilityOptionKey>(
+  public getCapabilityOptions<K extends CapabilityOptionsKey>(
     capability: K,
-  ): CapabilityOptions[K] {
-    return super.getCapabilityOptions(capability) as CapabilityOptions[K]
+  ): CapabilityOptionsEntries[K] {
+    return super.getCapabilityOptions(capability) as CapabilityOptionsEntries[K]
   }
 
-  public async setCapabilityOptions<K extends CapabilityOptionKey>(
+  public async setCapabilityOptions<K extends CapabilityOptionsKey>(
     capability: K,
-    options: CapabilityOptions[K],
+    options: CapabilityOptionsEntries[K],
   ): Promise<void> {
     await super.setCapabilityOptions(capability, options)
   }

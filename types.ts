@@ -51,11 +51,11 @@ export type TargetTemperatureOptions = object & {
   readonly max: number
 }
 
-export interface CapabilityOptions {
+export interface CapabilityOptionsEntries {
   readonly target_temperature: TargetTemperatureOptions
 }
 
-export type CapabilityOptionKey = keyof CapabilityOptions
+export type CapabilityOptionsKey = keyof CapabilityOptionsEntries
 
 type ValueOf<T> = T[keyof T]
 
