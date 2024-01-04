@@ -7,8 +7,9 @@ import withAPI from '../../mixins/withAPI'
 import {
   Mode,
   OperationMode,
-  type CapabilityKey,
   type Capabilities,
+  type CapabilityKey,
+  type CapabilityOptionKey,
   type CapabilityOptions,
   type DeviceDetails,
   type GetData,
@@ -21,6 +22,7 @@ import {
   type Settings,
   type SettingValue,
   type Switch,
+  type TargetTemperatureOptions,
 } from '../../types'
 
 const ENERGY_REFRESH_INTERVAL = 2 // hours
@@ -189,6 +191,10 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
+  public getSetting<K extends SettingKey>(setting: K): Settings[K] {
+    return super.getSetting(setting) as Settings[K]
+  }
+
   public async setSettings(settings: Settings): Promise<void> {
     const newSettings: Settings = Object.fromEntries(
       Object.entries(settings).filter(
@@ -209,8 +215,17 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getSetting<K extends SettingKey>(setting: K): Settings[K] {
-    return super.getSetting(setting) as Settings[K]
+  public getCapabilityOptions<K extends CapabilityOptionKey>(
+    capability: K,
+  ): CapabilityOptions[K] {
+    return super.getCapabilityOptions(capability) as CapabilityOptions[K]
+  }
+
+  public async setCapabilityOptions<K extends CapabilityOptionKey>(
+    capability: K,
+    options: CapabilityOptions[K],
+  ): Promise<void> {
+    await super.setCapabilityOptions(capability, options)
   }
 
   public async setWarning(warning: string | null): Promise<void> {
@@ -347,7 +362,7 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('measure_temperature', waterTemp)
     await this.setCapabilityValue('measure_temperature.required', procReqTemp)
     await this.setCapabilityValue('onoff', on)
-    await this.setCapabilityValue('onoff.auto', (mode as Mode) === Mode.auto)
+    await this.setCapabilityValue('onoff.auto', mode === Mode.auto)
     await this.setCapabilityValue('onoff.boost', boostOn)
     await this.setCapabilityValue(
       'operation_mode',
@@ -444,16 +459,15 @@ class NuosDevice extends withAPI(Device) {
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
-    const options: CapabilityOptions = this.getCapabilityOptions(
-      'target_temperature',
-    ) as CapabilityOptions
+    const options: TargetTemperatureOptions =
+      this.getCapabilityOptions('target_temperature')
     if (min === options.min && max === options.max) {
       return
     }
     await this.setCapabilityOptions('target_temperature', {
       ...options,
-      min,
-      max,
+      ...(min !== undefined ? { min } : {}),
+      ...(max !== undefined ? { max } : {}),
     })
     await this.setWarning(this.homey.__('warnings.settings'))
   }

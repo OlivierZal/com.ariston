@@ -46,10 +46,16 @@ export interface Capabilities {
 
 export type CapabilityKey = keyof Capabilities
 
-export type CapabilityOptions = object & {
+export type TargetTemperatureOptions = object & {
   readonly min: number
   readonly max: number
 }
+
+export interface CapabilityOptions {
+  readonly target_temperature: TargetTemperatureOptions
+}
+
+export type CapabilityOptionKey = keyof CapabilityOptions
 
 type ValueOf<T> = T[keyof T]
 
@@ -162,19 +168,7 @@ export interface HistogramData {
   readonly period: string
   readonly series: 'DhwHp' | 'DhwResistor'
   readonly items: readonly {
-    readonly x:
-      | '00'
-      | '02'
-      | '04'
-      | '06'
-      | '08'
-      | '10'
-      | '12'
-      | '14'
-      | '16'
-      | '18'
-      | '20'
-      | '22'
+    readonly x: string
     readonly y: number
   }[]
 }
