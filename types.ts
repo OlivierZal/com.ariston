@@ -2,12 +2,6 @@ import type { SimpleClass } from 'homey'
 import type Homey from 'homey/lib/Homey'
 import type NuosDevice from './drivers/nuos/device'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type HomeyClass = new (...args: any[]) => SimpleClass & {
-  readonly homey: Homey
-  readonly setWarning?: (warning: string | null) => Promise<void>
-}
-
 export enum Mode {
   auto = 1,
   manual = 2,
@@ -23,6 +17,12 @@ export enum OperationMode {
 export enum Switch {
   off = 0,
   on = 1,
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type HomeyClass = new (...args: any[]) => SimpleClass & {
+  readonly homey: Homey
+  readonly setWarning?: (warning: string | null) => Promise<void>
 }
 
 export interface Capabilities {
