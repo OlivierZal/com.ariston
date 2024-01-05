@@ -1,7 +1,6 @@
 import { Device } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
 import { DateTime, Duration } from 'luxon'
 import type NuosDriver from './driver'
-import type AristonApp from '../../app'
 import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 import {
@@ -66,27 +65,19 @@ const getPower = (energyData: HistogramData | undefined): number => {
 class NuosDevice extends withAPI(Device) {
   public declare driver: NuosDriver
 
-  public id!: string
+  readonly #id: string = (this.getData() as DeviceDetails['data']).id
 
-  protected app!: AristonApp
+  #postData: PostData = INITIAL_DATA
 
-  #data: PostData = INITIAL_DATA
-
-  #settings: PostSettings = {}
+  #postSettings: PostSettings = {}
 
   #syncTimeout!: NodeJS.Timeout
 
   public async onInit(): Promise<void> {
     await this.setWarning(null)
-    this.app = this.homey.app as AristonApp
-
-    const { id } = this.getData() as DeviceDetails['data']
-    this.id = id
-
     await this.handleCapabilities()
     this.registerCapabilityListeners()
     await this.sync()
-
     await this.plantMetering()
     const now: DateTime = DateTime.now()
     this.homey.setTimeout(
@@ -126,12 +117,12 @@ class NuosDevice extends withAPI(Device) {
       await this.triggerCapabilityListener('onoff', true)
     }
     if (changedKeys.includes('min') && newSettings.min !== undefined) {
-      this.#settings.SlpMinSetpointTemperature = { new: newSettings.min }
+      this.#postSettings.SlpMinSetpointTemperature = { new: newSettings.min }
     }
     if (changedKeys.includes('max') && newSettings.max !== undefined) {
-      this.#settings.SlpMaxSetpointTemperature = { new: newSettings.max }
+      this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
-    if (Object.keys(this.#settings).length) {
+    if (Object.keys(this.#postSettings).length) {
       await this.updateSettings()
       if (changedKeys.some((key: string) => ['min', 'max'].includes(key))) {
         await this.updateTargetTemperatureMinMax(newSettings)
@@ -226,45 +217,47 @@ class NuosDevice extends withAPI(Device) {
         if (this.getSetting('always_on') === true && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
-          this.#data.plantData.on = oldValue as boolean
-          this.#data.viewModel.on = value as boolean
+          this.#postData.plantData.on = oldValue as boolean
+          this.#postData.viewModel.on = value as boolean
         }
         break
       case 'onoff.auto':
-        this.#data.plantData.mode = convertToMode(oldValue as boolean)
-        this.#data.viewModel.plantMode = convertToMode(value as boolean)
+        this.#postData.plantData.mode = convertToMode(oldValue as boolean)
+        this.#postData.viewModel.plantMode = convertToMode(value as boolean)
         break
       case 'onoff.boost':
-        this.#data.plantData.boostOn = oldValue as boolean
-        this.#data.viewModel.boostOn = value as boolean
+        this.#postData.plantData.boostOn = oldValue as boolean
+        this.#postData.viewModel.boostOn = value as boolean
         break
       case 'onoff.legionella':
-        this.#settings.SlpAntilegionellaOnOff = {
+        this.#postSettings.SlpAntilegionellaOnOff = {
           old: Number(oldValue) as Switch,
           new: Number(value) as Switch,
         }
         break
       case 'onoff.preheating':
-        this.#settings.SlpPreHeatingOnOff = {
+        this.#postSettings.SlpPreHeatingOnOff = {
           old: Number(oldValue) as Switch,
           new: Number(value) as Switch,
         }
         break
       case 'operation_mode':
-        this.#data.plantData.opMode =
+        this.#postData.plantData.opMode =
           OperationMode[oldValue as keyof typeof OperationMode]
-        this.#data.viewModel.opMode =
+        this.#postData.viewModel.opMode =
           OperationMode[value as keyof typeof OperationMode]
         break
       case 'target_temperature':
-        this.#data.plantData.comfortTemp = oldValue as number
-        this.#data.viewModel.comfortTemp = value as number
+        this.#postData.plantData.comfortTemp = oldValue as number
+        this.#postData.viewModel.comfortTemp = value as number
         break
       case 'vacation':
-        this.#data.plantData.holidayUntil = convertToVacationDate(
+        this.#postData.plantData.holidayUntil = convertToVacationDate(
           Number(oldValue),
         )
-        this.#data.viewModel.holidayUntil = convertToVacationDate(Number(value))
+        this.#postData.viewModel.holidayUntil = convertToVacationDate(
+          Number(value),
+        )
         break
       default:
     }
@@ -362,19 +355,19 @@ class NuosDevice extends withAPI(Device) {
   }
 
   private async plant(post = false): Promise<GetData['data'] | null> {
-    if (post && !Object.keys(this.#data.viewModel).length) {
+    if (post && !Object.keys(this.#postData.viewModel).length) {
       return null
     }
     try {
       const { data } = await this.api<GetData>({
         method: post ? 'post' : 'get',
-        url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.id}`,
+        url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.#id}`,
         params: post
           ? undefined
           : { fetchSettings: 'true', fetchTimeProg: 'false' },
-        data: post ? this.#data : undefined,
+        data: post ? this.#postData : undefined,
       })
-      this.#data = INITIAL_DATA
+      this.#postData = INITIAL_DATA
       return data.data
     } catch (error: unknown) {
       return null
@@ -382,29 +375,29 @@ class NuosDevice extends withAPI(Device) {
   }
 
   private async updateSettings(): Promise<boolean> {
-    if (!Object.keys(this.#settings).length) {
+    if (!Object.keys(this.#postSettings).length) {
       return false
     }
     try {
       const { data } = await this.api.post<GetSettings>(
-        `/api/v2/velis/slpPlantData/${this.id}/PlantSettings`,
-        this.#settings,
+        `/api/v2/velis/slpPlantData/${this.#id}/PlantSettings`,
+        this.#postSettings,
       )
       const { success } = data
       if (success) {
-        if (this.#settings.SlpAntilegionellaOnOff) {
+        if (this.#postSettings.SlpAntilegionellaOnOff) {
           await this.setCapabilityValue(
             'onoff.legionella',
-            Boolean(this.#settings.SlpAntilegionellaOnOff.new),
+            Boolean(this.#postSettings.SlpAntilegionellaOnOff.new),
           )
         }
-        if (this.#settings.SlpPreHeatingOnOff) {
+        if (this.#postSettings.SlpPreHeatingOnOff) {
           await this.setCapabilityValue(
             'onoff.preheating',
-            Boolean(this.#settings.SlpPreHeatingOnOff.new),
+            Boolean(this.#postSettings.SlpPreHeatingOnOff.new),
           )
         }
-        this.#settings = {}
+        this.#postSettings = {}
       }
       return success
     } catch (error: unknown) {
@@ -455,7 +448,7 @@ class NuosDevice extends withAPI(Device) {
   private async plantMetering(): Promise<void> {
     try {
       const { data } = await this.api.post<ReportData>(
-        `/R2/PlantMetering/GetData/${this.id}`,
+        `/R2/PlantMetering/GetData/${this.#id}`,
       )
       const energyHpData = getEnergyData(data, 'DhwHp')
       const energyResistorData = getEnergyData(data, 'DhwResistor')
