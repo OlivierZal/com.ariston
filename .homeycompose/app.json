@@ -10,8 +10,10 @@
     "en": "Take control of your water heater",
     "fr": "Prenez le contrôle de votre ballon d'eau chaude"
   },
-  "category": ["climate"],
-  "version": "3.0.0",
+  "category": [
+    "climate"
+  ],
+  "version": "4.0.0",
   "compatibility": ">=5.0.0",
   "tags": {
     "en": [
@@ -53,5 +55,7 @@
       }
     }
   },
-  "platforms": ["local"]
+  "platforms": [
+    "local"
+  ]
 }
