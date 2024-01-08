@@ -44,8 +44,6 @@ export interface Capabilities {
   readonly vacation: string
 }
 
-export type CapabilityKey = keyof Capabilities
-
 export type TargetTemperatureOptions = object & {
   readonly min: number
   readonly max: number
@@ -55,8 +53,6 @@ export interface CapabilityOptionsEntries {
   readonly target_temperature: TargetTemperatureOptions
 }
 
-export type CapabilityOptionsKey = keyof CapabilityOptionsEntries
-
 export type ValueOf<T> = T[keyof T]
 
 export interface Settings {
@@ -64,8 +60,6 @@ export interface Settings {
   readonly min?: number
   readonly max?: number
 }
-
-export type SettingKey = keyof Settings
 
 interface BaseHomeySettingValue<T> {
   readonly username: T

@@ -3,7 +3,7 @@ import type PairSession from 'homey/lib/PairSession'
 import type AristonApp from '../../app'
 import withAPI from '../../mixins/withAPI'
 import type {
-  CapabilityKey,
+  Capabilities,
   DeviceDetails,
   FlowArgs,
   LoginCredentials,
@@ -53,8 +53,8 @@ export = class NuosDriver extends withAPI(Driver) {
 
   private registerFlowListeners(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    ;(this.manifest.capabilities as CapabilityKey[]).forEach(
-      (capability: CapabilityKey): void => {
+    ;(this.manifest.capabilities as (keyof Capabilities)[]).forEach(
+      (capability: keyof Capabilities): void => {
         if (capability === 'operation_mode') {
           this.homey.flow
             .getConditionCard(`${capability}_condition`)

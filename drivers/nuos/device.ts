@@ -7,9 +7,7 @@ import {
   Mode,
   OperationMode,
   type Capabilities,
-  type CapabilityKey,
   type CapabilityOptionsEntries,
-  type CapabilityOptionsKey,
   type DeviceDetails,
   type GetData,
   type GetSettings,
@@ -17,7 +15,6 @@ import {
   type PostData,
   type PostSettings,
   type ReportData,
-  type SettingKey,
   type Settings,
   type Switch,
   type TargetTemperatureOptions,
@@ -146,13 +143,13 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getCapabilityValue<K extends CapabilityKey>(
+  public getCapabilityValue<K extends keyof Capabilities>(
     capability: K,
   ): Capabilities[K] {
     return super.getCapabilityValue(capability) as Capabilities[K]
   }
 
-  public async setCapabilityValue<K extends CapabilityKey>(
+  public async setCapabilityValue<K extends keyof Capabilities>(
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
@@ -162,7 +159,7 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getSetting<K extends SettingKey>(setting: K): Settings[K] {
+  public getSetting<K extends keyof Settings>(setting: K): Settings[K] {
     return super.getSetting(setting) as Settings[K]
   }
 
@@ -170,7 +167,7 @@ class NuosDevice extends withAPI(Device) {
     const newSettings: Settings = Object.fromEntries(
       Object.entries(settings).filter(
         ([key, value]: [string, ValueOf<Settings>]) =>
-          value !== this.getSetting(key as SettingKey),
+          value !== this.getSetting(key as keyof Settings),
       ),
     )
     if (!Object.keys(newSettings).length) {
@@ -186,13 +183,13 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getCapabilityOptions<K extends CapabilityOptionsKey>(
+  public getCapabilityOptions<K extends keyof CapabilityOptionsEntries>(
     capability: K,
   ): CapabilityOptionsEntries[K] {
     return super.getCapabilityOptions(capability) as CapabilityOptionsEntries[K]
   }
 
-  public async setCapabilityOptions<K extends CapabilityOptionsKey>(
+  public async setCapabilityOptions<K extends keyof CapabilityOptionsEntries>(
     capability: K,
     options: CapabilityOptionsEntries[K],
   ): Promise<void> {
@@ -206,7 +203,7 @@ class NuosDevice extends withAPI(Device) {
     await super.setWarning(null)
   }
 
-  private async onCapability<K extends CapabilityKey>(
+  private async onCapability<K extends keyof Capabilities>(
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
@@ -284,7 +281,7 @@ class NuosDevice extends withAPI(Device) {
       }, Promise.resolve())
   }
 
-  private registerCapabilityListeners<K extends CapabilityKey>(): void {
+  private registerCapabilityListeners<K extends keyof Capabilities>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ;(this.driver.manifest.capabilities as K[]).forEach(
       (capability: K): void => {
