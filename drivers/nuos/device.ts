@@ -19,9 +19,9 @@ import {
   type ReportData,
   type SettingKey,
   type Settings,
-  type SettingValue,
   type Switch,
   type TargetTemperatureOptions,
+  type ValueOf,
 } from '../../types'
 
 const ENERGY_REFRESH_INTERVAL = 2 // hours
@@ -169,7 +169,7 @@ class NuosDevice extends withAPI(Device) {
   public async setSettings(settings: Settings): Promise<void> {
     const newSettings: Settings = Object.fromEntries(
       Object.entries(settings).filter(
-        ([key, value]: [string, SettingValue]) =>
+        ([key, value]: [string, ValueOf<Settings>]) =>
           value !== this.getSetting(key as SettingKey),
       ),
     )

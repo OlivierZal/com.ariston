@@ -57,7 +57,7 @@ export interface CapabilityOptionsEntries {
 
 export type CapabilityOptionsKey = keyof CapabilityOptionsEntries
 
-type ValueOf<T> = T[keyof T]
+export type ValueOf<T> = T[keyof T]
 
 export interface Settings {
   readonly always_on?: boolean
@@ -67,19 +67,13 @@ export interface Settings {
 
 export type SettingKey = keyof Settings
 
-export type SettingValue = ValueOf<Settings>
-
 interface BaseHomeySettingValue<T> {
   readonly username: T
   readonly password: T
   readonly expires: T
 }
 
-export type HomeySettingKey = keyof HomeySettings
-
 export type HomeySettings = BaseHomeySettingValue<string | null>
-
-export type HomeySettingValue = ValueOf<HomeySettings>
 
 export interface LoginCredentials {
   readonly username: string

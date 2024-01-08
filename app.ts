@@ -8,9 +8,8 @@ import type {
   LoginCredentials,
   LoginData,
   LoginPostData,
-  HomeySettingKey,
   HomeySettings,
-  HomeySettingValue,
+  ValueOf,
 } from './types'
 
 const DOMAIN = 'www.ariston-net.remotethermo.com'
@@ -106,10 +105,10 @@ export = class AristonApp extends withAPI(App) {
   private setHomeySettings(settings: Partial<HomeySettings>): void {
     Object.entries(settings)
       .filter(
-        ([setting, value]: [string, HomeySettingValue]) =>
-          value !== this.getHomeySetting(setting as HomeySettingKey),
+        ([setting, value]: [string, ValueOf<HomeySettings>]) =>
+          value !== this.getHomeySetting(setting as keyof HomeySettings),
       )
-      .forEach(([setting, value]: [string, HomeySettingValue]): void => {
+      .forEach(([setting, value]: [string, ValueOf<HomeySettings>]): void => {
         this.homey.settings.set(setting, value)
       })
   }
