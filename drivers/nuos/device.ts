@@ -450,17 +450,23 @@ class NuosDevice extends withAPI(Device) {
       const { data } = await this.api.post<ReportData>(
         `/R2/PlantMetering/GetData/${this.#id}`,
       )
-      const energyHpData = getEnergyData(data, 'DhwHp')
-      const energyResistorData = getEnergyData(data, 'DhwResistor')
+      const energyHpData: HistogramData | undefined = getEnergyData(
+        data,
+        'DhwHp',
+      )
+      const energyResistorData: HistogramData | undefined = getEnergyData(
+        data,
+        'DhwResistor',
+      )
 
-      const energyHp = getEnergy(energyHpData)
-      const energyResistor = getEnergy(energyResistorData)
+      const energyHp: number = getEnergy(energyHpData)
+      const energyResistor: number = getEnergy(energyResistorData)
       await this.setCapabilityValue('meter_power', energyHp + energyResistor)
       await this.setCapabilityValue('meter_power.hp', energyHp)
       await this.setCapabilityValue('meter_power.resistor', energyResistor)
 
-      const powerHp = getPower(energyHpData)
-      const powerResistor = getPower(energyResistorData)
+      const powerHp: number = getPower(energyHpData)
+      const powerResistor: number = getPower(energyResistorData)
       await this.setCapabilityValue('measure_power', powerHp + powerResistor)
       await this.setCapabilityValue('measure_power.hp', powerHp)
       await this.setCapabilityValue('measure_power.resistor', powerResistor)
