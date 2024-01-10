@@ -11,7 +11,7 @@
     "fr": "Prenez le contrôle de votre ballon d'eau chaude"
   },
   "category": ["climate"],
-  "version": "4.0.1",
+  "version": "4.0.2",
   "compatibility": ">=5.0.0",
   "tags": {
     "en": [
