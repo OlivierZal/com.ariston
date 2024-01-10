@@ -61,13 +61,11 @@ export interface Settings {
   readonly max?: number
 }
 
-interface BaseHomeySettingValue<T> {
-  readonly username: T
-  readonly password: T
-  readonly expires: T
+export interface HomeySettings {
+  readonly username: string | null
+  readonly password: string | null
+  readonly expires: string | null
 }
-
-export type HomeySettings = BaseHomeySettingValue<string | null>
 
 export interface LoginCredentials {
   readonly username: string
