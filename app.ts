@@ -49,7 +49,7 @@ export = class AristonApp extends withAPI(App) {
         rememberMe: true,
       }
       const { data, config } = await this.api.post<LoginData>(
-        this.loginURL,
+        AristonApp.loginURL,
         postData,
       )
       const { ok } = data

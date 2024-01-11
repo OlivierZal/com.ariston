@@ -13,7 +13,6 @@ import type { HomeyClass, HomeySettings } from '../types'
 
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
-  readonly loginURL: string
   readonly getHomeySetting: <K extends keyof HomeySettings>(
     setting: K,
   ) => HomeySettings[K]
@@ -21,11 +20,13 @@ type APIClass = new (...args: any[]) => {
 
 const getAPIErrorMessage = (error: AxiosError): string => error.message
 
-const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
-  class extends base {
-    public readonly api: AxiosInstance = axios.create()
+const withAPI = <T extends HomeyClass>(
+  base: T,
+): APIClass & T & { readonly loginURL: string } =>
+  class WithAPI extends base {
+    public static readonly loginURL: string = '/R2/Account/Login'
 
-    public readonly loginURL: string = '/R2/Account/Login'
+    public readonly api: AxiosInstance = axios.create()
 
     public constructor(...args: any[]) {
       super(...args)
@@ -74,7 +75,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       if (
         contentType.includes('text/html') &&
         app.retry &&
-        config.url !== this.loginURL
+        config.url !== WithAPI.loginURL
       ) {
         app.handleRetry()
         const loggedIn: boolean = await app.login()
