@@ -2,6 +2,10 @@ import type { SimpleClass } from 'homey'
 import type Homey from 'homey/lib/Homey'
 import type NuosDevice from './drivers/nuos/device'
 
+export enum WheType {
+  nuos = 4,
+}
+
 export enum Mode {
   auto = 1,
   manual = 2,
@@ -85,7 +89,7 @@ export interface LoginData {
 export interface Plant {
   readonly gw: string
   readonly name: string
-  readonly wheType: number
+  readonly wheType: WheType
 }
 
 interface BaseData {

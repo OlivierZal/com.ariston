@@ -2,18 +2,19 @@ import { Driver } from 'homey' // eslint-disable-line import/no-extraneous-depen
 import type PairSession from 'homey/lib/PairSession'
 import type AristonApp from '../../app'
 import withAPI from '../../mixins/withAPI'
-import type {
-  Capabilities,
-  DeviceDetails,
-  FlowArgs,
-  LoginCredentials,
-  Plant,
+import {
+  WheType,
+  type Capabilities,
+  type DeviceDetails,
+  type FlowArgs,
+  type LoginCredentials,
+  type Plant,
 } from '../../types'
 
 export = class NuosDriver extends withAPI(Driver) {
   readonly #app: AristonApp = this.homey.app as AristonApp
 
-  readonly #deviceType = 4
+  readonly #deviceType: WheType = WheType.nuos
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async onInit(): Promise<void> {
@@ -44,7 +45,7 @@ export = class NuosDriver extends withAPI(Driver) {
     try {
       const { data } = await this.api.get<Plant[]>('/api/v2/velis/plants')
       return data
-        .filter(({ wheType }) => wheType === this.#deviceType)
+        .filter(({ wheType }) => WheType[wheType] === WheType[this.#deviceType])
         .map(({ gw, name }): DeviceDetails => ({ name, data: { id: gw } }))
     } catch (error: unknown) {
       return []
