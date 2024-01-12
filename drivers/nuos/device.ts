@@ -159,8 +159,10 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  public getSetting<K extends keyof Settings>(setting: K): Settings[K] {
-    return super.getSetting(setting) as Settings[K]
+  public getSetting<K extends keyof Settings>(
+    setting: K,
+  ): NonNullable<Settings[K]> {
+    return super.getSetting(setting) as NonNullable<Settings[K]>
   }
 
   public async setSettings(settings: Settings): Promise<void> {
@@ -211,7 +213,7 @@ class NuosDevice extends withAPI(Device) {
     const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
-        if (this.getSetting('always_on') === true && !(value as boolean)) {
+        if (this.getSetting('always_on') && !(value as boolean)) {
           await this.setWarning(this.homey.__('warnings.always_on'))
         } else {
           this.#postData.plantData.on = oldValue as boolean
