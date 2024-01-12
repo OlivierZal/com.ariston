@@ -44,9 +44,12 @@ export = class NuosDriver extends withAPI(Driver) {
   private async discoverDevices(): Promise<DeviceDetails[]> {
     try {
       const { data } = await this.api.get<Plant[]>('/api/v2/velis/plants')
-      return data
-        .filter(({ wheType }) => WheType[wheType] === WheType[this.#deviceType])
-        .map(({ gw, name }): DeviceDetails => ({ name, data: { id: gw } }))
+      return (
+        data
+          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          .filter(({ wheType }) => wheType === this.#deviceType)
+          .map(({ gw, name }): DeviceDetails => ({ name, data: { id: gw } }))
+      )
     } catch (error: unknown) {
       return []
     }
