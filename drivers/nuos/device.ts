@@ -264,8 +264,9 @@ class NuosDevice extends withAPI(Device) {
   }
 
   private async handleCapabilities(): Promise<void> {
-    const requiredCapabilities: string[] = this.driver.manifest
-      .capabilities as string[] // eslint-disable-line @typescript-eslint/no-unsafe-member-access
+    const requiredCapabilities: string[] =
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+      this.driver.manifest.capabilities as string[]
     await requiredCapabilities.reduce<Promise<void>>(
       async (acc, capability: string) => {
         await acc
