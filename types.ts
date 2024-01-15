@@ -157,17 +157,12 @@ export interface HistogramData {
   readonly tab: string
   readonly period: string
   readonly series: 'DhwHp' | 'DhwResistor'
-  readonly items: readonly {
-    readonly x: string
-    readonly y: number
-  }[]
+  readonly items: readonly { readonly x: string; readonly y: number }[]
 }
 
 export interface ReportData {
   readonly data: {
-    readonly asKwhRaw: {
-      readonly histogramData: readonly HistogramData[]
-    }
+    readonly asKwhRaw: { readonly histogramData: readonly HistogramData[] }
   }
 }
 

@@ -56,8 +56,7 @@ export = class AristonApp extends withAPI(App) {
       if (ok) {
         this.setHomeySettings({
           username,
-          password,
-          // @ts-expect-error: `CookieJar` is partially typed
+          password, // @ts-expect-error: `CookieJar` is partially typed
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           expires: (config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
             '.AspNet.ApplicationCookie'
