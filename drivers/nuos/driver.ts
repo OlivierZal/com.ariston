@@ -58,7 +58,7 @@ export = class NuosDriver extends withAPI(Driver) {
   private registerFlowListeners(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ;(this.manifest.capabilities as (keyof Capabilities)[]).forEach(
-      (capability: keyof Capabilities): void => {
+      (capability: keyof Capabilities) => {
         if (capability === 'operation_mode') {
           this.homey.flow
             .getConditionCard(`${capability}_condition`)
