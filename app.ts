@@ -60,9 +60,9 @@ export = class AristonApp extends withAPI(App) {
           expires:
             // @ts-expect-error: `CookieJar` is partially typed
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            (config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
+            config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
               '.AspNet.ApplicationCookie'
-            ]?.expires as string | undefined) ?? null,
+            ]?.expires as string,
         })
         this.refreshLogin()
       }
