@@ -1,7 +1,3 @@
-/* eslint-disable
-  @typescript-eslint/no-explicit-any,
-  @typescript-eslint/no-unsafe-argument
-*/
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -11,6 +7,7 @@ import axios, {
 import type AristonApp from '../app'
 import type { HomeyClass, HomeySettings } from '../types'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
   readonly getHomeySetting: <K extends keyof HomeySettings>(
@@ -28,7 +25,9 @@ const withAPI = <T extends HomeyClass>(
 
     public readonly api: AxiosInstance = axios.create()
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     public constructor(...args: any[]) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       super(...args)
       this.setupAxiosInterceptors()
     }
