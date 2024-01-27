@@ -1,17 +1,12 @@
-import { Device } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
-import { DateTime, Duration } from 'luxon'
-import type NuosDriver from './driver'
-import addToLogs from '../../decorators/addToLogs'
-import withAPI from '../../mixins/withAPI'
 import {
-  Mode,
-  OperationMode,
   type Capabilities,
   type CapabilityOptionsEntries,
   type DeviceDetails,
   type GetData,
   type GetSettings,
   type HistogramData,
+  Mode,
+  OperationMode,
   type PostData,
   type PostSettings,
   type ReportData,
@@ -20,15 +15,25 @@ import {
   type TargetTemperatureOptions,
   type ValueOf,
 } from '../../types'
+import { DateTime, Duration } from 'luxon'
+import type { AxiosRequestConfig } from 'axios'
+import { Device } from 'homey'
+import type NuosDriver from './driver'
+import addToLogs from '../../decorators/addToLogs'
+import withAPI from '../../mixins/withAPI'
 
-const ENERGY_REFRESH_INTERVAL = 2 // hours
+const ENERGY_REFRESH_HOURS = 2
 const INITIAL_DATA: PostData = { plantData: {}, viewModel: {} }
 const K_MULTIPLIER = 1000
+const SETTINGS: Record<string, keyof PostSettings> = {
+  'onoff.legionella': 'SlpAntilegionellaOnOff',
+  'onoff.preheating': 'SlpPreHeatingOnOff',
+}
 
 const convertToMode = (value: boolean): Mode =>
   value ? Mode.auto : Mode.manual
 
-const convertToVacationDate = (days: number): string | null =>
+const convertToDate = (days: number): string | null =>
   days ? DateTime.now().plus({ days }).toISODate() : null
 
 const getEnergyData = (
@@ -44,17 +49,19 @@ const getEnergyData = (
 }
 
 const getEnergy = (energyData: HistogramData | undefined): number =>
-  energyData ? energyData.items.reduce<number>((acc, { y }) => acc + y, 0) : 0
+  energyData
+    ? energyData.items.reduce<number>((acc, { y: yNumber }) => acc + yNumber, 0)
+    : 0
 
 const getPower = (energyData: HistogramData | undefined): number => {
   const hour: number = DateTime.now().hour
   return (
-    ((energyData?.items.find(({ x }) => {
-      const xNumber = Number(x)
-      return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_INTERVAL
+    ((energyData?.items.find(({ x: xString }) => {
+      const xNumber = Number(xString)
+      return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_HOURS
     })?.y ?? 0) *
       K_MULTIPLIER) /
-    ENERGY_REFRESH_INTERVAL
+    ENERGY_REFRESH_HOURS
   )
 }
 
@@ -84,16 +91,16 @@ class NuosDevice extends withAPI(Device) {
           async (): Promise<void> => {
             await this.plantMetering()
           },
-          Duration.fromObject({ hours: ENERGY_REFRESH_INTERVAL }).as(
+          Duration.fromObject({ hours: ENERGY_REFRESH_HOURS }).as(
             'milliseconds',
           ),
         )
       },
       now
         .plus({
-          hours: now.hour % ENERGY_REFRESH_INTERVAL || ENERGY_REFRESH_INTERVAL,
+          hours: now.hour % ENERGY_REFRESH_HOURS || ENERGY_REFRESH_HOURS,
         })
-        .set({ minute: 1, second: 0, millisecond: 0 })
+        .set({ millisecond: 0, minute: 1, second: 0 })
         .diffNow()
         .as('milliseconds'),
     )
@@ -113,10 +120,10 @@ class NuosDevice extends withAPI(Device) {
     ) {
       await this.onCapability('onoff', true)
     }
-    if (changedKeys.includes('min') && newSettings.min !== undefined) {
+    if (changedKeys.includes('min') && typeof newSettings.min !== 'undefined') {
       this.#postSettings.SlpMinSetpointTemperature = { new: newSettings.min }
     }
-    if (changedKeys.includes('max') && newSettings.max !== undefined) {
+    if (changedKeys.includes('max') && typeof newSettings.max !== 'undefined') {
       this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
     if (Object.keys(this.#postSettings).length) {
@@ -229,15 +236,10 @@ class NuosDevice extends withAPI(Device) {
         this.#postData.viewModel.boostOn = value as boolean
         break
       case 'onoff.legionella':
-        this.#postSettings.SlpAntilegionellaOnOff = {
-          old: Number(oldValue) as Switch,
-          new: Number(value) as Switch,
-        }
-        break
       case 'onoff.preheating':
-        this.#postSettings.SlpPreHeatingOnOff = {
-          old: Number(oldValue) as Switch,
+        this.#postSettings[SETTINGS[capability]] = {
           new: Number(value) as Switch,
+          old: Number(oldValue) as Switch,
         }
         break
       case 'operation_mode':
@@ -251,12 +253,8 @@ class NuosDevice extends withAPI(Device) {
         this.#postData.viewModel.comfortTemp = value as number
         break
       case 'vacation':
-        this.#postData.plantData.holidayUntil = convertToVacationDate(
-          Number(oldValue),
-        )
-        this.#postData.viewModel.holidayUntil = convertToVacationDate(
-          Number(value),
-        )
+        this.#postData.plantData.holidayUntil = convertToDate(Number(oldValue))
+        this.#postData.viewModel.holidayUntil = convertToDate(Number(value))
         break
       default:
     }
@@ -306,100 +304,116 @@ class NuosDevice extends withAPI(Device) {
     if (!newData) {
       return
     }
-    if (newData.plantSettings) {
-      const {
-        antilegionellaOnOff,
-        preHeatingOnOff,
-        minSetpointTemp,
-        maxSetpointTemp,
-      } = newData.plantSettings
-      await this.setCapabilityValue('onoff.legionella', antilegionellaOnOff)
-      await this.setCapabilityValue('onoff.preheating', preHeatingOnOff)
-      await this.setSettings({
-        min: minSetpointTemp.value,
-        max: maxSetpointTemp.value,
-      })
+    await this.setPlantSettingValues(newData.plantSettings)
+    await this.setPlantDataValues(newData.plantData)
+  }
+
+  private async setPlantSettingValues(
+    plantSettings: GetData['data']['plantSettings'],
+  ): Promise<void> {
+    if (!plantSettings) {
+      return
     }
-    const {
-      boostOn,
-      comfortTemp,
-      holidayUntil,
-      mode,
-      on,
-      opMode,
-      procReqTemp,
-      waterTemp,
-    } = newData.plantData
-    await this.setCapabilityValue('measure_temperature', waterTemp)
-    await this.setCapabilityValue('measure_temperature.required', procReqTemp)
-    await this.setCapabilityValue('onoff', on)
-    await this.setCapabilityValue('onoff.auto', mode === Mode.auto)
-    await this.setCapabilityValue('onoff.boost', boostOn)
+    await this.setCapabilityValue(
+      'onoff.legionella',
+      plantSettings.antilegionellaOnOff,
+    )
+    await this.setCapabilityValue(
+      'onoff.preheating',
+      plantSettings.preHeatingOnOff,
+    )
+    await this.setSettings({
+      max: plantSettings.maxSetpointTemp.value,
+      min: plantSettings.minSetpointTemp.value,
+    })
+  }
+
+  private async setPlantDataValues(
+    plantData: GetData['data']['plantData'],
+  ): Promise<void> {
+    await this.setCapabilityValue('measure_temperature', plantData.waterTemp)
+    await this.setCapabilityValue(
+      'measure_temperature.required',
+      plantData.procReqTemp,
+    )
+    await this.setCapabilityValue('onoff', plantData.on)
+    await this.setCapabilityValue('onoff.auto', plantData.mode === Mode.auto)
+    await this.setCapabilityValue('onoff.boost', plantData.boostOn)
     await this.setCapabilityValue(
       'operation_mode',
-      OperationMode[opMode] as keyof typeof OperationMode,
+      OperationMode[plantData.opMode] as keyof typeof OperationMode,
     )
-    await this.setCapabilityValue('target_temperature', comfortTemp)
+    await this.setCapabilityValue('target_temperature', plantData.comfortTemp)
     await this.setCapabilityValue(
       'vacation',
       String(
-        holidayUntil !== null
-          ? Math.ceil(
-              Number(DateTime.fromISO(holidayUntil).diffNow('days').days),
-            )
-          : 0,
+        plantData.holidayUntil === null
+          ? 0
+          : Math.ceil(
+              Number(
+                DateTime.fromISO(plantData.holidayUntil).diffNow('days').days,
+              ),
+            ),
       ),
     )
   }
 
   private async plant(post = false): Promise<GetData['data'] | null> {
-    if (post && !Object.keys(this.#postData.viewModel).length) {
-      return null
+    let data: GetData['data'] | null = null
+    if (!post || Object.keys(this.#postData.viewModel).length) {
+      try {
+        const config: AxiosRequestConfig = {
+          method: post ? 'post' : 'get',
+          url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.#id}`,
+          ...(post ? { data: this.#postData } : {}),
+          ...(post
+            ? {}
+            : { params: { fetchSettings: 'false', fetchTimeProg: 'false' } }),
+        }
+        if (post) {
+          this.#postData = INITIAL_DATA
+        }
+        ;({ data } = (await this.api<GetData>(config)).data)
+      } catch (error: unknown) {
+        // Pass
+      }
     }
-    try {
-      const { data } = await this.api<GetData>({
-        method: post ? 'post' : 'get',
-        url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.#id}`,
-        params: post
-          ? undefined
-          : { fetchSettings: 'true', fetchTimeProg: 'false' },
-        data: post ? this.#postData : undefined,
-      })
-      this.#postData = INITIAL_DATA
-      return data.data
-    } catch (error: unknown) {
-      return null
-    }
+    return data
   }
 
   private async updateSettings(): Promise<boolean> {
-    if (!Object.keys(this.#postSettings).length) {
-      return false
-    }
-    try {
-      const { data } = await this.api.post<GetSettings>(
-        `/api/v2/velis/slpPlantData/${this.#id}/PlantSettings`,
-        this.#postSettings,
-      )
-      const { success } = data
-      if (success) {
-        if (this.#postSettings.SlpAntilegionellaOnOff) {
-          await this.setCapabilityValue(
-            'onoff.legionella',
-            Boolean(this.#postSettings.SlpAntilegionellaOnOff.new),
+    let success = false
+    if (Object.keys(this.#postSettings).length) {
+      try {
+        ;({ success } = (
+          await this.api.post<GetSettings>(
+            `/api/v2/velis/slpPlantData/${this.#id}/PlantSettings`,
+            this.#postSettings,
           )
-        }
-        if (this.#postSettings.SlpPreHeatingOnOff) {
-          await this.setCapabilityValue(
-            'onoff.preheating',
-            Boolean(this.#postSettings.SlpPreHeatingOnOff.new),
-          )
-        }
-        this.#postSettings = {}
+        ).data)
+        await this.setPlanSettings(success)
+      } catch (error: unknown) {
+        // Pass
       }
-      return success
-    } catch (error: unknown) {
-      return false
+    }
+    return success
+  }
+
+  private async setPlanSettings(success: boolean): Promise<void> {
+    if (success) {
+      if (this.#postSettings.SlpAntilegionellaOnOff) {
+        await this.setCapabilityValue(
+          'onoff.legionella',
+          Boolean(this.#postSettings.SlpAntilegionellaOnOff.new),
+        )
+      }
+      if (this.#postSettings.SlpPreHeatingOnOff) {
+        await this.setCapabilityValue(
+          'onoff.preheating',
+          Boolean(this.#postSettings.SlpPreHeatingOnOff.new),
+        )
+      }
+      this.#postSettings = {}
     }
   }
 
@@ -437,8 +451,8 @@ class NuosDevice extends withAPI(Device) {
     }
     await this.setCapabilityOptions('target_temperature', {
       ...options,
-      ...(min !== undefined ? { min } : {}),
-      ...(max !== undefined ? { max } : {}),
+      ...(typeof max === 'undefined' ? {} : { max }),
+      ...(typeof min === 'undefined' ? {} : { min }),
     })
     await this.setWarning(this.homey.__('warnings.settings'))
   }
@@ -456,21 +470,35 @@ class NuosDevice extends withAPI(Device) {
         data,
         'DhwResistor',
       )
-
-      const energyHp: number = getEnergy(energyHpData)
-      const energyResistor: number = getEnergy(energyResistorData)
-      await this.setCapabilityValue('meter_power', energyHp + energyResistor)
-      await this.setCapabilityValue('meter_power.hp', energyHp)
-      await this.setCapabilityValue('meter_power.resistor', energyResistor)
-
-      const powerHp: number = getPower(energyHpData)
-      const powerResistor: number = getPower(energyResistorData)
-      await this.setCapabilityValue('measure_power', powerHp + powerResistor)
-      await this.setCapabilityValue('measure_power.hp', powerHp)
-      await this.setCapabilityValue('measure_power.resistor', powerResistor)
+      await this.setPowerValues(
+        getPower(energyHpData),
+        getPower(energyResistorData),
+      )
+      await this.setEnergyValues(
+        getEnergy(energyHpData),
+        getEnergy(energyResistorData),
+      )
     } catch (error: unknown) {
       this.error(error instanceof Error ? error.message : error)
     }
+  }
+
+  private async setPowerValues(
+    powerHp: number,
+    powerResistor: number,
+  ): Promise<void> {
+    await this.setCapabilityValue('measure_power', powerHp + powerResistor)
+    await this.setCapabilityValue('measure_power.hp', powerHp)
+    await this.setCapabilityValue('measure_power.resistor', powerResistor)
+  }
+
+  private async setEnergyValues(
+    energyHp: number,
+    energyResistor: number,
+  ): Promise<void> {
+    await this.setCapabilityValue('meter_power', energyHp + energyResistor)
+    await this.setCapabilityValue('meter_power.hp', energyHp)
+    await this.setCapabilityValue('meter_power.resistor', energyResistor)
   }
 }
 

@@ -1,18 +1,18 @@
-import { App } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
-import axios from 'axios'
-import { wrapper } from 'axios-cookiejar-support'
-import { CookieJar } from 'tough-cookie'
 import { DateTime, Duration, Settings as LuxonSettings } from 'luxon'
-import withAPI from './mixins/withAPI'
 import type {
+  HomeySettings,
   LoginCredentials,
   LoginData,
-  LoginPostData,
-  HomeySettings,
   ValueOf,
 } from './types'
+import { App } from 'homey'
+import { CookieJar } from 'tough-cookie'
+import axios from 'axios'
+import withAPI from './mixins/withAPI'
+import { wrapper } from 'axios-cookiejar-support'
 
 const DOMAIN = 'www.ariston-net.remotethermo.com'
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers
 const MAX_INT32: number = 2 ** 31 - 1
 
 wrapper(axios)
@@ -33,43 +33,41 @@ export = class AristonApp extends withAPI(App) {
 
   public async login(
     loginCredentials: LoginCredentials = {
-      username: this.getHomeySetting('username') ?? '',
       password: this.getHomeySetting('password') ?? '',
+      username: this.getHomeySetting('username') ?? '',
     },
   ): Promise<boolean> {
     this.clearLoginRefresh()
-    try {
-      const { username, password } = loginCredentials
-      if (!username || !password) {
-        return false
+    const { username, password } = loginCredentials
+    if (username && password) {
+      try {
+        const { data, config } = await this.api.post<LoginData>(
+          AristonApp.loginURL,
+          {
+            email: username,
+            password,
+            rememberMe: true,
+          },
+        )
+        if (data.ok) {
+          this.setHomeySettings({
+            expires:
+              // @ts-expect-error: `CookieJar` is partially typed
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+              config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
+                '.AspNet.ApplicationCookie'
+              ]?.expires as string,
+            password,
+            username,
+          })
+          this.refreshLogin()
+        }
+        return data.ok
+      } catch (error: unknown) {
+        // Pass
       }
-      const postData: LoginPostData = {
-        email: username,
-        password,
-        rememberMe: true,
-      }
-      const { data, config } = await this.api.post<LoginData>(
-        AristonApp.loginURL,
-        postData,
-      )
-      const { ok } = data
-      if (ok) {
-        this.setHomeySettings({
-          username,
-          password,
-          expires:
-            // @ts-expect-error: `CookieJar` is partially typed
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
-              '.AspNet.ApplicationCookie'
-            ]?.expires as string,
-        })
-        this.refreshLogin()
-      }
-      return ok
-    } catch (error: unknown) {
-      return false
     }
+    return false
   }
 
   public handleRetry(): void {

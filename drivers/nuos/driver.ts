@@ -1,15 +1,15 @@
-import { Driver } from 'homey' // eslint-disable-line import/no-extraneous-dependencies
-import type PairSession from 'homey/lib/PairSession'
-import type AristonApp from '../../app'
-import withAPI from '../../mixins/withAPI'
 import {
-  WheType,
   type Capabilities,
   type DeviceDetails,
   type FlowArgs,
   type LoginCredentials,
   type Plant,
+  WheType,
 } from '../../types'
+import type AristonApp from '../../app'
+import { Driver } from 'homey'
+import type PairSession from 'homey/lib/PairSession'
+import withAPI from '../../mixins/withAPI'
 
 export = class NuosDriver extends withAPI(Driver) {
   readonly #app: AristonApp = this.homey.app as AristonApp
@@ -48,7 +48,7 @@ export = class NuosDriver extends withAPI(Driver) {
         data
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           .filter(({ wheType }) => wheType === this.#deviceType)
-          .map(({ gw, name }): DeviceDetails => ({ name, data: { id: gw } }))
+          .map(({ gw, name }): DeviceDetails => ({ data: { id: gw }, name }))
       )
     } catch (error: unknown) {
       return []

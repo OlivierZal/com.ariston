@@ -1,6 +1,6 @@
-import type { SimpleClass } from 'homey'
 import type Homey from 'homey/lib/Homey'
 import type NuosDevice from './drivers/nuos/device'
+import type { SimpleClass } from 'homey'
 
 export enum WheType {
   nuos = 4,

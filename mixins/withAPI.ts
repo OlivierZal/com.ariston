@@ -1,3 +1,4 @@
+import type { HomeyClass, HomeySettings } from '../types'
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -5,7 +6,6 @@ import axios, {
   type InternalAxiosRequestConfig,
 } from 'axios'
 import type AristonApp from '../app'
-import type { HomeyClass, HomeySettings } from '../types'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type APIClass = new (...args: any[]) => {
@@ -17,6 +17,7 @@ type APIClass = new (...args: any[]) => {
 
 const getAPIErrorMessage = (error: AxiosError): string => error.message
 
+// eslint-disable-next-line max-lines-per-function
 const withAPI = <T extends HomeyClass>(
   base: T,
 ): APIClass & T & { readonly loginURL: string } =>
