@@ -12,8 +12,7 @@ import withAPI from './mixins/withAPI'
 import { wrapper } from 'axios-cookiejar-support'
 
 const DOMAIN = 'www.ariston-net.remotethermo.com'
-// eslint-disable-next-line @typescript-eslint/no-magic-numbers
-const MAX_INT32: number = 2 ** 31 - 1
+const MAX_INT32 = 2147483647
 
 wrapper(axios)
 axios.defaults.jar = new CookieJar()
