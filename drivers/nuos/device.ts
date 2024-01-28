@@ -359,7 +359,6 @@ class NuosDevice extends withAPI(Device) {
   }
 
   private async plant(post = false): Promise<GetData['data'] | null> {
-    let data: GetData['data'] | null = null
     if (!post || Object.keys(this.#postData.viewModel).length) {
       try {
         const config: AxiosRequestConfig = {
@@ -373,30 +372,30 @@ class NuosDevice extends withAPI(Device) {
         if (post) {
           this.#postData = INITIAL_DATA
         }
-        ;({ data } = (await this.api<GetData>(config)).data)
+        return (await this.api<GetData>(config)).data.data
       } catch (error: unknown) {
         // Pass
       }
     }
-    return data
+    return null
   }
 
   private async updateSettings(): Promise<boolean> {
-    let success = false
     if (Object.keys(this.#postSettings).length) {
       try {
-        ;({ success } = (
+        const { success } = (
           await this.api.post<GetSettings>(
             `/api/v2/velis/slpPlantData/${this.#id}/PlantSettings`,
             this.#postSettings,
           )
-        ).data)
+        ).data
         await this.setPlanSettings(success)
+        return success
       } catch (error: unknown) {
         // Pass
       }
     }
-    return success
+    return false
   }
 
   private async setPlanSettings(success: boolean): Promise<void> {
