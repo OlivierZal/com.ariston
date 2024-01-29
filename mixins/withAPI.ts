@@ -1,7 +1,18 @@
-import type { HomeyClass, HomeySettings } from '../types'
+import type {
+  GetData,
+  GetSettings,
+  HomeyClass,
+  LoginData,
+  LoginPostData,
+  Plant,
+  PostData,
+  PostSettings,
+  ReportData,
+} from '../types'
 import axios, {
   type AxiosError,
   type AxiosInstance,
+  type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
@@ -10,20 +21,28 @@ import type AristonApp from '../app'
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type APIClass = new (...args: any[]) => {
   readonly api: AxiosInstance
-  readonly getHomeySetting: <K extends keyof HomeySettings>(
-    setting: K,
-  ) => HomeySettings[K]
+  readonly apiLogin: (
+    postData: LoginPostData,
+  ) => Promise<{ config: AxiosRequestConfig; data: LoginData }>
+  readonly apiPlants: () => Promise<{ data: readonly Plant[] }>
+  readonly apiPlantData: (
+    id: string,
+    postData: PostData | null,
+  ) => Promise<{ data: GetData }>
+  readonly apiPlantMetering: (id: string) => Promise<{ data: ReportData }>
+  readonly apiPlantSettings: (
+    id: string,
+    settings: PostSettings,
+  ) => Promise<{ data: GetSettings }>
 }
+
+const LOGIN_URL = '/R2/Account/Login'
 
 const getAPIErrorMessage = (error: AxiosError): string => error.message
 
 // eslint-disable-next-line max-lines-per-function
-const withAPI = <T extends HomeyClass>(
-  base: T,
-): APIClass & T & { readonly loginURL: string } =>
+const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
   class WithAPI extends base {
-    public static readonly loginURL: string = '/R2/Account/Login'
-
     public readonly api: AxiosInstance = axios.create()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,10 +52,42 @@ const withAPI = <T extends HomeyClass>(
       this.setupAxiosInterceptors()
     }
 
-    public getHomeySetting<K extends keyof HomeySettings>(
-      setting: K,
-    ): HomeySettings[K] {
-      return this.homey.settings.get(setting) as HomeySettings[K]
+    public async apiLogin(
+      postData: LoginPostData,
+    ): Promise<{ config: AxiosRequestConfig; data: LoginData }> {
+      return this.api.post<LoginData>(LOGIN_URL, postData)
+    }
+
+    public async apiPlants(): Promise<{ data: Plant[] }> {
+      return this.api.get<Plant[]>('/api/v2/velis/plants')
+    }
+
+    public async apiPlantData(
+      id: string,
+      postData: PostData | null = null,
+    ): Promise<{ data: GetData }> {
+      return this.api<GetData>({
+        method: postData ? 'post' : 'get',
+        url: `/R2/PlantHomeSlp/${postData ? 'SetData' : 'GetData'}/${id}`,
+        ...(postData ? { data: postData } : {}),
+        ...(postData
+          ? {}
+          : { params: { fetchSettings: 'false', fetchTimeProg: 'false' } }),
+      })
+    }
+
+    public async apiPlantSettings(
+      id: string,
+      settings: PostSettings,
+    ): Promise<{ data: GetSettings }> {
+      return this.api.post<GetSettings>(
+        `/api/v2/velis/slpPlantData/${id}/PlantSettings`,
+        settings,
+      )
+    }
+
+    public async apiPlantMetering(id: string): Promise<{ data: ReportData }> {
+      return this.api.post<ReportData>(`/R2/PlantMetering/GetData/${id}`)
     }
 
     private setupAxiosInterceptors(): void {
@@ -75,7 +126,7 @@ const withAPI = <T extends HomeyClass>(
       if (
         contentType.includes('text/html') &&
         app.retry &&
-        config.url !== WithAPI.loginURL
+        config.url !== LOGIN_URL
       ) {
         app.handleRetry()
         const loggedIn: boolean = await app.login()

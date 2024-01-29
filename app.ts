@@ -1,22 +1,18 @@
+import { type Cookie, CookieJar } from 'tough-cookie'
 import { DateTime, Duration, Settings as LuxonSettings } from 'luxon'
-import type {
-  HomeySettings,
-  LoginCredentials,
-  LoginData,
-  ValueOf,
-} from './types'
+import type { HomeySettings, LoginCredentials, ValueOf } from './types'
 import { App } from 'homey'
-import { CookieJar } from 'tough-cookie'
 import axios from 'axios'
 import withAPI from './mixins/withAPI'
 import { wrapper } from 'axios-cookiejar-support'
 
-const DOMAIN = 'www.ariston-net.remotethermo.com'
+const DOMAIN = 'https://www.ariston-net.remotethermo.com'
 const MAX_INT32 = 2147483647
 
 wrapper(axios)
+axios.defaults.baseURL = DOMAIN
 axios.defaults.jar = new CookieJar()
-axios.defaults.baseURL = `https://${DOMAIN}`
+axios.defaults.withCredentials = true
 
 export = class AristonApp extends withAPI(App) {
   public retry = true
@@ -37,28 +33,19 @@ export = class AristonApp extends withAPI(App) {
     },
   ): Promise<boolean> {
     this.clearLoginRefresh()
-    const { username, password } = loginCredentials
-    if (username && password) {
+    if (loginCredentials.username && loginCredentials.password) {
       try {
-        const { data, config } = await this.api.post<LoginData>(
-          AristonApp.loginURL,
-          {
-            email: username,
-            password,
-            rememberMe: true,
-          },
-        )
-        if (data.ok) {
+        const { config, data } = await this.apiLogin({
+          email: loginCredentials.username,
+          password: loginCredentials.password,
+          rememberMe: true,
+        })
+        if (data.ok && config.jar) {
           this.setHomeySettings({
-            expires:
-              // @ts-expect-error: `CookieJar` is partially typed
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-              config.jar?.store?.idx?.[DOMAIN]?.['/']?.[
-                '.AspNet.ApplicationCookie'
-              ]?.expires as string,
-            password,
-            username,
+            password: loginCredentials.password,
+            username: loginCredentials.username,
           })
+          this.setCookieExpiration(config.jar)
           this.refreshLogin()
         }
         return data.ok
@@ -100,6 +87,12 @@ export = class AristonApp extends withAPI(App) {
     this.homey.clearTimeout(this.#loginTimeout)
   }
 
+  private getHomeySetting<K extends keyof HomeySettings>(
+    setting: K,
+  ): HomeySettings[K] {
+    return this.homey.settings.get(setting) as HomeySettings[K]
+  }
+
   private setHomeySettings(settings: Partial<HomeySettings>): void {
     Object.entries(settings)
       .filter(
@@ -109,5 +102,20 @@ export = class AristonApp extends withAPI(App) {
       .forEach(([setting, value]: [string, ValueOf<HomeySettings>]) => {
         this.homey.settings.set(setting, value)
       })
+  }
+
+  private setCookieExpiration(jar: CookieJar): void {
+    jar.getCookies(DOMAIN, (error, cookies): void => {
+      if (error !== null) {
+        this.error(error.message)
+        return
+      }
+      const aspNetCookie: Cookie | undefined = cookies.find(
+        (cookie: Cookie) => cookie.key === '.AspNet.ApplicationCookie',
+      )
+      if (aspNetCookie) {
+        this.setHomeySettings({ expires: String(aspNetCookie.expires) })
+      }
+    })
   }
 }

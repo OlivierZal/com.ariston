@@ -3,7 +3,6 @@ import {
   type DeviceDetails,
   type FlowArgs,
   type LoginCredentials,
-  type Plant,
   WheType,
 } from '../../types'
 import type AristonApp from '../../app'
@@ -43,9 +42,8 @@ export = class NuosDriver extends withAPI(Driver) {
 
   private async discoverDevices(): Promise<DeviceDetails[]> {
     try {
-      const { data } = await this.api.get<Plant[]>('/api/v2/velis/plants')
       return (
-        data
+        (await this.apiPlants()).data
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           .filter(({ wheType }) => wheType === this.#deviceType)
           .map(({ gw, name }): DeviceDetails => ({ data: { id: gw }, name }))

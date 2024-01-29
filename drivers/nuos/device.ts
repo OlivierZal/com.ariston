@@ -3,7 +3,6 @@ import {
   type CapabilityOptionsEntries,
   type DeviceDetails,
   type GetData,
-  type GetSettings,
   type HistogramData,
   Mode,
   OperationMode,
@@ -16,7 +15,6 @@ import {
   type ValueOf,
 } from '../../types'
 import { DateTime, Duration } from 'luxon'
-import type { AxiosRequestConfig } from 'axios'
 import { Device } from 'homey'
 import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
@@ -361,18 +359,13 @@ class NuosDevice extends withAPI(Device) {
   private async plant(post = false): Promise<GetData['data'] | null> {
     if (!post || Object.keys(this.#postData.viewModel).length) {
       try {
-        const config: AxiosRequestConfig = {
-          method: post ? 'post' : 'get',
-          url: `/R2/PlantHomeSlp/${post ? 'SetData' : 'GetData'}/${this.#id}`,
-          ...(post ? { data: this.#postData } : {}),
-          ...(post
-            ? {}
-            : { params: { fetchSettings: 'false', fetchTimeProg: 'false' } }),
-        }
+        const { data } = (
+          await this.apiPlantData(this.#id, post ? this.#postData : null)
+        ).data
         if (post) {
           this.#postData = INITIAL_DATA
         }
-        return (await this.api<GetData>(config)).data.data
+        return data
       } catch (error: unknown) {
         // Pass
       }
@@ -384,10 +377,7 @@ class NuosDevice extends withAPI(Device) {
     if (Object.keys(this.#postSettings).length) {
       try {
         const { success } = (
-          await this.api.post<GetSettings>(
-            `/api/v2/velis/slpPlantData/${this.#id}/PlantSettings`,
-            this.#postSettings,
-          )
+          await this.apiPlantSettings(this.#id, this.#postSettings)
         ).data
         await this.setPlanSettings(success)
         return success
@@ -458,9 +448,7 @@ class NuosDevice extends withAPI(Device) {
 
   private async plantMetering(): Promise<void> {
     try {
-      const { data } = await this.api.post<ReportData>(
-        `/R2/PlantMetering/GetData/${this.#id}`,
-      )
+      const { data } = await this.apiPlantMetering(this.#id)
       const energyHpData: HistogramData | undefined = getEnergyData(
         data,
         'DhwHp',
