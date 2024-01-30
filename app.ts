@@ -27,24 +27,21 @@ export = class AristonApp extends withAPI(App) {
   }
 
   public async login(
-    loginCredentials: LoginCredentials = {
+    { password, username }: LoginCredentials = {
       password: this.getHomeySetting('password') ?? '',
       username: this.getHomeySetting('username') ?? '',
     },
   ): Promise<boolean> {
     this.clearLoginRefresh()
-    if (loginCredentials.username && loginCredentials.password) {
+    if (username && password) {
       try {
         const { config, data } = await this.apiLogin({
-          email: loginCredentials.username,
-          password: loginCredentials.password,
+          email: username,
+          password,
           rememberMe: true,
         })
         if (data.ok && config.jar) {
-          this.setHomeySettings({
-            password: loginCredentials.password,
-            username: loginCredentials.username,
-          })
+          this.setHomeySettings({ password, username })
           this.setCookieExpiration(config.jar)
           this.refreshLogin()
         }
