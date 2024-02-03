@@ -15,7 +15,6 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
-  isAxiosError,
 } from 'axios'
 import type AristonApp from '../app'
 
@@ -45,7 +44,7 @@ const getAPILogs = (
   object: AxiosError | AxiosResponse | InternalAxiosRequestConfig,
   message?: string,
 ): string => {
-  const isError = isAxiosError(object)
+  const isError = axios.isAxiosError(object)
   const isResponse = Boolean(
     (!isError && 'status' in object) || (isError && 'response' in object),
   )
