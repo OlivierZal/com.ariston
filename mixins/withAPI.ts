@@ -38,16 +38,11 @@ type APIClass = new (...args: any[]) => {
 
 const LOGIN_URL = '/R2/Account/Login'
 
-const getAPIErrorMessage = (error: AxiosError): string => error.message
-
-const getAPILogs = (
+const getAPICallData = (
   object: AxiosError | AxiosResponse | InternalAxiosRequestConfig,
-  message?: string,
-): string => {
+): string[] => {
   const isError = axios.isAxiosError(object)
-  const isResponse = Boolean(
-    (!isError && 'status' in object) || (isError && 'response' in object),
-  )
+  const isResponse = Boolean('status' in object || 'response' in object)
   const config: InternalAxiosRequestConfig | undefined =
     isResponse || isError
       ? (object as AxiosError | AxiosResponse).config
@@ -56,24 +51,24 @@ const getAPILogs = (
   if (isResponse) {
     response = isError ? object.response ?? null : (object as AxiosResponse)
   }
-  return [
-    `API ${isResponse ? 'response' : 'request'}:`,
-    config?.method?.toUpperCase(),
-    config?.url,
-    config?.params,
-    isResponse ? response?.headers : config?.headers,
-    response?.status,
-    isResponse ? (object as AxiosResponse).data : config?.data,
-    message,
-  ]
-    .filter(
-      (log: number | object | string | undefined) => typeof log !== 'undefined',
-    )
-    .map((log: number | object | string): number | string =>
-      // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-      typeof log === 'object' ? JSON.stringify(log, null, 2) : log,
-    )
-    .join('\n')
+  return (
+    [
+      `API ${isResponse ? 'response' : 'request'}:`,
+      config?.method?.toUpperCase(),
+      config?.url,
+      config?.params,
+      isResponse ? response?.headers : config?.headers,
+      response?.status,
+      isResponse ? (object as AxiosResponse).data : config?.data,
+      isError ? object.message : null,
+    ]
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((log: any) => typeof log !== 'undefined' && log !== null)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((log: any): string =>
+        typeof log === 'object' ? JSON.stringify(log, null, 2) : String(log),
+      )
+  )
 }
 
 // eslint-disable-next-line max-lines-per-function
@@ -131,20 +126,20 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
         (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig =>
           this.handleRequest(config),
         async (error: AxiosError): Promise<AxiosError> =>
-          this.handleError('request', error),
+          this.handleError(error),
       )
       this.api.interceptors.response.use(
         async (response: AxiosResponse): Promise<AxiosResponse> =>
           this.handleResponse(response),
         async (error: AxiosError): Promise<AxiosError> =>
-          this.handleError('response', error),
+          this.handleError(error),
       )
     }
 
     private handleRequest(
       config: InternalAxiosRequestConfig,
     ): InternalAxiosRequestConfig {
-      this.log(getAPILogs(config))
+      this.log(getAPICallData(config).join('\n'))
       return config
     }
 
@@ -152,7 +147,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       response: AxiosResponse,
     ): Promise<AxiosResponse> {
       const { config } = response
-      this.log(getAPILogs(response))
+      this.log(getAPICallData(response).join('\n'))
       const contentType = String(response.headers['content-type'])
       const app: AristonApp = this.homey.app as AristonApp
       if (
@@ -169,13 +164,10 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       return response
     }
 
-    private async handleError(
-      type: 'request' | 'response',
-      error: AxiosError,
-    ): Promise<AxiosError> {
-      const errorMessage: string = getAPIErrorMessage(error)
-      this.error(getAPILogs(error), errorMessage)
-      await this.setErrorWarning(errorMessage)
+    private async handleError(error: AxiosError): Promise<AxiosError> {
+      const apiCallData: string[] = getAPICallData(error)
+      this.error(apiCallData.join('\n'))
+      await this.setErrorWarning(apiCallData[apiCallData.length - 1])
       return Promise.reject(error)
     }
 
