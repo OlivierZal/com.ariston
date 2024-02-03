@@ -15,6 +15,7 @@ import axios, {
   type AxiosRequestConfig,
   type AxiosResponse,
   type InternalAxiosRequestConfig,
+  isAxiosError,
 } from 'axios'
 import type AristonApp from '../app'
 
@@ -39,6 +40,43 @@ type APIClass = new (...args: any[]) => {
 const LOGIN_URL = '/R2/Account/Login'
 
 const getAPIErrorMessage = (error: AxiosError): string => error.message
+
+const getAPILogs = (
+  object: AxiosError | AxiosResponse | InternalAxiosRequestConfig,
+  message?: string,
+): string => {
+  const isError = isAxiosError(object)
+  const isResponse = Boolean(
+    (!isError && 'status' in object) || (isError && 'response' in object),
+  )
+  const config: InternalAxiosRequestConfig = (
+    isResponse || isError
+      ? (object as AxiosError | AxiosResponse).config
+      : object
+  ) as InternalAxiosRequestConfig
+  let response: AxiosResponse | null = null
+  if (isResponse) {
+    response = isError ? object.response ?? null : (object as AxiosResponse)
+  }
+  return [
+    `API ${isResponse ? 'response' : 'request'}:`,
+    config.method?.toUpperCase(),
+    config.url,
+    config.params,
+    isResponse ? response?.headers : config.headers,
+    response?.status,
+    (isResponse ? (object as AxiosResponse) : config).data,
+    message,
+  ]
+    .filter(
+      (log: number | object | string | undefined) => typeof log !== 'undefined',
+    )
+    .map((log: number | object | string): number | string =>
+      // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+      typeof log === 'object' ? JSON.stringify(log, null, 2) : log,
+    )
+    .join('\n')
+}
 
 // eslint-disable-next-line max-lines-per-function
 const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
@@ -108,11 +146,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     private handleRequest(
       config: InternalAxiosRequestConfig,
     ): InternalAxiosRequestConfig {
-      this.log(
-        'Sending request:',
-        config.url,
-        config.method === 'post' ? config.data : '',
-      )
+      this.log(getAPILogs(config))
       return config
     }
 
@@ -120,7 +154,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       response: AxiosResponse,
     ): Promise<AxiosResponse> {
       const { config } = response
-      this.log('Received response:', config.url, response.data)
+      this.log(getAPILogs(response))
       const contentType = String(response.headers['content-type'])
       const app: AristonApp = this.homey.app as AristonApp
       if (
@@ -142,7 +176,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       error: AxiosError,
     ): Promise<AxiosError> {
       const errorMessage: string = getAPIErrorMessage(error)
-      this.error(`Error in ${type}:`, error.config?.url, errorMessage)
+      this.error(getAPILogs(error), errorMessage)
       await this.setErrorWarning(errorMessage)
       return Promise.reject(error)
     }
