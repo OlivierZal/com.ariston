@@ -146,19 +146,18 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     private async handleResponse(
       response: AxiosResponse,
     ): Promise<AxiosResponse> {
-      const { config } = response
       this.log(getAPICallData(response).join('\n'))
       const contentType = String(response.headers['content-type'])
       const app: AristonApp = this.homey.app as AristonApp
       if (
         contentType.includes('text/html') &&
         app.retry &&
-        config.url !== LOGIN_URL
+        response.config.url !== LOGIN_URL
       ) {
         app.handleRetry()
         const loggedIn: boolean = await app.login()
         if (loggedIn) {
-          return this.api.request(config)
+          return this.api.request(response.config)
         }
       }
       return response
