@@ -170,7 +170,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
       const apiCallData: string[] = getAPICallData(error)
       this.error(apiCallData.join('\n'))
       if (
-        error.response?.status === axios.HttpStatusCode.Unauthorized &&
+        error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
         this.app.retry &&
         error.config?.url !== LOGIN_URL
       ) {
