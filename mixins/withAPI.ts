@@ -16,7 +16,10 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
+import APICallRequestData from '../lib/APICallRequestData'
+import APICallResponseData from '../lib/APICallResponseData'
 import type AristonApp from '../app'
+import createAPICallErrorData from '../lib/APICallErrorData'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type APIClass = new (...args: any[]) => {
@@ -37,41 +40,6 @@ type APIClass = new (...args: any[]) => {
 }
 
 const LOGIN_URL = '/R2/Account/Login'
-
-const getAPICallData = (
-  object: AxiosError | AxiosResponse | InternalAxiosRequestConfig,
-): string[] => {
-  const isError = axios.isAxiosError(object)
-  const isResponse = Boolean(
-    'status' in object || (isError && typeof object.response !== 'undefined'),
-  )
-  const config: InternalAxiosRequestConfig | undefined =
-    isResponse || isError
-      ? (object as AxiosError | AxiosResponse).config
-      : (object as InternalAxiosRequestConfig)
-  let response: AxiosResponse | null = null
-  if (isResponse) {
-    response = isError ? object.response ?? null : (object as AxiosResponse)
-  }
-  return (
-    [
-      `API ${isResponse ? 'response' : 'request'}:`,
-      config?.method?.toUpperCase(),
-      config?.url,
-      config?.params,
-      isResponse ? response?.headers : config?.headers,
-      response?.status,
-      isResponse ? (object as AxiosResponse).data : config?.data,
-      isError ? object.message : null,
-    ]
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .filter((log: any) => typeof log !== 'undefined' && log !== null)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      .map((log: any): string =>
-        typeof log === 'object' ? JSON.stringify(log, null, 2) : String(log),
-      )
-  )
-}
 
 // eslint-disable-next-line max-lines-per-function
 const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
@@ -143,14 +111,14 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     private handleRequest(
       config: InternalAxiosRequestConfig,
     ): InternalAxiosRequestConfig {
-      this.log(getAPICallData(config).join('\n'))
+      this.log(new APICallRequestData(config))
       return config
     }
 
     private async handleResponse(
       response: AxiosResponse,
     ): Promise<AxiosResponse> {
-      this.log(getAPICallData(response).join('\n'))
+      this.log(new APICallResponseData(response))
       if (
         // @ts-expect-error: `axios` is partially typed
         response.headers.hasContentType('application/json') === false &&
@@ -166,8 +134,8 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     }
 
     private async handleError(error: AxiosError): Promise<AxiosError> {
-      const apiCallData: string[] = getAPICallData(error)
-      this.error(apiCallData.join('\n'))
+      const apiCallErrorData = createAPICallErrorData(error)
+      this.error(apiCallErrorData)
       if (
         error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
         this.app.retry &&
@@ -178,7 +146,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
           return this.api.request(error.config)
         }
       }
-      await this.setErrorWarning(apiCallData[apiCallData.length - 1])
+      await this.setErrorWarning(apiCallErrorData.errorMessage)
       return Promise.reject(error)
     }
 
