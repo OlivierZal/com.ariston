@@ -20,7 +20,7 @@ import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 
-const DEFAULT_ZERO = 0
+const DEFAULT_0 = 0
 const ENERGY_REFRESH_HOURS = 2
 const INITIAL_DATA: PostData = { plantData: {}, viewModel: {} }
 const K_MULTIPLIER = 1000
@@ -51,9 +51,9 @@ const getEnergy = (energyData: HistogramData | undefined): number =>
   energyData
     ? energyData.items.reduce<number>(
         (acc, { y: yNumber }) => acc + yNumber,
-        DEFAULT_ZERO,
+        DEFAULT_0,
       )
-    : DEFAULT_ZERO
+    : DEFAULT_0
 
 const getPower = (energyData: HistogramData | undefined): number => {
   const hour: number = DateTime.now().hour
@@ -61,7 +61,7 @@ const getPower = (energyData: HistogramData | undefined): number => {
     ((energyData?.items.find(({ x: xString }) => {
       const xNumber = Number(xString)
       return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_HOURS
-    })?.y ?? DEFAULT_ZERO) *
+    })?.y ?? DEFAULT_0) *
       K_MULTIPLIER) /
     ENERGY_REFRESH_HOURS
   )
