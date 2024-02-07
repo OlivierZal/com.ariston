@@ -103,7 +103,7 @@ export = class AristonApp extends withAPI(App) {
 
   private setCookieExpiration(jar: CookieJar): void {
     jar.getCookies(DOMAIN, (error, cookies): void => {
-      if (error !== null) {
+      if (error) {
         this.error(error.message)
         return
       }
