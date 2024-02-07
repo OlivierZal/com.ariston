@@ -10,6 +10,7 @@ const ORDER: string[] = [
   'status',
   'errorMessage',
 ]
+const SPACE = 2
 
 export default abstract class APICallContextData {
   public readonly method: InternalAxiosRequestConfig['method']
@@ -31,7 +32,11 @@ export default abstract class APICallContextData {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const value: any = this[key as keyof this]
         if (typeof value !== 'undefined') {
-          return `${key}: ${typeof value === 'object' ? JSON.stringify(value, null, 2) : value}`
+          return `${key}: ${
+            typeof value === 'object'
+              ? JSON.stringify(value, null, SPACE)
+              : value
+          }`
         }
       }
       return null

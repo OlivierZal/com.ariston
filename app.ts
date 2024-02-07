@@ -70,7 +70,7 @@ export = class AristonApp extends withAPI(App) {
       .minus({ days: 1 })
       .diffNow()
       .as('milliseconds')
-    if (ms > 0) {
+    if (ms > DateTime.now().diffNow().as('milliseconds')) {
       this.#loginTimeout = this.homey.setTimeout(
         async (): Promise<void> => {
           await this.login()
