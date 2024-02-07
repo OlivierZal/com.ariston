@@ -6,7 +6,7 @@ export default class APICallRequestData extends APICallContextData {
 
   public readonly headers?: InternalAxiosRequestConfig['headers']
 
-  public readonly data: string
+  public readonly data: InternalAxiosRequestConfig['data']
 
   public constructor(config?: InternalAxiosRequestConfig) {
     super(config)

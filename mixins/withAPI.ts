@@ -111,14 +111,14 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     private handleRequest(
       config: InternalAxiosRequestConfig,
     ): InternalAxiosRequestConfig {
-      this.log(new APICallRequestData(config))
+      this.log(String(new APICallRequestData(config)))
       return config
     }
 
     private async handleResponse(
       response: AxiosResponse,
     ): Promise<AxiosResponse> {
-      this.log(new APICallResponseData(response))
+      this.log(String(new APICallResponseData(response)))
       if (
         // @ts-expect-error: `axios` is partially typed
         response.headers.hasContentType('application/json') === false &&
@@ -135,7 +135,7 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
 
     private async handleError(error: AxiosError): Promise<AxiosError> {
       const apiCallErrorData = createAPICallErrorData(error)
-      this.error(apiCallErrorData)
+      this.error(String(apiCallErrorData))
       if (
         error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
         this.app.retry &&
