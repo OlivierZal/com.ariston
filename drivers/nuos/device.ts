@@ -348,15 +348,13 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('target_temperature', plantData.comfortTemp)
     await this.setCapabilityValue(
       'vacation',
-      String(
-        plantData.holidayUntil === null
-          ? DEFAULT_ZERO
-          : Math.ceil(
-              Number(
-                DateTime.fromISO(plantData.holidayUntil).diffNow('days').days,
-              ),
+      plantData.holidayUntil === null
+        ? '0'
+        : String(
+            Math.ceil(
+              DateTime.fromISO(plantData.holidayUntil).diffNow('days').days,
             ),
-      ),
+          ),
     )
   }
 
