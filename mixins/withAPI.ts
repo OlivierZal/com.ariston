@@ -16,6 +16,7 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
+import type { APICallContextDataWithErrorMessage } from './withErrorMessage'
 import APICallRequestData from '../lib/APICallRequestData'
 import APICallResponseData from '../lib/APICallResponseData'
 import type AristonApp from '../app'
@@ -134,7 +135,8 @@ const withAPI = <T extends HomeyClass>(base: T): APIClass & T =>
     }
 
     private async handleError(error: AxiosError): Promise<AxiosError> {
-      const apiCallErrorData = createAPICallErrorData(error)
+      const apiCallErrorData: APICallContextDataWithErrorMessage =
+        createAPICallErrorData(error)
       this.error(String(apiCallErrorData))
       if (
         error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
