@@ -21,8 +21,8 @@ import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 
 const DEFAULT_0 = 0
+const DEFAULT_POST_DATA: PostData = { plantData: {}, viewModel: {} }
 const ENERGY_REFRESH_HOURS = 2
-const INITIAL_DATA: PostData = { plantData: {}, viewModel: {} }
 const K_MULTIPLIER = 1000
 const SETTINGS: Record<string, keyof PostSettings> = {
   'onoff.legionella': 'SlpAntilegionellaOnOff',
@@ -73,7 +73,7 @@ class NuosDevice extends withAPI(Device) {
 
   readonly #id: string = (this.getData() as DeviceDetails['data']).id
 
-  #postData: PostData = INITIAL_DATA
+  #postData: PostData = DEFAULT_POST_DATA
 
   #postSettings: PostSettings = {}
 
@@ -365,7 +365,7 @@ class NuosDevice extends withAPI(Device) {
           await this.apiPlantData(this.#id, post ? this.#postData : null)
         ).data
         if (post) {
-          this.#postData = INITIAL_DATA
+          this.#postData = DEFAULT_POST_DATA
         }
         return data
       } catch (error: unknown) {
