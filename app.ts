@@ -30,6 +30,7 @@ export = class AristonApp extends withAPI(App) {
     this.#retry = value
   }
 
+  // eslint-disable-next-line @typescript-eslint/member-ordering
   public get retryTimeout(): NodeJS.Timeout {
     return this.#retryTimeout
   }
