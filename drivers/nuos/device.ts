@@ -71,27 +71,27 @@ const getPower = (energyData: HistogramData | undefined): number => {
 class NuosDevice extends withAPI(Device) {
   public declare driver: NuosDriver
 
-  readonly #id: string = (this.getData() as DeviceDetails['data']).id
-
   #postData: PostData = DEFAULT_POST_DATA
 
   #postSettings: PostSettings = {}
 
   #syncTimeout!: NodeJS.Timeout
 
+  readonly #id: string = (this.getData() as DeviceDetails['data']).id
+
   public async onInit(): Promise<void> {
     await this.setWarning(null)
-    await this.handleCapabilities()
-    this.registerCapabilityListeners()
-    await this.sync()
-    await this.plantMetering()
+    await this.#handleCapabilities()
+    this.#registerCapabilityListeners()
+    await this.#sync()
+    await this.#plantMetering()
     const now: DateTime = DateTime.now()
     this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.plantMetering()
+        await this.#plantMetering()
         this.homey.setInterval(
           async (): Promise<void> => {
-            await this.plantMetering()
+            await this.#plantMetering()
           },
           Duration.fromObject({ hours: ENERGY_REFRESH_HOURS }).as(
             'milliseconds',
@@ -129,15 +129,15 @@ class NuosDevice extends withAPI(Device) {
       this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
     if (Object.keys(this.#postSettings).length) {
-      await this.updateSettings()
+      await this.#updateSettings()
       if (changedKeys.some((key: string) => ['min', 'max'].includes(key))) {
-        await this.updateTargetTemperatureMinMax(newSettings)
+        await this.#updateTargetTemperatureMinMax(newSettings)
       }
     }
   }
 
   public onDeleted(): void {
-    this.clearSync()
+    this.#clearSync()
   }
 
   public async addCapability(capability: string): Promise<void> {
@@ -190,7 +190,7 @@ class NuosDevice extends withAPI(Device) {
         Object.keys(newSettings).includes(key),
       )
     ) {
-      await this.updateTargetTemperatureMinMax()
+      await this.#updateTargetTemperatureMinMax()
     }
   }
 
@@ -218,7 +218,7 @@ class NuosDevice extends withAPI(Device) {
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
-    this.clearSync()
+    this.#clearSync()
     const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
@@ -260,10 +260,10 @@ class NuosDevice extends withAPI(Device) {
         break
       default:
     }
-    this.applySyncToDevice()
+    this.#applySyncToDevice()
   }
 
-  private async handleCapabilities(): Promise<void> {
+  async #handleCapabilities(): Promise<void> {
     const requiredCapabilities: string[] =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.driver.manifest.capabilities as string[]
@@ -284,7 +284,7 @@ class NuosDevice extends withAPI(Device) {
       }, Promise.resolve())
   }
 
-  private registerCapabilityListeners<K extends keyof Capabilities>(): void {
+  #registerCapabilityListeners<K extends keyof Capabilities>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ;(this.driver.manifest.capabilities as K[]).forEach((capability: K) => {
       this.registerCapabilityListener(
@@ -296,21 +296,21 @@ class NuosDevice extends withAPI(Device) {
     })
   }
 
-  private async sync(post = false): Promise<void> {
-    await this.updateCapabilities(post)
-    this.applySyncFromDevice()
+  async #sync(post = false): Promise<void> {
+    await this.#updateCapabilities(post)
+    this.#applySyncFromDevice()
   }
 
-  private async updateCapabilities(post: boolean): Promise<void> {
-    const newData: GetData['data'] | null = await this.plant(post)
+  async #updateCapabilities(post: boolean): Promise<void> {
+    const newData: GetData['data'] | null = await this.#plant(post)
     if (!newData) {
       return
     }
-    await this.setPlantSettingValues(newData.plantSettings)
-    await this.setPlantDataValues(newData.plantData)
+    await this.#setPlantSettingValues(newData.plantSettings)
+    await this.#setPlantDataValues(newData.plantData)
   }
 
-  private async setPlantSettingValues(
+  async #setPlantSettingValues(
     plantSettings: GetData['data']['plantSettings'],
   ): Promise<void> {
     if (!plantSettings) {
@@ -330,7 +330,7 @@ class NuosDevice extends withAPI(Device) {
     })
   }
 
-  private async setPlantDataValues(
+  async #setPlantDataValues(
     plantData: GetData['data']['plantData'],
   ): Promise<void> {
     await this.setCapabilityValue('measure_temperature', plantData.waterTemp)
@@ -358,7 +358,7 @@ class NuosDevice extends withAPI(Device) {
     )
   }
 
-  private async plant(post = false): Promise<GetData['data'] | null> {
+  async #plant(post = false): Promise<GetData['data'] | null> {
     if (!post || Object.keys(this.#postData.viewModel).length) {
       try {
         const { data } = (
@@ -375,13 +375,13 @@ class NuosDevice extends withAPI(Device) {
     return null
   }
 
-  private async updateSettings(): Promise<boolean> {
+  async #updateSettings(): Promise<boolean> {
     if (Object.keys(this.#postSettings).length) {
       try {
         const { success } = (
           await this.apiPlantSettings(this.#id, this.#postSettings)
         ).data
-        await this.setPlanSettings(success)
+        await this.#setPlanSettings(success)
         return success
       } catch (error: unknown) {
         // Pass
@@ -390,7 +390,7 @@ class NuosDevice extends withAPI(Device) {
     return false
   }
 
-  private async setPlanSettings(success: boolean): Promise<void> {
+  async #setPlanSettings(success: boolean): Promise<void> {
     if (success) {
       if (this.#postSettings.SlpAntilegionellaOnOff) {
         await this.setCapabilityValue(
@@ -408,30 +408,30 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  private applySyncToDevice(): void {
+  #applySyncToDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.updateSettings()
-        await this.sync(true)
+        await this.#updateSettings()
+        await this.#sync(true)
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),
     )
   }
 
-  private applySyncFromDevice(): void {
+  #applySyncFromDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.sync()
+        await this.#sync()
       },
       Duration.fromObject({ minutes: 1 }).as('milliseconds'),
     )
   }
 
-  private clearSync(): void {
+  #clearSync(): void {
     this.homey.clearTimeout(this.#syncTimeout)
   }
 
-  private async updateTargetTemperatureMinMax(
+  async #updateTargetTemperatureMinMax(
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
@@ -448,7 +448,7 @@ class NuosDevice extends withAPI(Device) {
     await this.setWarning(this.homey.__('warnings.settings'))
   }
 
-  private async plantMetering(): Promise<void> {
+  async #plantMetering(): Promise<void> {
     try {
       const { data } = await this.apiPlantMetering(this.#id)
       const energyHpData: HistogramData | undefined = getEnergyData(
@@ -459,11 +459,11 @@ class NuosDevice extends withAPI(Device) {
         data,
         'DhwResistor',
       )
-      await this.setPowerValues(
+      await this.#setPowerValues(
         getPower(energyHpData),
         getPower(energyResistorData),
       )
-      await this.setEnergyValues(
+      await this.#setEnergyValues(
         getEnergy(energyHpData),
         getEnergy(energyResistorData),
       )
@@ -472,16 +472,13 @@ class NuosDevice extends withAPI(Device) {
     }
   }
 
-  private async setPowerValues(
-    powerHp: number,
-    powerResistor: number,
-  ): Promise<void> {
+  async #setPowerValues(powerHp: number, powerResistor: number): Promise<void> {
     await this.setCapabilityValue('measure_power', powerHp + powerResistor)
     await this.setCapabilityValue('measure_power.hp', powerHp)
     await this.setCapabilityValue('measure_power.resistor', powerResistor)
   }
 
-  private async setEnergyValues(
+  async #setEnergyValues(
     energyHp: number,
     energyResistor: number,
   ): Promise<void> {

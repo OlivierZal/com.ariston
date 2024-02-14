@@ -17,7 +17,7 @@ export = class NuosDriver extends withAPI(Driver) {
 
   // eslint-disable-next-line @typescript-eslint/require-await
   public async onInit(): Promise<void> {
-    this.registerRunListeners()
+    this.#registerRunListeners()
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await
@@ -28,7 +28,7 @@ export = class NuosDriver extends withAPI(Driver) {
     )
     session.setHandler(
       'list_devices',
-      async (): Promise<DeviceDetails[]> => this.discoverDevices(),
+      async (): Promise<DeviceDetails[]> => this.#discoverDevices(),
     )
   }
 
@@ -40,7 +40,7 @@ export = class NuosDriver extends withAPI(Driver) {
     )
   }
 
-  private async discoverDevices(): Promise<DeviceDetails[]> {
+  async #discoverDevices(): Promise<DeviceDetails[]> {
     try {
       return (
         (await this.apiPlants()).data
@@ -53,7 +53,7 @@ export = class NuosDriver extends withAPI(Driver) {
     }
   }
 
-  private registerRunListeners(): void {
+  #registerRunListeners(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ;(this.manifest.capabilities as (keyof Capabilities)[]).forEach(
       (capability: keyof Capabilities) => {

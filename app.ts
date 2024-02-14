@@ -46,11 +46,11 @@ export = class AristonApp extends withAPI(App) {
 
   public async login(
     { password, username }: LoginCredentials = {
-      password: this.getHomeySetting('password') ?? '',
-      username: this.getHomeySetting('username') ?? '',
+      password: this.#getHomeySetting('password') ?? '',
+      username: this.#getHomeySetting('username') ?? '',
     },
   ): Promise<boolean> {
-    this.clearLoginRefresh()
+    this.#clearLoginRefresh()
     if (username && password) {
       try {
         const { config, data } = await this.apiLogin({
@@ -59,9 +59,9 @@ export = class AristonApp extends withAPI(App) {
           rememberMe: true,
         })
         if (data.ok && config.jar) {
-          this.setHomeySettings({ password, username })
-          this.setCookieExpiration(config.jar)
-          this.refreshLogin()
+          this.#setHomeySettings({ password, username })
+          this.#setCookieExpiration(config.jar)
+          this.#refreshLogin()
         }
         return data.ok
       } catch (error: unknown) {
@@ -71,8 +71,8 @@ export = class AristonApp extends withAPI(App) {
     return false
   }
 
-  private refreshLogin(): void {
-    const expires: string = this.getHomeySetting('expires') ?? ''
+  #refreshLogin(): void {
+    const expires: string = this.#getHomeySetting('expires') ?? ''
     const ms: number = DateTime.fromISO(expires)
       .minus({ days: 1 })
       .diffNow()
@@ -87,28 +87,28 @@ export = class AristonApp extends withAPI(App) {
     }
   }
 
-  private clearLoginRefresh(): void {
+  #clearLoginRefresh(): void {
     this.homey.clearTimeout(this.#loginTimeout)
   }
 
-  private getHomeySetting<K extends keyof HomeySettings>(
+  #getHomeySetting<K extends keyof HomeySettings>(
     setting: K,
   ): HomeySettings[K] {
     return this.homey.settings.get(setting) as HomeySettings[K]
   }
 
-  private setHomeySettings(settings: Partial<HomeySettings>): void {
+  #setHomeySettings(settings: Partial<HomeySettings>): void {
     Object.entries(settings)
       .filter(
         ([setting, value]: [string, ValueOf<HomeySettings>]) =>
-          value !== this.getHomeySetting(setting as keyof HomeySettings),
+          value !== this.#getHomeySetting(setting as keyof HomeySettings),
       )
       .forEach(([setting, value]: [string, ValueOf<HomeySettings>]) => {
         this.homey.settings.set(setting, value)
       })
   }
 
-  private setCookieExpiration(jar: CookieJar): void {
+  #setCookieExpiration(jar: CookieJar): void {
     jar.getCookies(DOMAIN, (error, cookies): void => {
       if (error) {
         this.error(error.message)
@@ -118,7 +118,7 @@ export = class AristonApp extends withAPI(App) {
         (cookie: Cookie) => cookie.key === '.AspNet.ApplicationCookie',
       )
       if (aspNetCookie) {
-        this.setHomeySettings({ expires: String(aspNetCookie.expires) })
+        this.#setHomeySettings({ expires: String(aspNetCookie.expires) })
       }
     })
   }
