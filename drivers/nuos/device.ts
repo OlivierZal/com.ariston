@@ -20,6 +20,7 @@ import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
 import withAPI from '../../mixins/withAPI'
 
+const DAYS_1 = 1
 const DEFAULT_0 = 0
 const DEFAULT_POST_DATA: PostData = { plantData: {}, viewModel: {} }
 const ENERGY_REFRESH_HOURS = 2
@@ -33,7 +34,11 @@ const convertToMode = (value: boolean): Mode =>
   value ? Mode.auto : Mode.manual
 
 const convertToDate = (days: number): string | null =>
-  days ? DateTime.now().plus({ days }).toISODate() : null
+  days
+    ? DateTime.now()
+        .plus({ days: days - DAYS_1 })
+        .toISODate()
+    : null
 
 const getEnergyData = (
   data: ReportData,
@@ -348,13 +353,15 @@ class NuosDevice extends withAPI(Device) {
     await this.setCapabilityValue('target_temperature', plantData.comfortTemp)
     await this.setCapabilityValue(
       'vacation',
-      plantData.holidayUntil === null
-        ? '0'
-        : String(
-            Math.ceil(
-              DateTime.fromISO(plantData.holidayUntil).diffNow('days').days,
+      String(
+        plantData.holidayUntil === null
+          ? DEFAULT_0
+          : Math.ceil(
+              DateTime.fromISO(plantData.holidayUntil)
+                .plus({ days: 1 })
+                .diffNow('days').days,
             ),
-          ),
+      ),
     )
   }
 
