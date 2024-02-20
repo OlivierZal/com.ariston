@@ -136,6 +136,7 @@ export default class AristonAPI {
       this.#logger(
         'Login refresh will run in',
         Math.floor(interval / MS_PER_DAY),
+        'days',
       )
       return true
     }
@@ -242,7 +243,8 @@ export default class AristonAPI {
         (cookie: Cookie) => cookie.key === '.AspNet.ApplicationCookie',
       )
       if (aspNetCookie) {
-        this.#settingManager.set('expires', String(aspNetCookie.expires))
+        const expiresDate: Date = new Date(String(aspNetCookie.expires))
+        this.#settingManager.set('expires', expiresDate.toISOString())
       }
     })
   }
