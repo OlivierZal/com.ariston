@@ -4,13 +4,14 @@ import type {
   FlowArgs,
   LoginCredentials,
 } from '../../types/types'
+import type AristonAPI from '../../lib/AristonAPI'
 import type AristonApp from '../../app'
 import { Driver } from 'homey'
 import type PairSession from 'homey/lib/PairSession'
 import { WheType } from '../../types/AristonAPITypes'
 
 export = class NuosDriver extends Driver {
-  readonly #app: AristonApp = this.homey.app as AristonApp
+  readonly #aristonAPI: AristonAPI = (this.homey.app as AristonApp).aristonAPI
 
   readonly #deviceType: WheType = WheType.nuos
 
@@ -43,7 +44,7 @@ export = class NuosDriver extends Driver {
     if (username && password) {
       try {
         return (
-          await this.#app.aristonAPI.login({
+          await this.#aristonAPI.login({
             email: username,
             password,
             rememberMe: true,
@@ -59,7 +60,7 @@ export = class NuosDriver extends Driver {
   async #discoverDevices(): Promise<DeviceDetails[]> {
     try {
       return (
-        (await this.#app.aristonAPI.plants()).data
+        (await this.#aristonAPI.plants()).data
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           .filter(({ wheType }) => wheType === this.#deviceType)
           .map(({ gw, name }): DeviceDetails => ({ data: { id: gw }, name }))

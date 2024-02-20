@@ -17,6 +17,7 @@ import {
   type ReportData,
   type Switch,
 } from '../../types/AristonAPITypes'
+import type AristonAPI from '../../lib/AristonAPI'
 import type AristonApp from '../../app'
 import { Device } from 'homey'
 import type NuosDriver from './driver'
@@ -84,7 +85,7 @@ class NuosDevice extends Device {
 
   #syncTimeout!: NodeJS.Timeout
 
-  readonly #app: AristonApp = this.homey.app as AristonApp
+  readonly #aristonAPI: AristonAPI = (this.homey.app as AristonApp).aristonAPI
 
   readonly #id: string = (this.getData() as DeviceDetails['data']).id
 
@@ -378,7 +379,7 @@ class NuosDevice extends Device {
     if (!post || Object.keys(this.#postData.viewModel).length) {
       try {
         const { data } = (
-          await this.#app.aristonAPI.plantData(
+          await this.#aristonAPI.plantData(
             this.#id,
             post ? this.#postData : null,
           )
@@ -398,7 +399,7 @@ class NuosDevice extends Device {
     if (Object.keys(this.#postSettings).length) {
       try {
         const { success } = (
-          await this.#app.aristonAPI.plantSettings(this.#id, this.#postSettings)
+          await this.#aristonAPI.plantSettings(this.#id, this.#postSettings)
         ).data
         await this.#setPlanSettings(success)
         return success
@@ -469,7 +470,7 @@ class NuosDevice extends Device {
 
   async #plantMetering(): Promise<void> {
     try {
-      const { data } = await this.#app.aristonAPI.plantMetering(this.#id)
+      const { data } = await this.#aristonAPI.plantMetering(this.#id)
       const energyHpData: HistogramData | undefined = getEnergyData(
         data,
         'DhwHp',
