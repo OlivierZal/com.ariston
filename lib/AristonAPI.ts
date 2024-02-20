@@ -174,7 +174,7 @@ export default class AristonAPI {
     this.#logger(String(new APICallResponseData(response)))
     if (
       // @ts-expect-error: `axios` is partially typed
-      response.headers.hasContentType('application/json') === false &&
+      (response.headers.hasContentType('application/json') as boolean) &&
       this.#retry &&
       response.config.url !== LOGIN_URL
     ) {
