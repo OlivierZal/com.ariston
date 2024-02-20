@@ -1,7 +1,13 @@
+import type {
+  Capabilities,
+  CapabilityOptionsEntries,
+  DeviceDetails,
+  Settings,
+  TargetTemperatureOptions,
+  ValueOf,
+} from '../../types/types'
+import { DateTime, Duration } from 'luxon'
 import {
-  type Capabilities,
-  type CapabilityOptionsEntries,
-  type DeviceDetails,
   type GetData,
   type HistogramData,
   Mode,
@@ -9,16 +15,12 @@ import {
   type PostData,
   type PostSettings,
   type ReportData,
-  type Settings,
   type Switch,
-  type TargetTemperatureOptions,
-  type ValueOf,
-} from '../../types'
-import { DateTime, Duration } from 'luxon'
+} from '../../types/AristonAPITypes'
+import type AristonApp from '../../app'
 import { Device } from 'homey'
 import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
-import withAPI from '../../mixins/withAPI'
 
 const DAYS_1 = 1
 const DEFAULT_0 = 0
@@ -73,7 +75,7 @@ const getPower = (energyData: HistogramData | undefined): number => {
 }
 
 @addToLogs('getName()')
-class NuosDevice extends withAPI(Device) {
+class NuosDevice extends Device {
   public declare driver: NuosDriver
 
   #postData: PostData = DEFAULT_POST_DATA
@@ -81,6 +83,8 @@ class NuosDevice extends withAPI(Device) {
   #postSettings: PostSettings = {}
 
   #syncTimeout!: NodeJS.Timeout
+
+  readonly #app: AristonApp = this.homey.app as AristonApp
 
   readonly #id: string = (this.getData() as DeviceDetails['data']).id
 
@@ -142,7 +146,12 @@ class NuosDevice extends withAPI(Device) {
   }
 
   public onDeleted(): void {
-    this.#clearSync()
+    this.homey.clearTimeout(this.#syncTimeout)
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async onUninit(): Promise<void> {
+    this.onDeleted()
   }
 
   public async addCapability(capability: string): Promise<void> {
@@ -369,7 +378,10 @@ class NuosDevice extends withAPI(Device) {
     if (!post || Object.keys(this.#postData.viewModel).length) {
       try {
         const { data } = (
-          await this.apiPlantData(this.#id, post ? this.#postData : null)
+          await this.#app.aristonAPI.plantData(
+            this.#id,
+            post ? this.#postData : null,
+          )
         ).data
         if (post) {
           this.#postData = DEFAULT_POST_DATA
@@ -386,7 +398,7 @@ class NuosDevice extends withAPI(Device) {
     if (Object.keys(this.#postSettings).length) {
       try {
         const { success } = (
-          await this.apiPlantSettings(this.#id, this.#postSettings)
+          await this.#app.aristonAPI.plantSettings(this.#id, this.#postSettings)
         ).data
         await this.#setPlanSettings(success)
         return success
@@ -457,7 +469,7 @@ class NuosDevice extends withAPI(Device) {
 
   async #plantMetering(): Promise<void> {
     try {
-      const { data } = await this.apiPlantMetering(this.#id)
+      const { data } = await this.#app.aristonAPI.plantMetering(this.#id)
       const energyHpData: HistogramData | undefined = getEnergyData(
         data,
         'DhwHp',

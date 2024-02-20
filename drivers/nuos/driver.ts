@@ -1,16 +1,15 @@
-import {
-  type Capabilities,
-  type DeviceDetails,
-  type FlowArgs,
-  type LoginCredentials,
-  WheType,
-} from '../../types'
+import type {
+  Capabilities,
+  DeviceDetails,
+  FlowArgs,
+  LoginCredentials,
+} from '../../types/types'
 import type AristonApp from '../../app'
 import { Driver } from 'homey'
 import type PairSession from 'homey/lib/PairSession'
-import withAPI from '../../mixins/withAPI'
+import { WheType } from '../../types/AristonAPITypes'
 
-export = class NuosDriver extends withAPI(Driver) {
+export = class NuosDriver extends Driver {
   readonly #app: AristonApp = this.homey.app as AristonApp
 
   readonly #deviceType: WheType = WheType.nuos
@@ -24,7 +23,7 @@ export = class NuosDriver extends withAPI(Driver) {
   public async onPair(session: PairSession): Promise<void> {
     session.setHandler(
       'login',
-      async (data: LoginCredentials): Promise<boolean> => this.#app.login(data),
+      async (data: LoginCredentials): Promise<boolean> => this.#login(data),
     )
     session.setHandler(
       'list_devices',
@@ -36,14 +35,31 @@ export = class NuosDriver extends withAPI(Driver) {
   public async onRepair(session: PairSession): Promise<void> {
     session.setHandler(
       'login',
-      async (data: LoginCredentials): Promise<boolean> => this.#app.login(data),
+      async (data: LoginCredentials): Promise<boolean> => this.#login(data),
     )
+  }
+
+  async #login({ password, username }: LoginCredentials): Promise<boolean> {
+    if (username && password) {
+      try {
+        return (
+          await this.#app.aristonAPI.login({
+            email: username,
+            password,
+            rememberMe: true,
+          })
+        ).data.ok
+      } catch (error: unknown) {
+        // Pass
+      }
+    }
+    return false
   }
 
   async #discoverDevices(): Promise<DeviceDetails[]> {
     try {
       return (
-        (await this.apiPlants()).data
+        (await this.#app.aristonAPI.plants()).data
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           .filter(({ wheType }) => wheType === this.#deviceType)
           .map(({ gw, name }): DeviceDetails => ({ data: { id: gw }, name }))

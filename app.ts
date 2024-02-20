@@ -1,125 +1,21 @@
-import { type Cookie, CookieJar } from 'tough-cookie'
-import { DateTime, Settings as LuxonSettings } from 'luxon'
-import type { HomeySettings, LoginCredentials, ValueOf } from './types'
 import { App } from 'homey'
-import axios from 'axios'
-import withAPI from './mixins/withAPI'
-import { wrapper } from 'axios-cookiejar-support'
+import AristonAPI from './lib/AristonAPI'
+import { Settings as LuxonSettings } from 'luxon'
 
-const DOMAIN = 'https://www.ariston-net.remotethermo.com'
-const MAX_INT32 = 2147483647
-const NO_TIME_DIFF = 0
-
-wrapper(axios)
-axios.defaults.baseURL = DOMAIN
-axios.defaults.jar = new CookieJar()
-axios.defaults.withCredentials = true
-
-export = class AristonApp extends withAPI(App) {
-  #retry = true
-
-  #loginTimeout!: NodeJS.Timeout
-
-  #retryTimeout!: NodeJS.Timeout
-
-  public get retry(): boolean {
-    return this.#retry
-  }
-
-  public set retry(value: boolean) {
-    this.#retry = value
-  }
-
-  // eslint-disable-next-line @typescript-eslint/member-ordering
-  public get retryTimeout(): NodeJS.Timeout {
-    return this.#retryTimeout
-  }
-
-  public set retryTimeout(value: NodeJS.Timeout) {
-    this.#retryTimeout = value
-  }
+export = class AristonApp extends App {
+  public readonly aristonAPI: AristonAPI = new AristonAPI(
+    this.homey.settings,
+    this.log.bind(this),
+    this.error.bind(this),
+  )
 
   public async onInit(): Promise<void> {
     LuxonSettings.defaultZone = this.homey.clock.getTimezone()
-    await this.login()
+    await this.aristonAPI.planRefreshLogin()
   }
 
-  public async login(
-    { password, username }: LoginCredentials = {
-      password: this.#getHomeySetting('password') ?? '',
-      username: this.#getHomeySetting('username') ?? '',
-    },
-  ): Promise<boolean> {
-    this.#clearLoginRefresh()
-    if (username && password) {
-      try {
-        const { config, data } = await this.apiLogin({
-          email: username,
-          password,
-          rememberMe: true,
-        })
-        if (data.ok && config.jar) {
-          this.#setHomeySettings({ password, username })
-          this.#setCookieExpiration(config.jar)
-          this.#refreshLogin()
-        }
-        return data.ok
-      } catch (error: unknown) {
-        // Pass
-      }
-    }
-    return false
-  }
-
-  #refreshLogin(): void {
-    const expires: string = this.#getHomeySetting('expires') ?? ''
-    const ms: number = DateTime.fromISO(expires)
-      .minus({ days: 1 })
-      .diffNow()
-      .as('milliseconds')
-    if (ms > NO_TIME_DIFF) {
-      this.#loginTimeout = this.homey.setTimeout(
-        async (): Promise<void> => {
-          await this.login()
-        },
-        Math.min(ms, MAX_INT32),
-      )
-    }
-  }
-
-  #clearLoginRefresh(): void {
-    this.homey.clearTimeout(this.#loginTimeout)
-  }
-
-  #getHomeySetting<K extends keyof HomeySettings>(
-    setting: K,
-  ): HomeySettings[K] {
-    return this.homey.settings.get(setting) as HomeySettings[K]
-  }
-
-  #setHomeySettings(settings: Partial<HomeySettings>): void {
-    Object.entries(settings)
-      .filter(
-        ([setting, value]: [string, ValueOf<HomeySettings>]) =>
-          value !== this.#getHomeySetting(setting as keyof HomeySettings),
-      )
-      .forEach(([setting, value]: [string, ValueOf<HomeySettings>]) => {
-        this.homey.settings.set(setting, value)
-      })
-  }
-
-  #setCookieExpiration(jar: CookieJar): void {
-    jar.getCookies(DOMAIN, (error, cookies): void => {
-      if (error) {
-        this.error(error.message)
-        return
-      }
-      const aspNetCookie: Cookie | undefined = cookies.find(
-        (cookie: Cookie) => cookie.key === '.AspNet.ApplicationCookie',
-      )
-      if (aspNetCookie) {
-        this.#setHomeySettings({ expires: String(aspNetCookie.expires) })
-      }
-    })
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async onUninit(): Promise<void> {
+    this.aristonAPI.clearLoginRefresh()
   }
 }
