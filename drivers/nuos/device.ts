@@ -233,7 +233,7 @@ class NuosDevice extends Device {
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
-    this.#clearSync()
+    this.homey.clearTimeout(this.#syncTimeout)
     const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
@@ -445,10 +445,6 @@ class NuosDevice extends Device {
       },
       Duration.fromObject({ minutes: 1 }).as('milliseconds'),
     )
-  }
-
-  #clearSync(): void {
-    this.homey.clearTimeout(this.#syncTimeout)
   }
 
   async #updateTargetTemperatureMinMax(
