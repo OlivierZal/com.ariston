@@ -220,11 +220,7 @@ export default class AristonAPI {
     if (username && password) {
       try {
         return (
-          await this.login({
-            email: username,
-            password,
-            rememberMe: true,
-          })
+          await this.login({ email: username, password, rememberMe: true })
         ).data.ok
       } catch (error: unknown) {
         // Pass
