@@ -215,11 +215,11 @@ class NuosDevice extends Device {
     if (changedKeys.includes('max') && typeof newSettings.max !== 'undefined') {
       this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
-    if (Object.keys(this.#postSettings).length) {
-      await this.#plantSettings()
-      if (changedKeys.some((key: string) => ['min', 'max'].includes(key))) {
-        await this.#updateTargetTemperatureMinMax(newSettings)
-      }
+    if (
+      (await this.#plantSettings()) &&
+      changedKeys.some((key: string) => ['min', 'max'].includes(key))
+    ) {
+      await this.#updateTargetTemperatureMinMax(newSettings)
     }
   }
 
