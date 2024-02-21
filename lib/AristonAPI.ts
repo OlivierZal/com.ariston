@@ -36,9 +36,6 @@ type Logger = (...args: any[]) => void
 
 const DOMAIN = 'https://www.ariston-net.remotethermo.com'
 const LOGIN_URL = '/R2/Account/Login'
-const MAX_INT32 = 2147483647
-const MS_PER_DAY = 86400000
-const NO_TIME_DIFF = 0
 
 const throwIfRequested = (error: unknown, raise: boolean): void => {
   if (raise) {
@@ -47,8 +44,6 @@ const throwIfRequested = (error: unknown, raise: boolean): void => {
 }
 
 export default class AristonAPI {
-  #loginTimeout!: NodeJS.Timeout
-
   #retry = true
 
   #retryTimeout!: NodeJS.Timeout
@@ -98,11 +93,6 @@ export default class AristonAPI {
       }
     }
     return false
-  }
-
-  public clearLoginRefresh(): void {
-    clearTimeout(this.#loginTimeout)
-    this.#logger('Login refresh has been paused')
   }
 
   public async login(postData: LoginPostData): Promise<{ data: LoginData }> {
@@ -166,9 +156,13 @@ export default class AristonAPI {
     return Promise.reject(error)
   }
 
-  #handleRequest(
+  async #handleRequest(
     config: InternalAxiosRequestConfig,
-  ): InternalAxiosRequestConfig {
+  ): Promise<InternalAxiosRequestConfig> {
+    const expires: string = this.#settingManager.get('expires') ?? ''
+    if (expires && DateTime.fromISO(expires) < DateTime.now()) {
+      await this.applyLogin()
+    }
     this.#logger(String(new APICallRequestData(config)))
     return config
   }
@@ -188,7 +182,6 @@ export default class AristonAPI {
     }
     if (response.config.jar) {
       this.#setCookieExpiration(response.config.jar)
-      await this.#planRefreshLogin()
     }
     return response
   }
@@ -202,30 +195,6 @@ export default class AristonAPI {
       },
       Duration.fromObject({ minutes: 1 }).as('milliseconds'),
     )
-  }
-
-  async #planRefreshLogin(): Promise<boolean> {
-    this.clearLoginRefresh()
-    const expires: string = this.#settingManager.get('expires') ?? ''
-    const ms: number = DateTime.fromISO(expires)
-      .minus({ days: 1 })
-      .diffNow()
-      .as('milliseconds')
-    if (ms > NO_TIME_DIFF) {
-      const interval: number = Math.min(ms, MAX_INT32)
-      this.#loginTimeout = setTimeout((): void => {
-        this.applyLogin().catch((error: Error) => {
-          this.#errorLogger(error.message)
-        })
-      }, interval)
-      this.#logger(
-        'Login refresh will run in',
-        Math.floor(interval / MS_PER_DAY),
-        'days',
-      )
-      return true
-    }
-    return this.applyLogin()
   }
 
   #setCookieExpiration(jar: CookieJar): void {
@@ -246,8 +215,9 @@ export default class AristonAPI {
 
   #setupAxiosInterceptors(): void {
     this.#api.interceptors.request.use(
-      (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig =>
-        this.#handleRequest(config),
+      async (
+        config: InternalAxiosRequestConfig,
+      ): Promise<InternalAxiosRequestConfig> => this.#handleRequest(config),
       async (error: AxiosError): Promise<AxiosError> =>
         this.#handleError(error),
     )
