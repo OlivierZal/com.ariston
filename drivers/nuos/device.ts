@@ -89,123 +89,9 @@ class NuosDevice extends Device {
 
   readonly #id: string = (this.getData() as DeviceDetails['data']).id
 
-  public async onInit(): Promise<void> {
-    await this.setWarning(null)
-    await this.#handleCapabilities()
-    this.#registerCapabilityListeners()
-    await this.#sync()
-    await this.#plantMetering()
-    const now: DateTime = DateTime.now()
-    this.homey.setTimeout(
-      async (): Promise<void> => {
-        await this.#plantMetering()
-        this.homey.setInterval(
-          async (): Promise<void> => {
-            await this.#plantMetering()
-          },
-          Duration.fromObject({ hours: ENERGY_REFRESH_HOURS }).as(
-            'milliseconds',
-          ),
-        )
-      },
-      now
-        .plus({
-          hours: now.hour % ENERGY_REFRESH_HOURS || ENERGY_REFRESH_HOURS,
-        })
-        .set({ millisecond: 0, minute: 1, second: 0 })
-        .diffNow()
-        .as('milliseconds'),
-    )
-  }
-
-  public async onSettings({
-    newSettings,
-    changedKeys,
-  }: {
-    newSettings: Settings
-    changedKeys: string[]
-  }): Promise<void> {
-    if (
-      changedKeys.includes('always_on') &&
-      newSettings.always_on === true &&
-      !this.getCapabilityValue('onoff')
-    ) {
-      await this.onCapability('onoff', true)
-    }
-    if (changedKeys.includes('min') && typeof newSettings.min !== 'undefined') {
-      this.#postSettings.SlpMinSetpointTemperature = { new: newSettings.min }
-    }
-    if (changedKeys.includes('max') && typeof newSettings.max !== 'undefined') {
-      this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
-    }
-    if (Object.keys(this.#postSettings).length) {
-      await this.#updateSettings()
-      if (changedKeys.some((key: string) => ['min', 'max'].includes(key))) {
-        await this.#updateTargetTemperatureMinMax(newSettings)
-      }
-    }
-  }
-
-  public onDeleted(): void {
-    this.homey.clearTimeout(this.#syncTimeout)
-  }
-
-  // eslint-disable-next-line @typescript-eslint/require-await
-  public async onUninit(): Promise<void> {
-    this.onDeleted()
-  }
-
   public async addCapability(capability: string): Promise<void> {
     if (!this.hasCapability(capability)) {
       await super.addCapability(capability)
-    }
-  }
-
-  public async removeCapability(capability: string): Promise<void> {
-    if (this.hasCapability(capability)) {
-      await super.removeCapability(capability)
-    }
-  }
-
-  public getCapabilityValue<K extends keyof Capabilities>(
-    capability: K,
-  ): Capabilities[K] {
-    return super.getCapabilityValue(capability) as Capabilities[K]
-  }
-
-  public async setCapabilityValue<K extends keyof Capabilities>(
-    capability: K,
-    value: Capabilities[K],
-  ): Promise<void> {
-    if (value !== this.getCapabilityValue(capability)) {
-      await super.setCapabilityValue(capability, value)
-      this.log('Capability', capability, 'is', value)
-    }
-  }
-
-  public getSetting<K extends keyof Settings>(
-    setting: K,
-  ): NonNullable<Settings[K]> {
-    return super.getSetting(setting) as NonNullable<Settings[K]>
-  }
-
-  public async setSettings(settings: Settings): Promise<void> {
-    const newSettings: Settings = Object.fromEntries(
-      Object.entries(settings).filter(
-        ([key, value]: [string, ValueOf<Settings>]) =>
-          value !== this.getSetting(key as keyof Settings),
-      ),
-    )
-    if (!Object.keys(newSettings).length) {
-      return
-    }
-    await super.setSettings(newSettings)
-    if (
-      ['min', 'max'].some((key: string) =>
-        Object.keys(newSettings).includes(key),
-      )
-    ) {
-      await this.#updateTargetTemperatureMinMax()
     }
   }
 
@@ -215,18 +101,16 @@ class NuosDevice extends Device {
     return super.getCapabilityOptions(capability) as CapabilityOptionsEntries[K]
   }
 
-  public async setCapabilityOptions<K extends keyof CapabilityOptionsEntries>(
+  public getCapabilityValue<K extends keyof Capabilities>(
     capability: K,
-    options: CapabilityOptionsEntries[K],
-  ): Promise<void> {
-    await super.setCapabilityOptions(capability, options)
+  ): Capabilities[K] {
+    return super.getCapabilityValue(capability) as Capabilities[K]
   }
 
-  public async setWarning(warning: string | null): Promise<void> {
-    if (warning !== null) {
-      await super.setWarning(warning)
-    }
-    await super.setWarning(null)
+  public getSetting<K extends keyof Settings>(
+    setting: K,
+  ): NonNullable<Settings[K]> {
+    return super.getSetting(setting) as NonNullable<Settings[K]>
   }
 
   public async onCapability<K extends keyof Capabilities>(
@@ -278,6 +162,141 @@ class NuosDevice extends Device {
     this.#applySyncToDevice()
   }
 
+  public onDeleted(): void {
+    this.homey.clearTimeout(this.#syncTimeout)
+  }
+
+  public async onInit(): Promise<void> {
+    await this.setWarning(null)
+    await this.#handleCapabilities()
+    this.#registerCapabilityListeners()
+    await this.#sync()
+    await this.#plantMetering()
+    const now: DateTime = DateTime.now()
+    this.homey.setTimeout(
+      async (): Promise<void> => {
+        await this.#plantMetering()
+        this.homey.setInterval(
+          async (): Promise<void> => {
+            await this.#plantMetering()
+          },
+          Duration.fromObject({ hours: ENERGY_REFRESH_HOURS }).as(
+            'milliseconds',
+          ),
+        )
+      },
+      now
+        .plus({
+          hours: now.hour % ENERGY_REFRESH_HOURS || ENERGY_REFRESH_HOURS,
+        })
+        .set({ millisecond: 0, minute: 1, second: 0 })
+        .diffNow()
+        .as('milliseconds'),
+    )
+  }
+
+  public async onSettings({
+    changedKeys,
+    newSettings,
+  }: {
+    changedKeys: string[]
+    newSettings: Settings
+  }): Promise<void> {
+    if (
+      changedKeys.includes('always_on') &&
+      newSettings.always_on === true &&
+      !this.getCapabilityValue('onoff')
+    ) {
+      await this.onCapability('onoff', true)
+    }
+    if (changedKeys.includes('min') && typeof newSettings.min !== 'undefined') {
+      this.#postSettings.SlpMinSetpointTemperature = { new: newSettings.min }
+    }
+    if (changedKeys.includes('max') && typeof newSettings.max !== 'undefined') {
+      this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
+    }
+    if (Object.keys(this.#postSettings).length) {
+      await this.#plantSettings()
+      if (changedKeys.some((key: string) => ['min', 'max'].includes(key))) {
+        await this.#updateTargetTemperatureMinMax(newSettings)
+      }
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/require-await
+  public async onUninit(): Promise<void> {
+    this.onDeleted()
+  }
+
+  public async removeCapability(capability: string): Promise<void> {
+    if (this.hasCapability(capability)) {
+      await super.removeCapability(capability)
+    }
+  }
+
+  public async setCapabilityOptions<K extends keyof CapabilityOptionsEntries>(
+    capability: K,
+    options: CapabilityOptionsEntries[K],
+  ): Promise<void> {
+    await super.setCapabilityOptions(capability, options)
+  }
+
+  public async setCapabilityValue<K extends keyof Capabilities>(
+    capability: K,
+    value: Capabilities[K],
+  ): Promise<void> {
+    if (value !== this.getCapabilityValue(capability)) {
+      await super.setCapabilityValue(capability, value)
+      this.log('Capability', capability, 'is', value)
+    }
+  }
+
+  public async setSettings(settings: Settings): Promise<void> {
+    const newSettings: Settings = Object.fromEntries(
+      Object.entries(settings).filter(
+        ([key, value]: [string, ValueOf<Settings>]) =>
+          value !== this.getSetting(key as keyof Settings),
+      ),
+    )
+    if (!Object.keys(newSettings).length) {
+      return
+    }
+    await super.setSettings(newSettings)
+    if (
+      ['min', 'max'].some((key: string) =>
+        Object.keys(newSettings).includes(key),
+      )
+    ) {
+      await this.#updateTargetTemperatureMinMax()
+    }
+  }
+
+  public async setWarning(warning: string | null): Promise<void> {
+    if (warning !== null) {
+      await super.setWarning(warning)
+    }
+    await super.setWarning(null)
+  }
+
+  #applySyncFromDevice(): void {
+    this.#syncTimeout = this.homey.setTimeout(
+      async (): Promise<void> => {
+        await this.#sync()
+      },
+      Duration.fromObject({ minutes: 1 }).as('milliseconds'),
+    )
+  }
+
+  #applySyncToDevice(): void {
+    this.#syncTimeout = this.homey.setTimeout(
+      async (): Promise<void> => {
+        await this.#plantSettings()
+        await this.#sync(true)
+      },
+      Duration.fromObject({ seconds: 1 }).as('milliseconds'),
+    )
+  }
+
   async #handleCapabilities(): Promise<void> {
     const requiredCapabilities: string[] =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
@@ -299,6 +318,68 @@ class NuosDevice extends Device {
       }, Promise.resolve())
   }
 
+  async #plantData(post = false): Promise<GetData['data'] | null> {
+    if (!post || Object.keys(this.#postData.viewModel).length) {
+      try {
+        const { data } = (
+          await this.#aristonAPI.plantData(
+            this.#id,
+            post ? this.#postData : null,
+          )
+        ).data
+        if (post) {
+          this.#postData = DEFAULT_POST_DATA
+        }
+        return data
+      } catch (error: unknown) {
+        // Pass
+      }
+    }
+    return null
+  }
+
+  async #plantMetering(): Promise<void> {
+    try {
+      const { data } = await this.#aristonAPI.plantMetering(this.#id)
+      const energyHpData: HistogramData | undefined = getEnergyData(
+        data,
+        'DhwHp',
+      )
+      const energyResistorData: HistogramData | undefined = getEnergyData(
+        data,
+        'DhwResistor',
+      )
+      await this.#setPowerValues(
+        getPower(energyHpData),
+        getPower(energyResistorData),
+      )
+      await this.#setEnergyValues(
+        getEnergy(energyHpData),
+        getEnergy(energyResistorData),
+      )
+    } catch (error: unknown) {
+      this.error(error instanceof Error ? error.message : error)
+    }
+  }
+
+  async #plantSettings(): Promise<boolean> {
+    if (Object.keys(this.#postSettings).length) {
+      try {
+        const { success } = (
+          await this.#aristonAPI.plantSettings(this.#id, this.#postSettings)
+        ).data
+        if (success) {
+          await this.#setSettingCapabilityValues()
+          this.#postSettings = {}
+        }
+        return success
+      } catch (error: unknown) {
+        // Pass
+      }
+    }
+    return false
+  }
+
   #registerCapabilityListeners<K extends keyof Capabilities>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ;(this.driver.manifest.capabilities as K[]).forEach((capability: K) => {
@@ -311,43 +392,7 @@ class NuosDevice extends Device {
     })
   }
 
-  async #sync(post = false): Promise<void> {
-    await this.#updateCapabilities(post)
-    this.#applySyncFromDevice()
-  }
-
-  async #updateCapabilities(post: boolean): Promise<void> {
-    const newData: GetData['data'] | null = await this.#plant(post)
-    if (!newData) {
-      return
-    }
-    await this.#setPlantSettingValues(newData.plantSettings)
-    await this.#setPlantDataValues(newData.plantData)
-  }
-
-  async #setPlantSettingValues(
-    plantSettings: GetData['data']['plantSettings'],
-  ): Promise<void> {
-    if (!plantSettings) {
-      return
-    }
-    await this.setCapabilityValue(
-      'onoff.legionella',
-      plantSettings.antilegionellaOnOff,
-    )
-    await this.setCapabilityValue(
-      'onoff.preheating',
-      plantSettings.preHeatingOnOff,
-    )
-    await this.setSettings({
-      max: plantSettings.maxSetpointTemp.value,
-      min: plantSettings.minSetpointTemp.value,
-    })
-  }
-
-  async #setPlantDataValues(
-    plantData: GetData['data']['plantData'],
-  ): Promise<void> {
+  async #setDataValues(plantData: GetData['data']['plantData']): Promise<void> {
     await this.setCapabilityValue('measure_temperature', plantData.waterTemp)
     await this.setCapabilityValue(
       'measure_temperature.required',
@@ -375,76 +420,68 @@ class NuosDevice extends Device {
     )
   }
 
-  async #plant(post = false): Promise<GetData['data'] | null> {
-    if (!post || Object.keys(this.#postData.viewModel).length) {
-      try {
-        const { data } = (
-          await this.#aristonAPI.plantData(
-            this.#id,
-            post ? this.#postData : null,
-          )
-        ).data
-        if (post) {
-          this.#postData = DEFAULT_POST_DATA
-        }
-        return data
-      } catch (error: unknown) {
-        // Pass
-      }
-    }
-    return null
+  async #setEnergyValues(
+    energyHp: number,
+    energyResistor: number,
+  ): Promise<void> {
+    await this.setCapabilityValue('meter_power', energyHp + energyResistor)
+    await this.setCapabilityValue('meter_power.hp', energyHp)
+    await this.setCapabilityValue('meter_power.resistor', energyResistor)
   }
 
-  async #updateSettings(): Promise<boolean> {
-    if (Object.keys(this.#postSettings).length) {
-      try {
-        const { success } = (
-          await this.#aristonAPI.plantSettings(this.#id, this.#postSettings)
-        ).data
-        await this.#setPlanSettings(success)
-        return success
-      } catch (error: unknown) {
-        // Pass
-      }
-    }
-    return false
+  async #setPowerValues(powerHp: number, powerResistor: number): Promise<void> {
+    await this.setCapabilityValue('measure_power', powerHp + powerResistor)
+    await this.setCapabilityValue('measure_power.hp', powerHp)
+    await this.setCapabilityValue('measure_power.resistor', powerResistor)
   }
 
-  async #setPlanSettings(success: boolean): Promise<void> {
-    if (success) {
-      if (this.#postSettings.SlpAntilegionellaOnOff) {
-        await this.setCapabilityValue(
-          'onoff.legionella',
-          Boolean(this.#postSettings.SlpAntilegionellaOnOff.new),
-        )
-      }
-      if (this.#postSettings.SlpPreHeatingOnOff) {
-        await this.setCapabilityValue(
-          'onoff.preheating',
-          Boolean(this.#postSettings.SlpPreHeatingOnOff.new),
-        )
-      }
-      this.#postSettings = {}
+  async #setSettingCapabilityValues(): Promise<void> {
+    if (this.#postSettings.SlpAntilegionellaOnOff) {
+      await this.setCapabilityValue(
+        'onoff.legionella',
+        Boolean(this.#postSettings.SlpAntilegionellaOnOff.new),
+      )
+    }
+    if (this.#postSettings.SlpPreHeatingOnOff) {
+      await this.setCapabilityValue(
+        'onoff.preheating',
+        Boolean(this.#postSettings.SlpPreHeatingOnOff.new),
+      )
     }
   }
 
-  #applySyncToDevice(): void {
-    this.#syncTimeout = this.homey.setTimeout(
-      async (): Promise<void> => {
-        await this.#updateSettings()
-        await this.#sync(true)
-      },
-      Duration.fromObject({ seconds: 1 }).as('milliseconds'),
+  async #setSettingValues(
+    plantSettings: GetData['data']['plantSettings'],
+  ): Promise<void> {
+    if (!plantSettings) {
+      return
+    }
+    await this.setCapabilityValue(
+      'onoff.legionella',
+      plantSettings.antilegionellaOnOff,
     )
+    await this.setCapabilityValue(
+      'onoff.preheating',
+      plantSettings.preHeatingOnOff,
+    )
+    await this.setSettings({
+      max: plantSettings.maxSetpointTemp.value,
+      min: plantSettings.minSetpointTemp.value,
+    })
   }
 
-  #applySyncFromDevice(): void {
-    this.#syncTimeout = this.homey.setTimeout(
-      async (): Promise<void> => {
-        await this.#sync()
-      },
-      Duration.fromObject({ minutes: 1 }).as('milliseconds'),
-    )
+  async #sync(post = false): Promise<void> {
+    await this.#updateCapabilities(post)
+    this.#applySyncFromDevice()
+  }
+
+  async #updateCapabilities(post: boolean): Promise<void> {
+    const data: GetData['data'] | null = await this.#plantData(post)
+    if (!data) {
+      return
+    }
+    await this.#setSettingValues(data.plantSettings)
+    await this.#setDataValues(data.plantData)
   }
 
   async #updateTargetTemperatureMinMax(
@@ -462,45 +499,6 @@ class NuosDevice extends Device {
       ...(typeof min === 'undefined' ? {} : { min }),
     })
     await this.setWarning(this.homey.__('warnings.settings'))
-  }
-
-  async #plantMetering(): Promise<void> {
-    try {
-      const { data } = await this.#aristonAPI.plantMetering(this.#id)
-      const energyHpData: HistogramData | undefined = getEnergyData(
-        data,
-        'DhwHp',
-      )
-      const energyResistorData: HistogramData | undefined = getEnergyData(
-        data,
-        'DhwResistor',
-      )
-      await this.#setPowerValues(
-        getPower(energyHpData),
-        getPower(energyResistorData),
-      )
-      await this.#setEnergyValues(
-        getEnergy(energyHpData),
-        getEnergy(energyResistorData),
-      )
-    } catch (error: unknown) {
-      this.error(error instanceof Error ? error.message : error)
-    }
-  }
-
-  async #setPowerValues(powerHp: number, powerResistor: number): Promise<void> {
-    await this.setCapabilityValue('measure_power', powerHp + powerResistor)
-    await this.setCapabilityValue('measure_power.hp', powerHp)
-    await this.setCapabilityValue('measure_power.resistor', powerResistor)
-  }
-
-  async #setEnergyValues(
-    energyHp: number,
-    energyResistor: number,
-  ): Promise<void> {
-    await this.setCapabilityValue('meter_power', energyHp + energyResistor)
-    await this.setCapabilityValue('meter_power.hp', energyHp)
-    await this.setCapabilityValue('meter_power.resistor', energyResistor)
   }
 }
 

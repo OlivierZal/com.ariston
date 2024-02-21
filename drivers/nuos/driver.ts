@@ -1,14 +1,9 @@
-import type {
-  Capabilities,
-  DeviceDetails,
-  FlowArgs,
-  LoginCredentials,
-} from '../../types/types'
+import type { Capabilities, DeviceDetails, FlowArgs } from '../../types/types'
+import { type LoginCredentials, WheType } from '../../types/AristonAPITypes'
 import type AristonAPI from '../../lib/AristonAPI'
 import type AristonApp from '../../app'
 import { Driver } from 'homey'
 import type PairSession from 'homey/lib/PairSession'
-import { WheType } from '../../types/AristonAPITypes'
 
 export = class NuosDriver extends Driver {
   readonly #aristonAPI: AristonAPI = (this.homey.app as AristonApp).aristonAPI
@@ -40,23 +35,6 @@ export = class NuosDriver extends Driver {
     )
   }
 
-  async #login({ password, username }: LoginCredentials): Promise<boolean> {
-    if (username && password) {
-      try {
-        return (
-          await this.#aristonAPI.login({
-            email: username,
-            password,
-            rememberMe: true,
-          })
-        ).data.ok
-      } catch (error: unknown) {
-        // Pass
-      }
-    }
-    return false
-  }
-
   async #discoverDevices(): Promise<DeviceDetails[]> {
     try {
       return (
@@ -68,6 +46,10 @@ export = class NuosDriver extends Driver {
     } catch (error: unknown) {
       return []
     }
+  }
+
+  async #login({ password, username }: LoginCredentials): Promise<boolean> {
+    return this.#aristonAPI.applyLogin({ password, username })
   }
 
   #registerRunListeners(): void {

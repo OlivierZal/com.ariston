@@ -11,7 +11,7 @@ export = class AristonApp extends App {
 
   public async onInit(): Promise<void> {
     LuxonSettings.defaultZone = this.homey.clock.getTimezone()
-    await this.aristonAPI.attemptAutoLogin()
+    await this.aristonAPI.applyLogin()
   }
 
   // eslint-disable-next-line @typescript-eslint/require-await

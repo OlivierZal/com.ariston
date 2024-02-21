@@ -2,6 +2,7 @@ import type {
   APISettings,
   GetData,
   GetSettings,
+  LoginCredentials,
   LoginData,
   LoginPostData,
   Plant,
@@ -39,6 +40,12 @@ const MAX_INT32 = 2147483647
 const MS_PER_DAY = 86400000
 const NO_TIME_DIFF = 0
 
+const throwIfRequested = (error: unknown, raise: boolean): void => {
+  if (raise) {
+    throw new Error(error instanceof Error ? error.message : String(error))
+  }
+}
+
 export default class AristonAPI {
   #loginTimeout!: NodeJS.Timeout
 
@@ -46,15 +53,15 @@ export default class AristonAPI {
 
   #retryTimeout!: NodeJS.Timeout
 
-  readonly #settingManager: SettingManager
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly #logger: (...args: any[]) => void
+  readonly #api: AxiosInstance
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   readonly #errorLogger: (...args: any[]) => void
 
-  readonly #api: AxiosInstance
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  readonly #logger: (...args: any[]) => void
+
+  readonly #settingManager: SettingManager
 
   public constructor(
     settingManager: SettingManager,
@@ -74,6 +81,30 @@ export default class AristonAPI {
     this.#setupAxiosInterceptors()
   }
 
+  public async applyLogin(
+    { password, username }: LoginCredentials = {
+      password: this.#settingManager.get('password') ?? '',
+      username: this.#settingManager.get('username') ?? '',
+    },
+    raise = false,
+  ): Promise<boolean> {
+    if (username && password) {
+      try {
+        return (
+          await this.login({ email: username, password, rememberMe: true })
+        ).data.ok
+      } catch (error: unknown) {
+        throwIfRequested(error, raise)
+      }
+    }
+    return false
+  }
+
+  public clearLoginRefresh(): void {
+    clearTimeout(this.#loginTimeout)
+    this.#logger('Login refresh has been paused')
+  }
+
   public async login(postData: LoginPostData): Promise<{ data: LoginData }> {
     const response: AxiosResponse<LoginData> = await this.#api.post<LoginData>(
       LOGIN_URL,
@@ -86,10 +117,6 @@ export default class AristonAPI {
       await this.#planRefreshLogin()
     }
     return response
-  }
-
-  public async plants(): Promise<{ data: Plant[] }> {
-    return this.#api.get<Plant[]>('/api/v2/velis/plants')
   }
 
   public async plantData(
@@ -106,6 +133,14 @@ export default class AristonAPI {
     })
   }
 
+  public async plantMetering(id: string): Promise<{ data: ReportData }> {
+    return this.#api.post<ReportData>(`/R2/PlantMetering/GetData/${id}`)
+  }
+
+  public async plants(): Promise<{ data: Plant[] }> {
+    return this.#api.get<Plant[]>('/api/v2/velis/plants')
+  }
+
   public async plantSettings(
     id: string,
     settings: PostSettings,
@@ -116,43 +151,21 @@ export default class AristonAPI {
     )
   }
 
-  public async plantMetering(id: string): Promise<{ data: ReportData }> {
-    return this.#api.post<ReportData>(`/R2/PlantMetering/GetData/${id}`)
-  }
-
-  public async attemptAutoLogin(): Promise<boolean> {
-    const username: string = this.#settingManager.get('username') ?? ''
-    const password: string = this.#settingManager.get('password') ?? ''
-    if (username && password) {
-      try {
-        return (
-          await this.login({ email: username, password, rememberMe: true })
-        ).data.ok
-      } catch (error: unknown) {
-        // Pass
+  async #handleError(error: AxiosError): Promise<AxiosError> {
+    const apiCallData: APICallContextDataWithErrorMessage =
+      createAPICallErrorData(error)
+    this.#errorLogger(String(apiCallData))
+    if (
+      error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
+      this.#retry &&
+      error.config?.url !== LOGIN_URL
+    ) {
+      this.#handleRetry()
+      if ((await this.applyLogin()) && error.config) {
+        return this.#api.request(error.config)
       }
     }
-    return false
-  }
-
-  public clearLoginRefresh(): void {
-    clearTimeout(this.#loginTimeout)
-    this.#logger('Login refresh has been paused')
-  }
-
-  #setupAxiosInterceptors(): void {
-    this.#api.interceptors.request.use(
-      (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig =>
-        this.#handleRequest(config),
-      async (error: AxiosError): Promise<AxiosError> =>
-        this.#handleError(error),
-    )
-    this.#api.interceptors.response.use(
-      async (response: AxiosResponse): Promise<AxiosResponse> =>
-        this.#handleResponse(response),
-      async (error: AxiosError): Promise<AxiosError> =>
-        this.#handleError(error),
-    )
+    return Promise.reject(error)
   }
 
   #handleRequest(
@@ -171,28 +184,11 @@ export default class AristonAPI {
       response.config.url !== LOGIN_URL
     ) {
       this.#handleRetry()
-      if (await this.attemptAutoLogin()) {
+      if (await this.applyLogin()) {
         return this.#api.request(response.config)
       }
     }
     return response
-  }
-
-  async #handleError(error: AxiosError): Promise<AxiosError> {
-    const apiCallData: APICallContextDataWithErrorMessage =
-      createAPICallErrorData(error)
-    this.#errorLogger(String(apiCallData))
-    if (
-      error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
-      this.#retry &&
-      error.config?.url !== LOGIN_URL
-    ) {
-      this.#handleRetry()
-      if ((await this.attemptAutoLogin()) && error.config) {
-        return this.#api.request(error.config)
-      }
-    }
-    return Promise.reject(error)
   }
 
   #handleRetry(): void {
@@ -204,6 +200,30 @@ export default class AristonAPI {
       },
       Duration.fromObject({ minutes: 1 }).as('milliseconds'),
     )
+  }
+
+  async #planRefreshLogin(): Promise<boolean> {
+    this.clearLoginRefresh()
+    const expires: string = this.#settingManager.get('expires') ?? ''
+    const ms: number = DateTime.fromISO(expires)
+      .minus({ days: 1 })
+      .diffNow()
+      .as('milliseconds')
+    if (ms > NO_TIME_DIFF) {
+      const interval: number = Math.min(ms, MAX_INT32)
+      this.#loginTimeout = setTimeout((): void => {
+        this.applyLogin().catch((error: Error) => {
+          this.#errorLogger(error.message)
+        })
+      }, interval)
+      this.#logger(
+        'Login refresh will run in',
+        Math.floor(interval / MS_PER_DAY),
+        'days',
+      )
+      return true
+    }
+    return this.applyLogin()
   }
 
   #setCookieExpiration(jar: CookieJar): void {
@@ -222,27 +242,18 @@ export default class AristonAPI {
     })
   }
 
-  async #planRefreshLogin(): Promise<boolean> {
-    this.clearLoginRefresh()
-    const expires: string = this.#settingManager.get('expires') ?? ''
-    const ms: number = DateTime.fromISO(expires)
-      .minus({ days: 1 })
-      .diffNow()
-      .as('milliseconds')
-    if (ms > NO_TIME_DIFF) {
-      const interval: number = Math.min(ms, MAX_INT32)
-      this.#loginTimeout = setTimeout((): void => {
-        this.attemptAutoLogin().catch((error: Error) => {
-          this.#errorLogger(error.message)
-        })
-      }, interval)
-      this.#logger(
-        'Login refresh will run in',
-        Math.floor(interval / MS_PER_DAY),
-        'days',
-      )
-      return true
-    }
-    return this.attemptAutoLogin()
+  #setupAxiosInterceptors(): void {
+    this.#api.interceptors.request.use(
+      (config: InternalAxiosRequestConfig): InternalAxiosRequestConfig =>
+        this.#handleRequest(config),
+      async (error: AxiosError): Promise<AxiosError> =>
+        this.#handleError(error),
+    )
+    this.#api.interceptors.response.use(
+      async (response: AxiosResponse): Promise<AxiosResponse> =>
+        this.#handleResponse(response),
+      async (error: AxiosError): Promise<AxiosError> =>
+        this.#handleError(error),
+    )
   }
 }

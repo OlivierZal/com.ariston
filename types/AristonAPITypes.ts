@@ -20,9 +20,14 @@ export enum Switch {
 }
 
 export interface APISettings {
-  readonly username?: string | null
-  readonly password?: string | null
   readonly expires?: string | null
+  readonly password?: string | null
+  readonly username?: string | null
+}
+
+export interface LoginCredentials {
+  readonly password: string
+  readonly username: string
 }
 
 export interface LoginPostData {
@@ -42,10 +47,10 @@ export interface Plant {
 }
 
 interface BaseData {
-  on?: boolean
   boostOn?: boolean
   comfortTemp?: number
   holidayUntil?: string | null
+  on?: boolean
   opMode?: OperationMode
 }
 
@@ -64,15 +69,15 @@ export interface PostData {
 
 export interface GetData {
   readonly data: {
+    readonly plantSettings?: {
+      readonly antilegionellaOnOff: boolean
+      readonly maxSetpointTemp: { value: number }
+      readonly minSetpointTemp: { value: number }
+      readonly preHeatingOnOff: boolean
+    }
     readonly plantData: Readonly<Required<PostPlantData>> & {
       readonly procReqTemp: number
       readonly waterTemp: number
-    }
-    readonly plantSettings?: {
-      readonly antilegionellaOnOff: boolean
-      readonly preHeatingOnOff: boolean
-      readonly minSetpointTemp: { value: number }
-      readonly maxSetpointTemp: { value: number }
     }
     readonly viewModel: Readonly<Required<ViewModel>>
   }
@@ -88,9 +93,9 @@ interface BasePostSettingsWithOld<T> extends BasePostSettings<T> {
 
 export interface PostSettings {
   SlpAntilegionellaOnOff?: BasePostSettingsWithOld<Switch>
-  SlpPreHeatingOnOff?: BasePostSettingsWithOld<Switch>
-  SlpMinSetpointTemperature?: BasePostSettings<number>
   SlpMaxSetpointTemperature?: BasePostSettings<number>
+  SlpMinSetpointTemperature?: BasePostSettings<number>
+  SlpPreHeatingOnOff?: BasePostSettingsWithOld<Switch>
 }
 
 export interface GetSettings {
@@ -98,10 +103,10 @@ export interface GetSettings {
 }
 
 export interface HistogramData {
-  readonly tab: string
+  readonly items: readonly { readonly x: string; readonly y: number }[]
   readonly period: string
   readonly series: 'DhwHp' | 'DhwResistor'
-  readonly items: readonly { readonly x: string; readonly y: number }[]
+  readonly tab: string
 }
 
 export interface ReportData {
