@@ -110,11 +110,9 @@ export default class AristonAPI {
       LOGIN_URL,
       postData,
     )
-    if (response.data.ok && response.config.jar) {
+    if (response.data.ok) {
       this.#settingManager.set('username', postData.email)
       this.#settingManager.set('password', postData.password)
-      this.#setCookieExpiration(response.config.jar)
-      await this.#planRefreshLogin()
     }
     return response
   }
@@ -187,6 +185,10 @@ export default class AristonAPI {
       if (await this.applyLogin()) {
         return this.#api.request(response.config)
       }
+    }
+    if (response.config.jar) {
+      this.#setCookieExpiration(response.config.jar)
+      await this.#planRefreshLogin()
     }
     return response
   }
