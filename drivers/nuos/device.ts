@@ -25,7 +25,6 @@ import addToLogs from '../../decorators/addToLogs'
 
 const DAYS_1 = 1
 const DEFAULT_0 = 0
-const INIT_POST_DATA: PostData = { plantData: {}, viewModel: {} }
 const ENERGY_REFRESH_HOURS = 2
 const K_MULTIPLIER = 1000
 const SETTINGS: Record<string, keyof PostSettings> = {
@@ -79,7 +78,7 @@ const getPower = (energyData: HistogramData | undefined): number => {
 class NuosDevice extends Device {
   public declare driver: NuosDriver
 
-  #postData: PostData = { ...INIT_POST_DATA }
+  #postData: PostData = { plantData: {}, viewModel: {} }
 
   #postSettings: PostSettings = {}
 
@@ -328,7 +327,7 @@ class NuosDevice extends Device {
           )
         ).data
         if (post) {
-          this.#postData = { ...INIT_POST_DATA }
+          this.#postData = { plantData: {}, viewModel: {} }
         }
         return data
       } catch (error: unknown) {
