@@ -159,13 +159,11 @@ export default class AristonAPI {
   async #handleRequest(
     config: InternalAxiosRequestConfig,
   ): Promise<InternalAxiosRequestConfig> {
-    const expires: string = this.#settingManager.get('expires') ?? ''
-    if (
-      config.url !== LOGIN_URL &&
-      expires &&
-      DateTime.fromISO(expires) < DateTime.now()
-    ) {
-      await this.applyLogin()
+    if (config.url !== LOGIN_URL) {
+      const expires: string = this.#settingManager.get('expires') ?? ''
+      if (expires && DateTime.fromISO(expires) < DateTime.now()) {
+        await this.applyLogin()
+      }
     }
     this.#logger(String(new APICallRequestData(config)))
     return config
