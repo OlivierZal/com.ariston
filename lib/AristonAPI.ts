@@ -83,7 +83,7 @@ export default class AristonAPI {
       this.#settingManager.set('username', postData.email)
       this.#settingManager.set('password', postData.password)
       this.#setCookieExpiration(response.config.jar)
-      await this.planRefreshLogin()
+      await this.#planRefreshLogin()
     }
     return response
   }
@@ -120,28 +120,19 @@ export default class AristonAPI {
     return this.#api.post<ReportData>(`/R2/PlantMetering/GetData/${id}`)
   }
 
-  public async planRefreshLogin(): Promise<boolean> {
-    this.clearLoginRefresh()
-    const expires: string = this.#settingManager.get('expires') ?? ''
-    const ms: number = DateTime.fromISO(expires)
-      .minus({ days: 1 })
-      .diffNow()
-      .as('milliseconds')
-    if (ms > NO_TIME_DIFF) {
-      const interval: number = Math.min(ms, MAX_INT32)
-      this.#loginTimeout = setTimeout((): void => {
-        this.#attemptAutoLogin().catch((error: Error) => {
-          this.#errorLogger(error.message)
-        })
-      }, interval)
-      this.#logger(
-        'Login refresh will run in',
-        Math.floor(interval / MS_PER_DAY),
-        'days',
-      )
-      return true
+  public async attemptAutoLogin(): Promise<boolean> {
+    const username: string = this.#settingManager.get('username') ?? ''
+    const password: string = this.#settingManager.get('password') ?? ''
+    if (username && password) {
+      try {
+        return (
+          await this.login({ email: username, password, rememberMe: true })
+        ).data.ok
+      } catch (error: unknown) {
+        // Pass
+      }
     }
-    return this.#attemptAutoLogin()
+    return false
   }
 
   public clearLoginRefresh(): void {
@@ -175,12 +166,12 @@ export default class AristonAPI {
     this.#logger(String(new APICallResponseData(response)))
     if (
       // @ts-expect-error: `axios` is partially typed
-      (response.headers.hasContentType('application/json') as boolean) &&
+      response.headers.hasContentType('application/json') !== true &&
       this.#retry &&
       response.config.url !== LOGIN_URL
     ) {
       this.#handleRetry()
-      if (await this.#attemptAutoLogin()) {
+      if (await this.attemptAutoLogin()) {
         return this.#api.request(response.config)
       }
     }
@@ -197,7 +188,7 @@ export default class AristonAPI {
       error.config?.url !== LOGIN_URL
     ) {
       this.#handleRetry()
-      if ((await this.#attemptAutoLogin()) && error.config) {
+      if ((await this.attemptAutoLogin()) && error.config) {
         return this.#api.request(error.config)
       }
     }
@@ -215,21 +206,6 @@ export default class AristonAPI {
     )
   }
 
-  async #attemptAutoLogin(): Promise<boolean> {
-    const username: string = this.#settingManager.get('username') ?? ''
-    const password: string = this.#settingManager.get('password') ?? ''
-    if (username && password) {
-      try {
-        return (
-          await this.login({ email: username, password, rememberMe: true })
-        ).data.ok
-      } catch (error: unknown) {
-        // Pass
-      }
-    }
-    return false
-  }
-
   #setCookieExpiration(jar: CookieJar): void {
     jar.getCookies(DOMAIN, (error, cookies): void => {
       if (error) {
@@ -244,5 +220,29 @@ export default class AristonAPI {
         this.#settingManager.set('expires', expiresDate.toISOString())
       }
     })
+  }
+
+  async #planRefreshLogin(): Promise<boolean> {
+    this.clearLoginRefresh()
+    const expires: string = this.#settingManager.get('expires') ?? ''
+    const ms: number = DateTime.fromISO(expires)
+      .minus({ days: 1 })
+      .diffNow()
+      .as('milliseconds')
+    if (ms > NO_TIME_DIFF) {
+      const interval: number = Math.min(ms, MAX_INT32)
+      this.#loginTimeout = setTimeout((): void => {
+        this.attemptAutoLogin().catch((error: Error) => {
+          this.#errorLogger(error.message)
+        })
+      }, interval)
+      this.#logger(
+        'Login refresh will run in',
+        Math.floor(interval / MS_PER_DAY),
+        'days',
+      )
+      return true
+    }
+    return this.attemptAutoLogin()
   }
 }
