@@ -19,7 +19,8 @@ export = class NuosDriver extends Driver {
   public async onPair(session: PairSession): Promise<void> {
     session.setHandler(
       'login',
-      async (data: LoginCredentials): Promise<boolean> => this.#login(data),
+      async (data: LoginCredentials): Promise<boolean> =>
+        this.#applyLogin(data),
     )
     session.setHandler(
       'list_devices',
@@ -31,8 +32,13 @@ export = class NuosDriver extends Driver {
   public async onRepair(session: PairSession): Promise<void> {
     session.setHandler(
       'login',
-      async (data: LoginCredentials): Promise<boolean> => this.#login(data),
+      async (data: LoginCredentials): Promise<boolean> =>
+        this.#applyLogin(data),
     )
+  }
+
+  async #applyLogin(data: LoginCredentials): Promise<boolean> {
+    return this.#aristonAPI.applyLogin(data)
   }
 
   async #discoverDevices(): Promise<DeviceDetails[]> {
@@ -46,10 +52,6 @@ export = class NuosDriver extends Driver {
     } catch (error: unknown) {
       return []
     }
-  }
-
-  async #login({ password, username }: LoginCredentials): Promise<boolean> {
-    return this.#aristonAPI.applyLogin({ password, username })
   }
 
   #registerRunListeners(): void {
