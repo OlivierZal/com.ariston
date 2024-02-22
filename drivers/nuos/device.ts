@@ -24,9 +24,9 @@ import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
 
 const DAYS_1 = 1
-const DEFAULT_0 = 0
 const ENERGY_REFRESH_HOURS = 2
 const K_MULTIPLIER = 1000
+const NUMBER_0 = 0
 const SETTINGS: Record<string, keyof PostSettings> = {
   'onoff.legionella': 'SlpAntilegionellaOnOff',
   'onoff.preheating': 'SlpPreHeatingOnOff',
@@ -58,9 +58,9 @@ const getEnergy = (energyData: HistogramData | undefined): number =>
   energyData
     ? energyData.items.reduce<number>(
         (acc, { y: yNumber }) => acc + yNumber,
-        DEFAULT_0,
+        NUMBER_0,
       )
-    : DEFAULT_0
+    : NUMBER_0
 
 const getPower = (energyData: HistogramData | undefined): number => {
   const hour: number = DateTime.now().hour
@@ -68,7 +68,7 @@ const getPower = (energyData: HistogramData | undefined): number => {
     ((energyData?.items.find(({ x: xString }) => {
       const xNumber = Number(xString)
       return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_HOURS
-    })?.y ?? DEFAULT_0) *
+    })?.y ?? NUMBER_0) *
       K_MULTIPLIER) /
     ENERGY_REFRESH_HOURS
   )
@@ -409,7 +409,7 @@ class NuosDevice extends Device {
       'vacation',
       String(
         plantData.holidayUntil === null
-          ? DEFAULT_0
+          ? NUMBER_0
           : Math.ceil(
               DateTime.fromISO(plantData.holidayUntil)
                 .plus({ days: 1 })
