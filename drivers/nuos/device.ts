@@ -2,8 +2,8 @@ import type {
   Capabilities,
   CapabilityOptionsEntries,
   DeviceDetails,
-  Settings,
   MinMaxOptions,
+  Settings,
   ValueOf,
 } from '../../types/types'
 import { DateTime, Duration } from 'luxon'
