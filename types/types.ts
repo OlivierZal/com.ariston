@@ -20,13 +20,13 @@ export interface Capabilities {
   readonly vacation: string
 }
 
-export type MinMaxOptions = object & {
+export type RangeOptions = object & {
   readonly max: number
   readonly min: number
 }
 
 export interface CapabilityOptionsEntries {
-  readonly target_temperature: MinMaxOptions
+  readonly target_temperature: RangeOptions
 }
 
 export type ValueOf<T> = T[keyof T]
