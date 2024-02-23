@@ -3,7 +3,7 @@ import type {
   CapabilityOptionsEntries,
   DeviceDetails,
   Settings,
-  TargetTemperatureOptions,
+  MinMaxOptions,
   ValueOf,
 } from '../../types/types'
 import { DateTime, Duration } from 'luxon'
@@ -487,7 +487,7 @@ class NuosDevice extends Device {
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
-    const options: TargetTemperatureOptions =
+    const options: MinMaxOptions =
       this.getCapabilityOptions('target_temperature')
     if (min === options.min && max === options.max) {
       return
