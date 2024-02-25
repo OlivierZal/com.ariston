@@ -16,6 +16,7 @@ import axios, {
   type AxiosError,
   type AxiosInstance,
   type AxiosResponse,
+  HttpStatusCode,
   type InternalAxiosRequestConfig,
 } from 'axios'
 import type { APICallContextDataWithErrorMessage } from '../mixins/withErrorMessage'
@@ -144,7 +145,7 @@ export default class AristonAPI {
       createAPICallErrorData(error)
     this.#errorLogger(String(apiCallData))
     if (
-      error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
+      error.response?.status === HttpStatusCode.MethodNotAllowed &&
       this.#retry &&
       error.config?.url !== LOGIN_URL
     ) {
