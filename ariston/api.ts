@@ -9,7 +9,7 @@ import type {
   PostData,
   PostSettings,
   ReportData,
-} from '../types/AristonAPITypes'
+} from './types'
 import { type Cookie, CookieJar } from 'tough-cookie'
 import { DateTime, Duration } from 'luxon'
 import axios, {
@@ -19,10 +19,10 @@ import axios, {
   HttpStatusCode,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import type { APICallContextDataWithErrorMessage } from '../mixins/withErrorMessage'
-import APICallRequestData from './APICallRequestData'
-import APICallResponseData from './APICallResponseData'
-import createAPICallErrorData from './APICallErrorData'
+import type { APICallContextDataWithErrorMessage } from './lib/withErrorMessage'
+import APICallRequestData from './lib/APICallRequestData'
+import APICallResponseData from './lib/APICallResponseData'
+import createAPICallErrorData from './lib/APICallErrorData'
 import { wrapper } from 'axios-cookiejar-support'
 
 interface SettingManager {

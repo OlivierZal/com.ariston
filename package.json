@@ -15,7 +15,7 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@eslint/js": "^8.56.0",
+    "@eslint/js": "^8.57.0",
     "@stylistic/eslint-plugin": "^1.6.2",
     "@tsconfig/node16": "^16.1.1",
     "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.5",
@@ -24,7 +24,7 @@
     "@types/tough-cookie": "^4.0.5",
     "@typescript-eslint/eslint-plugin": "^7.0.2",
     "@typescript-eslint/parser": "^7.0.2",
-    "eslint": "^8.56.0",
+    "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",

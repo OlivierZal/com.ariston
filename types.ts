@@ -1,5 +1,5 @@
-import type NuosDevice from '../drivers/nuos/device'
-import type { OperationMode } from './AristonAPITypes'
+import type NuosDevice from './drivers/nuos/device'
+import type { OperationMode } from './ariston/types'
 
 export interface Capabilities {
   readonly measure_power: number

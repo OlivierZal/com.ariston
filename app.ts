@@ -1,5 +1,5 @@
 import { App } from 'homey'
-import AristonAPI from './lib/AristonAPI'
+import AristonAPI from './ariston/api'
 import { Settings as LuxonSettings } from 'luxon'
 
 export = class AristonApp extends App {

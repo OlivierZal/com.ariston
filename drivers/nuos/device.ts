@@ -5,7 +5,7 @@ import type {
   RangeOptions,
   Settings,
   ValueOf,
-} from '../../types/types'
+} from '../../types'
 import { DateTime, Duration } from 'luxon'
 import {
   type GetData,
@@ -16,8 +16,8 @@ import {
   type PostSettings,
   type ReportData,
   type Switch,
-} from '../../types/AristonAPITypes'
-import type AristonAPI from '../../lib/AristonAPI'
+} from '../../ariston/types'
+import type AristonAPI from '../../ariston/api'
 import type AristonApp from '../../app'
 import { Device } from 'homey'
 import type NuosDriver from './driver'
