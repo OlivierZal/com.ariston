@@ -51,11 +51,9 @@ export default class AristonAPI {
 
   readonly #api: AxiosInstance
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly #errorLogger: (...args: any[]) => void
+  readonly #errorLogger: Logger
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  readonly #logger: (...args: any[]) => void
+  readonly #logger: Logger
 
   readonly #settingManager: SettingManager
 
