@@ -331,7 +331,7 @@ class NuosDevice extends Device {
         }
         return data
       } catch (error: unknown) {
-        // Pass
+        // Error handling is delegated to the interceptor
       }
     }
     return null
@@ -373,7 +373,7 @@ class NuosDevice extends Device {
         }
         return success
       } catch (error: unknown) {
-        // Pass
+        // Error handling is delegated to the interceptor
       }
     }
     return false
