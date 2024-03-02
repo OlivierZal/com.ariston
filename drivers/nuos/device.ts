@@ -222,9 +222,9 @@ class NuosDevice extends Device {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async onUninit(): Promise<void> {
     this.onDeleted()
+    return Promise.resolve()
   }
 
   public async removeCapability(capability: string): Promise<void> {

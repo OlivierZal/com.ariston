@@ -10,12 +10,11 @@ export = class NuosDriver extends Driver {
 
   readonly #deviceType: WheType = WheType.nuos
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async onInit(): Promise<void> {
     this.#registerRunListeners()
+    return Promise.resolve()
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async onPair(session: PairSession): Promise<void> {
     session.setHandler(
       'login',
@@ -26,15 +25,16 @@ export = class NuosDriver extends Driver {
       'list_devices',
       async (): Promise<DeviceDetails[]> => this.#discoverDevices(),
     )
+    return Promise.resolve()
   }
 
-  // eslint-disable-next-line @typescript-eslint/require-await
   public async onRepair(session: PairSession): Promise<void> {
     session.setHandler(
       'login',
       async (data: LoginCredentials): Promise<boolean> =>
         this.#applyLogin(data),
     )
+    return Promise.resolve()
   }
 
   async #applyLogin(data: LoginCredentials): Promise<boolean> {
