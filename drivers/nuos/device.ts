@@ -205,7 +205,7 @@ class NuosDevice extends Device {
       newSettings.always_on === true &&
       !this.getCapabilityValue('onoff')
     ) {
-      await this.onCapability('onoff', true)
+      await this.triggerCapabilityListener('onoff', true)
     }
     if (changedKeys.includes('min') && typeof newSettings.min !== 'undefined') {
       this.#postSettings.SlpMinSetpointTemperature = { new: newSettings.min }

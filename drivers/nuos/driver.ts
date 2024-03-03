@@ -69,7 +69,10 @@ export = class NuosDriver extends Driver {
           this.homey.flow
             .getActionCard(`${capability}_action`)
             .registerRunListener(async (args: FlowArgs): Promise<void> => {
-              await args.device.onCapability(capability, args.operation_mode)
+              await args.device.triggerCapabilityListener(
+                capability,
+                args.operation_mode,
+              )
             })
         } else if (capability.startsWith('onoff.')) {
           this.homey.flow
@@ -81,7 +84,10 @@ export = class NuosDriver extends Driver {
           this.homey.flow
             .getActionCard(`${capability}_action`)
             .registerRunListener(async (args: FlowArgs): Promise<void> => {
-              await args.device.onCapability(capability, args.onoff)
+              await args.device.triggerCapabilityListener(
+                capability,
+                args.onoff,
+              )
             })
         }
       },
