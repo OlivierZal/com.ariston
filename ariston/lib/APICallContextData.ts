@@ -6,10 +6,12 @@ const ORDER: string[] = [
   'url',
   'params',
   'headers',
-  'data',
+  'requestData',
+  'responseData',
   'status',
   'errorMessage',
 ]
+
 const SPACE = 2
 
 export default abstract class APICallContextData {

@@ -19,10 +19,11 @@ import axios, {
   HttpStatusCode,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import type { APICallContextDataWithErrorMessage } from './lib/withErrorMessage'
+import createAPICallErrorData, {
+  type APICallContextDataWithErrorMessage,
+} from './lib/APICallErrorData'
 import APICallRequestData from './lib/APICallRequestData'
 import APICallResponseData from './lib/APICallResponseData'
-import createAPICallErrorData from './lib/APICallErrorData'
 import { wrapper } from 'axios-cookiejar-support'
 
 interface SettingManager {
