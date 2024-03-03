@@ -116,7 +116,6 @@ class NuosDevice extends Device {
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
-    this.homey.clearTimeout(this.#syncTimeout)
     const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
@@ -385,6 +384,7 @@ class NuosDevice extends Device {
       this.registerCapabilityListener(
         capability,
         async (value: Capabilities[K]): Promise<void> => {
+          this.homey.clearTimeout(this.#syncTimeout)
           await this.onCapability(capability, value)
         },
       )
