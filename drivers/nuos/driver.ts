@@ -10,12 +10,11 @@ export = class NuosDriver extends Driver {
 
   readonly #deviceType: WheType = WheType.nuos
 
-  readonly #onoffCapabilities: (keyof Capabilities)[] = [
-    'onoff.auto',
-    'onoff.boost',
-    'onoff.legionella',
-    'onoff.preheating',
-  ]
+  readonly #onoffCapabilities: (keyof Capabilities)[] =
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    (this.manifest.capabilities as (keyof Capabilities)[]).filter(
+      (capability: string) => capability.startsWith('onoff.'),
+    )
 
   public async onInit(): Promise<void> {
     this.#registerRunListeners()
