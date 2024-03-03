@@ -10,12 +10,11 @@ export = class NuosDriver extends Driver {
 
   readonly #deviceType: WheType = WheType.nuos
 
-  readonly #flowCapabilities: (keyof Capabilities)[] = [
+  readonly #onoffCapabilities: (keyof Capabilities)[] = [
     'onoff.auto',
     'onoff.boost',
     'onoff.legionella',
     'onoff.preheating',
-    'operation_mode',
   ]
 
   public async onInit(): Promise<void> {
@@ -63,30 +62,32 @@ export = class NuosDriver extends Driver {
   }
 
   #registerRunListeners(): void {
-    this.#flowCapabilities.forEach((capability: keyof Capabilities) => {
-      if (capability === 'operation_mode') {
-        this.homey.flow
-          .getConditionCard(`${capability}_condition`)
-          .registerRunListener(
-            (args: FlowArgs): boolean =>
-              args.operation_mode ===
-              args.device.getCapabilityValue(capability),
-          )
-      } else {
-        this.homey.flow
-          .getConditionCard(`${capability}_condition`)
-          .registerRunListener(
-            (args: FlowArgs): boolean =>
-              args.device.getCapabilityValue(capability) as boolean,
-          )
-      }
+    this.homey.flow
+      .getConditionCard('operation_mode_condition')
+      .registerRunListener(
+        (args: FlowArgs): boolean =>
+          args.operation_mode ===
+          args.device.getCapabilityValue('operation_mode'),
+      )
+    this.homey.flow
+      .getActionCard('operation_mode_action')
+      .registerRunListener(async (args: FlowArgs): Promise<void> => {
+        await args.device.triggerCapabilityListener(
+          'operation_mode',
+          args.operation_mode,
+        )
+      })
+    this.#onoffCapabilities.forEach((capability: keyof Capabilities) => {
+      this.homey.flow
+        .getConditionCard(`${capability}_condition`)
+        .registerRunListener(
+          (args: FlowArgs): boolean =>
+            args.device.getCapabilityValue(capability) as boolean,
+        )
       this.homey.flow
         .getActionCard(`${capability}_action`)
         .registerRunListener(async (args: FlowArgs): Promise<void> => {
-          await args.device.triggerCapabilityListener(
-            capability,
-            args[capability as keyof FlowArgs],
-          )
+          await args.device.triggerCapabilityListener(capability, args.onoff)
         })
     })
   }
