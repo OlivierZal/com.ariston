@@ -13,7 +13,7 @@ export = class NuosDriver extends Driver {
   readonly #onoffCapabilities: (keyof Capabilities)[] =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (this.manifest.capabilities as (keyof Capabilities)[]).filter(
-      (capability: string) => capability.startsWith('onoff.'),
+      (capability: keyof Capabilities) => capability.startsWith('onoff.'),
     )
 
   public async onInit(): Promise<void> {
