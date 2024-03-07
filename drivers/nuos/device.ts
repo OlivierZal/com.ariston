@@ -119,11 +119,10 @@ class NuosDevice extends Device {
     const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
-        if (this.getSetting('always_on') && !(value as boolean)) {
+        this.#postData.plantData.on = oldValue as boolean
+        this.#postData.viewModel.on = value as boolean
+        if (this.getSetting('always_on')) {
           await this.setWarning(this.homey.__('warnings.always_on'))
-        } else {
-          this.#postData.plantData.on = oldValue as boolean
-          this.#postData.viewModel.on = value as boolean
         }
         break
       case 'onoff.auto':
