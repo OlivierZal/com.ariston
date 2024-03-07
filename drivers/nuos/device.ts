@@ -23,8 +23,8 @@ import { Device } from 'homey'
 import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
 
-const DAYS_1 = 1
-const ENERGY_REFRESH_HOURS = 2
+const ENERGY_REFRESH_INTERVAL: Duration = Duration.fromObject({ hours: 2 })
+const ENERGY_REFRESH_HOURS: number = ENERGY_REFRESH_INTERVAL.as('hours')
 const K_MULTIPLIER = 1000
 const NUMBER_0 = 0
 const SETTINGS: Record<string, keyof PostSettings> = {
@@ -38,7 +38,7 @@ const convertToMode = (value: boolean): Mode =>
 const convertToDate = (days: number): string | null =>
   days
     ? DateTime.now()
-        .plus({ days: days - DAYS_1 })
+        .plus({ days: days - Duration.fromObject({ days: 1 }).as('days') })
         .toISODate()
     : null
 
@@ -174,14 +174,9 @@ class NuosDevice extends Device {
     this.homey.setTimeout(
       async (): Promise<void> => {
         await this.#plantMetering()
-        this.homey.setInterval(
-          async (): Promise<void> => {
-            await this.#plantMetering()
-          },
-          Duration.fromObject({ hours: ENERGY_REFRESH_HOURS }).as(
-            'milliseconds',
-          ),
-        )
+        this.homey.setInterval(async (): Promise<void> => {
+          await this.#plantMetering()
+        }, ENERGY_REFRESH_INTERVAL.as('milliseconds'))
       },
       now
         .plus({
