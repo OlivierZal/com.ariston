@@ -156,7 +156,6 @@ class NuosDevice extends Device {
         break
       default:
     }
-    this.#applySyncToDevice()
   }
 
   public onDeleted(): void {
@@ -380,6 +379,7 @@ class NuosDevice extends Device {
         async (value: Capabilities[K]): Promise<void> => {
           this.homey.clearTimeout(this.#syncTimeout)
           await this.onCapability(capability, value)
+          this.#applySyncToDevice()
         },
       )
     })
