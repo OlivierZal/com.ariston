@@ -119,8 +119,8 @@
       },
       {
         "title": {
-          "en": "Antilegionella turned off",
-          "fr": "Anti-légionellose désactivé"
+          "en": "Anti-legionella turned off",
+          "fr": "Antilégionellose désactivé"
         },
         "args": [
           {
@@ -133,8 +133,8 @@
       },
       {
         "title": {
-          "en": "Antilegionella turned on",
-          "fr": "Anti-légionellose activé"
+          "en": "Anti-legionella turned on",
+          "fr": "Antilégionellose activé"
         },
         "args": [
           {
@@ -232,8 +232,8 @@
       },
       {
         "title": {
-          "en": "The antilegionella is turned !{{on|off}}",
-          "fr": "L'anti-légionellose est !{{activé|désactivé}}"
+          "en": "The anti-legionella is turned !{{on|off}}",
+          "fr": "L'antilégionellose est !{{activé|désactivé}}"
         },
         "args": [
           {
@@ -366,12 +366,12 @@
       },
       {
         "title": {
-          "en": "Set the antilegionella",
-          "fr": "Définir l'anti-légionellose"
+          "en": "Set the anti-legionella",
+          "fr": "Définir l'antilégionellose"
         },
         "titleFormatted": {
-          "en": "Set the antilegionella to [[onoff]]",
-          "fr": "Définir l'anti-légionellose à [[onoff]]"
+          "en": "Set the anti-legionella to [[onoff]]",
+          "fr": "Définir l'antilégionellose à [[onoff]]"
         },
         "args": [
           {
@@ -383,8 +383,8 @@
             "name": "onoff",
             "type": "checkbox",
             "title": {
-              "en": "Antilegionella",
-              "fr": "Anti-légionellose"
+              "en": "Anti-legionella",
+              "fr": "Antilégionellose"
             }
           }
         ],
@@ -595,16 +595,16 @@
         },
         "onoff.legionella": {
           "title": {
-            "en": "Antilegionella",
-            "fr": "Anti-légionellose"
+            "en": "Anti-legionella",
+            "fr": "Antilégionellose"
           },
           "insightsTitleTrue": {
-            "en": "Antilegionella turned on",
-            "fr": "Anti-légionellose activé"
+            "en": "Anti-legionella turned on",
+            "fr": "Antilégionellose activé"
           },
           "insightsTitleFalse": {
-            "en": "Antilegionella turned off",
-            "fr": "Anti-légionellose désactivé"
+            "en": "Anti-legionella turned off",
+            "fr": "Antilégionellose désactivé"
           }
         },
         "onoff.preheating": {
