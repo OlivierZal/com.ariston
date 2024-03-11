@@ -65,8 +65,8 @@ export = class NuosDriver extends Driver {
       .getConditionCard('operation_mode_condition')
       .registerRunListener(
         (args: FlowArgs): boolean =>
-          args.operation_mode ===
-          args.device.getCapabilityValue('operation_mode'),
+          args.device.getCapabilityValue('operation_mode') ===
+          args.operation_mode,
       )
     this.homey.flow
       .getActionCard('operation_mode_action')
