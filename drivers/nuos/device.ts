@@ -250,16 +250,15 @@ class NuosDevice extends Device {
           value !== this.getSetting(key as keyof Settings),
       ),
     )
-    if (!Object.keys(newSettings).length) {
-      return
-    }
-    await super.setSettings(newSettings)
-    if (
-      ['min', 'max'].some((key: string) =>
-        Object.keys(newSettings).includes(key),
-      )
-    ) {
-      await this.#updateTargetTemperatureMinMax()
+    if (Object.keys(newSettings).length) {
+      await super.setSettings(newSettings)
+      if (
+        ['min', 'max'].some((key: string) =>
+          Object.keys(newSettings).includes(key),
+        )
+      ) {
+        await this.#updateTargetTemperatureMinMax()
+      }
     }
   }
 
@@ -447,21 +446,20 @@ class NuosDevice extends Device {
   async #setSettingValues(
     plantSettings: GetData['data']['plantSettings'],
   ): Promise<void> {
-    if (!plantSettings) {
-      return
+    if (plantSettings) {
+      await this.setCapabilityValue(
+        'onoff.legionella',
+        plantSettings.antilegionellaOnOff,
+      )
+      await this.setCapabilityValue(
+        'onoff.preheating',
+        plantSettings.preHeatingOnOff,
+      )
+      await this.setSettings({
+        max: plantSettings.maxSetpointTemp.value,
+        min: plantSettings.minSetpointTemp.value,
+      })
     }
-    await this.setCapabilityValue(
-      'onoff.legionella',
-      plantSettings.antilegionellaOnOff,
-    )
-    await this.setCapabilityValue(
-      'onoff.preheating',
-      plantSettings.preHeatingOnOff,
-    )
-    await this.setSettings({
-      max: plantSettings.maxSetpointTemp.value,
-      min: plantSettings.minSetpointTemp.value,
-    })
   }
 
   async #sync(post = false): Promise<void> {
@@ -471,11 +469,10 @@ class NuosDevice extends Device {
 
   async #updateCapabilities(post: boolean): Promise<void> {
     const data: GetData['data'] | null = await this.#plantData(post)
-    if (!data) {
-      return
+    if (data) {
+      await this.#setSettingValues(data.plantSettings)
+      await this.#setDataValues(data.plantData)
     }
-    await this.#setSettingValues(data.plantSettings)
-    await this.#setDataValues(data.plantData)
   }
 
   async #updateTargetTemperatureMinMax(
@@ -484,15 +481,14 @@ class NuosDevice extends Device {
     const { min, max } = settings
     const options: RangeOptions =
       this.getCapabilityOptions('target_temperature')
-    if (min === options.min && max === options.max) {
-      return
+    if (min !== options.min || max !== options.max) {
+      await this.setCapabilityOptions('target_temperature', {
+        ...options,
+        ...(typeof max === 'undefined' ? {} : { max }),
+        ...(typeof min === 'undefined' ? {} : { min }),
+      })
+      await this.setWarning(this.homey.__('warnings.settings'))
     }
-    await this.setCapabilityOptions('target_temperature', {
-      ...options,
-      ...(typeof max === 'undefined' ? {} : { max }),
-      ...(typeof min === 'undefined' ? {} : { min }),
-    })
-    await this.setWarning(this.homey.__('warnings.settings'))
   }
 }
 
