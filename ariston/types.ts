@@ -14,7 +14,7 @@ export enum OperationMode {
   auto = 3,
 }
 
-export enum Switch {
+enum Switch {
   off = 0,
   on = 1,
 }

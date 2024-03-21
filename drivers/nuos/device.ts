@@ -15,7 +15,6 @@ import {
   type PostData,
   type PostSettings,
   type ReportData,
-  type Switch,
 } from '../../ariston/types'
 import type AristonAPI from '../../ariston/api'
 import type AristonApp from '../../app'
@@ -137,8 +136,8 @@ class NuosDevice extends Device {
       case 'onoff.legionella':
       case 'onoff.preheating':
         this.#postSettings[SETTINGS[capability]] = {
-          new: Number(value) as Switch,
-          old: Number(oldValue) as Switch,
+          new: Number(value),
+          old: Number(oldValue),
         }
         break
       case 'operation_mode':
