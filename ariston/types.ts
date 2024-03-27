@@ -19,12 +19,6 @@ enum Switch {
   on = 1,
 }
 
-export interface APISettings {
-  readonly expires?: string | null
-  readonly password?: string | null
-  readonly username?: string | null
-}
-
 export interface LoginCredentials {
   readonly password: string
   readonly username: string

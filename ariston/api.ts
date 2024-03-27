@@ -1,5 +1,6 @@
+import { type Cookie, CookieJar } from 'tough-cookie'
+import { DateTime, Duration } from 'luxon'
 import type {
-  APISettings,
   GetData,
   GetSettings,
   LoginCredentials,
@@ -10,8 +11,6 @@ import type {
   PostSettings,
   ReportData,
 } from './types'
-import { type Cookie, CookieJar } from 'tough-cookie'
-import { DateTime, Duration } from 'luxon'
 import axios, {
   type AxiosError,
   type AxiosInstance,
@@ -25,15 +24,21 @@ import APICallRequestData from './lib/APICallRequestData'
 import APICallResponseData from './lib/APICallResponseData'
 import { wrapper } from 'axios-cookiejar-support'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Logger = (...args: any[]) => void
+
+interface APISettings {
+  readonly expires?: string | null
+  readonly password?: string | null
+  readonly username?: string | null
+}
+
 interface SettingManager {
   get: <K extends keyof APISettings>(
     key: K,
   ) => APISettings[K] | null | undefined
   set: <K extends keyof APISettings>(key: K, value: APISettings[K]) => void
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Logger = (...args: any[]) => void
 
 const DOMAIN = 'https://www.ariston-net.remotethermo.com'
 const LOGIN_URL = '/R2/Account/Login'
