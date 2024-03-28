@@ -3,7 +3,7 @@ import AristonAPI from './ariston/api'
 import { Settings as LuxonSettings } from 'luxon'
 
 export = class AristonApp extends App {
-  public readonly aristonAPI: AristonAPI = new AristonAPI(
+  public readonly aristonAPI = new AristonAPI(
     this.homey.settings,
     this.log.bind(this),
     this.error.bind(this),

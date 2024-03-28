@@ -16,14 +16,13 @@ import {
   type PostSettings,
   type ReportData,
 } from '../../ariston/types'
-import type AristonAPI from '../../ariston/api'
 import type AristonApp from '../../app'
 import { Device } from 'homey'
 import type NuosDriver from './driver'
 import addToLogs from '../../decorators/addToLogs'
 
-const ENERGY_REFRESH_INTERVAL: Duration = Duration.fromObject({ hours: 2 })
-const ENERGY_REFRESH_HOURS: number = ENERGY_REFRESH_INTERVAL.as('hours')
+const ENERGY_REFRESH_INTERVAL = Duration.fromObject({ hours: 2 })
+const ENERGY_REFRESH_HOURS = ENERGY_REFRESH_INTERVAL.as('hours')
 const K_MULTIPLIER = 1000
 const NUMBER_0 = 0
 const SETTINGS: Record<string, keyof PostSettings> = {
@@ -62,7 +61,7 @@ const getEnergy = (energyData: HistogramData | undefined): number =>
     : NUMBER_0
 
 const getPower = (energyData: HistogramData | undefined): number => {
-  const hour: number = DateTime.now().hour
+  const { hour } = DateTime.now()
   return (
     ((energyData?.items.find(({ x: xString }) => {
       const xNumber = Number(xString)
@@ -83,9 +82,9 @@ class NuosDevice extends Device {
 
   #syncTimeout!: NodeJS.Timeout
 
-  readonly #aristonAPI: AristonAPI = (this.homey.app as AristonApp).aristonAPI
+  readonly #aristonAPI = (this.homey.app as AristonApp).aristonAPI
 
-  readonly #id: string = (this.getData() as DeviceDetails['data']).id
+  readonly #id = (this.getData() as DeviceDetails['data']).id
 
   public async addCapability(capability: string): Promise<void> {
     if (!this.hasCapability(capability)) {
@@ -115,7 +114,7 @@ class NuosDevice extends Device {
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
-    const oldValue: Capabilities[K] = this.getCapabilityValue(capability)
+    const oldValue = this.getCapabilityValue(capability)
     switch (capability) {
       case 'onoff':
         if (this.getSetting('always_on') && !(value as boolean)) {
@@ -168,7 +167,7 @@ class NuosDevice extends Device {
     this.#registerCapabilityListeners()
     await this.#sync()
     await this.#plantMetering()
-    const now: DateTime = DateTime.now()
+    const now = DateTime.now()
     this.homey.setTimeout(
       async (): Promise<void> => {
         await this.#plantMetering()
@@ -243,7 +242,7 @@ class NuosDevice extends Device {
   }
 
   public async setSettings(settings: Settings): Promise<void> {
-    const newSettings: Settings = Object.fromEntries(
+    const newSettings = Object.fromEntries(
       Object.entries(settings).filter(
         ([key, value]: [string, ValueOf<Settings>]) =>
           value !== this.getSetting(key as keyof Settings),
@@ -331,14 +330,8 @@ class NuosDevice extends Device {
   async #plantMetering(): Promise<void> {
     try {
       const { data } = await this.#aristonAPI.plantMetering(this.#id)
-      const energyHpData: HistogramData | undefined = getEnergyData(
-        data,
-        'DhwHp',
-      )
-      const energyResistorData: HistogramData | undefined = getEnergyData(
-        data,
-        'DhwResistor',
-      )
+      const energyHpData = getEnergyData(data, 'DhwHp')
+      const energyResistorData = getEnergyData(data, 'DhwResistor')
       await this.#setPowerValues(
         getPower(energyHpData),
         getPower(energyResistorData),
@@ -467,7 +460,7 @@ class NuosDevice extends Device {
   }
 
   async #updateCapabilities(post: boolean): Promise<void> {
-    const data: GetData['data'] | null = await this.#plantData(post)
+    const data = await this.#plantData(post)
     if (data) {
       await this.#setSettingValues(data.plantSettings)
       await this.#setDataValues(data.plantData)

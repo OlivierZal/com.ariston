@@ -100,10 +100,7 @@ export default class AristonAPI {
   }
 
   public async login(postData: LoginPostData): Promise<{ data: LoginData }> {
-    const response: AxiosResponse<LoginData> = await this.#api.post<LoginData>(
-      LOGIN_URL,
-      postData,
-    )
+    const response = await this.#api.post<LoginData>(LOGIN_URL, postData)
     if (response.data.ok) {
       this.#settingManager.set('username', postData.email)
       this.#settingManager.set('password', postData.password)
@@ -164,7 +161,7 @@ export default class AristonAPI {
     config: InternalAxiosRequestConfig,
   ): Promise<InternalAxiosRequestConfig> {
     if (config.url !== LOGIN_URL) {
-      const expires: string = this.#settingManager.get('expires') ?? ''
+      const expires = this.#settingManager.get('expires') ?? ''
       if (expires && DateTime.fromISO(expires) < DateTime.now()) {
         await this.applyLogin()
       }
@@ -209,11 +206,11 @@ export default class AristonAPI {
         this.#errorLogger(error.message)
         return
       }
-      const aspNetCookie: Cookie | undefined = cookies.find(
+      const aspNetCookie = cookies.find(
         (cookie: Cookie) => cookie.key === '.AspNet.ApplicationCookie',
       )
       if (aspNetCookie) {
-        const expiresDate: Date = new Date(String(aspNetCookie.expires))
+        const expiresDate = new Date(String(aspNetCookie.expires))
         this.#settingManager.set('expires', expiresDate.toISOString())
       }
     })

@@ -1,14 +1,13 @@
 import type { Capabilities, DeviceDetails, FlowArgs } from '../../types'
 import { type LoginCredentials, WheType } from '../../ariston/types'
-import type AristonAPI from '../../ariston/api'
 import type AristonApp from '../../app'
 import { Driver } from 'homey'
 import type PairSession from 'homey/lib/PairSession'
 
 export = class NuosDriver extends Driver {
-  readonly #aristonAPI: AristonAPI = (this.homey.app as AristonApp).aristonAPI
+  readonly #aristonAPI = (this.homey.app as AristonApp).aristonAPI
 
-  readonly #deviceType: WheType = WheType.nuos
+  readonly #deviceType = WheType.nuos
 
   readonly #onoffCapabilities: (keyof Capabilities)[] =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
