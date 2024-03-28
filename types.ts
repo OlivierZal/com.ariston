@@ -20,13 +20,11 @@ export interface Capabilities {
   readonly vacation: string
 }
 
-type RangeOptions = object & {
-  readonly max: number
-  readonly min: number
-}
-
 export interface CapabilityOptionsEntries {
-  readonly target_temperature: RangeOptions
+  readonly target_temperature: object & {
+    readonly max: number
+    readonly min: number
+  }
 }
 
 export interface Settings {
