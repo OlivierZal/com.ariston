@@ -20,7 +20,7 @@ export interface Capabilities {
   readonly vacation: string
 }
 
-export type RangeOptions = object & {
+type RangeOptions = object & {
   readonly max: number
   readonly min: number
 }

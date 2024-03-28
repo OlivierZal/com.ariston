@@ -17,11 +17,9 @@ import axios, {
   type AxiosResponse,
   type InternalAxiosRequestConfig,
 } from 'axios'
-import createAPICallErrorData, {
-  type APICallContextDataWithErrorMessage,
-} from './lib/APICallErrorData'
 import APICallRequestData from './lib/APICallRequestData'
 import APICallResponseData from './lib/APICallResponseData'
+import createAPICallErrorData from './lib/APICallErrorData'
 import { wrapper } from 'axios-cookiejar-support'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -141,8 +139,7 @@ export default class AristonAPI {
   }
 
   async #handleError(error: AxiosError): Promise<AxiosError> {
-    const apiCallData: APICallContextDataWithErrorMessage =
-      createAPICallErrorData(error)
+    const apiCallData = createAPICallErrorData(error)
     this.#errorLogger(String(apiCallData))
     if (
       error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&

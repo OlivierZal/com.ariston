@@ -9,7 +9,7 @@ export = class NuosDriver extends Driver {
 
   readonly #deviceType = WheType.nuos
 
-  readonly #onoffCapabilities: (keyof Capabilities)[] =
+  readonly #onoffCapabilities =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (this.manifest.capabilities as (keyof Capabilities)[]).filter(
       (capability) => capability.startsWith('onoff.'),

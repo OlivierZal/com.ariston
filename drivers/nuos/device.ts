@@ -2,7 +2,6 @@ import type {
   Capabilities,
   CapabilityOptionsEntries,
   DeviceDetails,
-  RangeOptions,
   Settings,
 } from '../../types'
 import { DateTime, Duration } from 'luxon'
@@ -43,11 +42,10 @@ const getEnergyData = (
   data: ReportData,
   seriesName: HistogramData['series'],
 ): HistogramData | undefined => {
-  const histogramData: HistogramData[] =
-    data.data.asKwhRaw.histogramData.filter(
-      ({ tab, period }) =>
-        tab === 'ConsumedElectricity' && period === 'CurrentDay',
-    )
+  const histogramData = data.data.asKwhRaw.histogramData.filter(
+    ({ tab, period }) =>
+      tab === 'ConsumedElectricity' && period === 'CurrentDay',
+  )
   return histogramData.find(({ series }) => series === seriesName)
 }
 
@@ -285,7 +283,7 @@ class NuosDevice extends Device {
   }
 
   async #handleCapabilities(): Promise<void> {
-    const requiredCapabilities: string[] =
+    const requiredCapabilities =
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.driver.manifest.capabilities as string[]
     await requiredCapabilities.reduce<Promise<void>>(
@@ -467,8 +465,7 @@ class NuosDevice extends Device {
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
-    const options: RangeOptions =
-      this.getCapabilityOptions('target_temperature')
+    const options = this.getCapabilityOptions('target_temperature')
     if (min !== options.min || max !== options.max) {
       await this.setCapabilityOptions('target_temperature', {
         ...options,
