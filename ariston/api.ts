@@ -92,7 +92,7 @@ export default class AristonAPI {
         return (
           await this.login({ email: username, password, rememberMe: true })
         ).data.ok
-      } catch (error: unknown) {
+      } catch (error) {
         throwIfRequested(error, raise)
       }
     }

@@ -47,7 +47,7 @@ export = class NuosDriver extends Driver {
           .filter(({ wheType }) => wheType === this.#deviceType)
           .map(({ gw, name }) => ({ data: { id: gw }, name }))
       )
-    } catch (error: unknown) {
+    } catch (error) {
       return []
     }
   }

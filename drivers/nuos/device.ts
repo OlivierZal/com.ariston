@@ -316,7 +316,7 @@ class NuosDevice extends Device {
           this.#postData = { plantData: {}, viewModel: {} }
         }
         return data
-      } catch (error: unknown) {
+      } catch (error) {
         // Error handling is delegated to the interceptor
       }
     }
@@ -336,7 +336,7 @@ class NuosDevice extends Device {
         getEnergy(energyHpData),
         getEnergy(energyResistorData),
       )
-    } catch (error: unknown) {
+    } catch (error) {
       this.error(error instanceof Error ? error.message : error)
     }
   }
@@ -352,7 +352,7 @@ class NuosDevice extends Device {
           this.#postSettings = {}
         }
         return success
-      } catch (error: unknown) {
+      } catch (error) {
         // Error handling is delegated to the interceptor
       }
     }
