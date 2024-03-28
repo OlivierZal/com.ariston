@@ -12,7 +12,7 @@ export = class NuosDriver extends Driver {
   readonly #onoffCapabilities: (keyof Capabilities)[] =
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     (this.manifest.capabilities as (keyof Capabilities)[]).filter(
-      (capability: keyof Capabilities) => capability.startsWith('onoff.'),
+      (capability) => capability.startsWith('onoff.'),
     )
 
   public async onInit(): Promise<void> {
@@ -21,23 +21,16 @@ export = class NuosDriver extends Driver {
   }
 
   public async onPair(session: PairSession): Promise<void> {
-    session.setHandler(
-      'login',
-      async (data: LoginCredentials): Promise<boolean> =>
-        this.#applyLogin(data),
+    session.setHandler('login', async (data: LoginCredentials) =>
+      this.#applyLogin(data),
     )
-    session.setHandler(
-      'list_devices',
-      async (): Promise<DeviceDetails[]> => this.#discoverDevices(),
-    )
+    session.setHandler('list_devices', async () => this.#discoverDevices())
     return Promise.resolve()
   }
 
   public async onRepair(session: PairSession): Promise<void> {
-    session.setHandler(
-      'login',
-      async (data: LoginCredentials): Promise<boolean> =>
-        this.#applyLogin(data),
+    session.setHandler('login', async (data: LoginCredentials) =>
+      this.#applyLogin(data),
     )
     return Promise.resolve()
   }
@@ -52,7 +45,7 @@ export = class NuosDriver extends Driver {
         (await this.#aristonAPI.plants()).data
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
           .filter(({ wheType }) => wheType === this.#deviceType)
-          .map(({ gw, name }): DeviceDetails => ({ data: { id: gw }, name }))
+          .map(({ gw, name }) => ({ data: { id: gw }, name }))
       )
     } catch (error: unknown) {
       return []
@@ -63,28 +56,28 @@ export = class NuosDriver extends Driver {
     this.homey.flow
       .getConditionCard('operation_mode_condition')
       .registerRunListener(
-        (args: FlowArgs): boolean =>
+        (args: FlowArgs) =>
           args.device.getCapabilityValue('operation_mode') ===
           args.operation_mode,
       )
     this.homey.flow
       .getActionCard('operation_mode_action')
-      .registerRunListener(async (args: FlowArgs): Promise<void> => {
+      .registerRunListener(async (args: FlowArgs) => {
         await args.device.triggerCapabilityListener(
           'operation_mode',
           args.operation_mode,
         )
       })
-    this.#onoffCapabilities.forEach((capability: keyof Capabilities) => {
+    this.#onoffCapabilities.forEach((capability) => {
       this.homey.flow
         .getConditionCard(`${capability}_condition`)
         .registerRunListener(
-          (args: FlowArgs): boolean =>
+          (args: FlowArgs) =>
             args.device.getCapabilityValue(capability) as boolean,
         )
       this.homey.flow
         .getActionCard(`${capability}_action`)
-        .registerRunListener(async (args: FlowArgs): Promise<void> => {
+        .registerRunListener(async (args: FlowArgs) => {
           await args.device.triggerCapabilityListener(capability, args.onoff)
         })
     })

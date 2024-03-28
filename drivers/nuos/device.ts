@@ -4,7 +4,6 @@ import type {
   DeviceDetails,
   RangeOptions,
   Settings,
-  ValueOf,
 } from '../../types'
 import { DateTime, Duration } from 'luxon'
 import {
@@ -244,8 +243,7 @@ class NuosDevice extends Device {
   public async setSettings(settings: Settings): Promise<void> {
     const newSettings = Object.fromEntries(
       Object.entries(settings).filter(
-        ([key, value]: [string, ValueOf<Settings>]) =>
-          value !== this.getSetting(key as keyof Settings),
+        ([key, value]) => value !== this.getSetting(key as keyof Settings),
       ),
     )
     if (Object.keys(newSettings).length) {
@@ -291,17 +289,15 @@ class NuosDevice extends Device {
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       this.driver.manifest.capabilities as string[]
     await requiredCapabilities.reduce<Promise<void>>(
-      async (acc, capability: string) => {
+      async (acc, capability) => {
         await acc
         return this.addCapability(capability)
       },
       Promise.resolve(),
     )
     await this.getCapabilities()
-      .filter(
-        (capability: string) => !requiredCapabilities.includes(capability),
-      )
-      .reduce<Promise<void>>(async (acc, capability: string) => {
+      .filter((capability) => !requiredCapabilities.includes(capability))
+      .reduce<Promise<void>>(async (acc, capability) => {
         await acc
         await this.removeCapability(capability)
       }, Promise.resolve())
@@ -365,7 +361,7 @@ class NuosDevice extends Device {
 
   #registerCapabilityListeners<K extends keyof Capabilities>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    ;(this.driver.manifest.capabilities as K[]).forEach((capability: K) => {
+    ;(this.driver.manifest.capabilities as K[]).forEach((capability) => {
       this.registerCapabilityListener(
         capability,
         async (value: Capabilities[K]): Promise<void> => {

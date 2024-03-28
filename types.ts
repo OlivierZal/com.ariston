@@ -29,8 +29,6 @@ export interface CapabilityOptionsEntries {
   readonly target_temperature: RangeOptions
 }
 
-export type ValueOf<T> = T[keyof T]
-
 export interface Settings {
   readonly always_on?: boolean
   readonly max?: number
