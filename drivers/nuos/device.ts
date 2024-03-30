@@ -315,7 +315,7 @@ class NuosDevice extends Device {
         }
         return data
       } catch (error) {
-        // Error handling is delegated to the interceptor
+        return null
       }
     }
     return null
