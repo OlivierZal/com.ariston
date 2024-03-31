@@ -1,4 +1,3 @@
-import { type Cookie, CookieJar } from 'tough-cookie'
 import { DateTime, Duration } from 'luxon'
 import type {
   GetData,
@@ -19,6 +18,7 @@ import axios, {
 } from 'axios'
 import APICallRequestData from './lib/APICallRequestData'
 import APICallResponseData from './lib/APICallResponseData'
+import { CookieJar } from 'tough-cookie'
 import createAPICallErrorData from './lib/APICallErrorData'
 import { wrapper } from 'axios-cookiejar-support'
 
@@ -201,7 +201,7 @@ export default class AristonAPI {
         return
       }
       const aspNetCookie = cookies.find(
-        (cookie: Cookie) => cookie.key === '.AspNet.ApplicationCookie',
+        (cookie) => cookie.key === '.AspNet.ApplicationCookie',
       )
       if (aspNetCookie) {
         const expiresDate = new Date(String(aspNetCookie.expires))

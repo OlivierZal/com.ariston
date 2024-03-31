@@ -204,7 +204,7 @@ class NuosDevice extends Device {
     }
     if (
       (await this.#plantSettings()) &&
-      changedKeys.some((key: string) => ['min', 'max'].includes(key))
+      changedKeys.some((key) => ['min', 'max'].includes(key))
     ) {
       await this.#updateTargetTemperatureMinMax(newSettings)
     }
@@ -247,9 +247,7 @@ class NuosDevice extends Device {
     if (Object.keys(newSettings).length) {
       await super.setSettings(newSettings)
       if (
-        ['min', 'max'].some((key: string) =>
-          Object.keys(newSettings).includes(key),
-        )
+        ['min', 'max'].some((key) => Object.keys(newSettings).includes(key))
       ) {
         await this.#updateTargetTemperatureMinMax()
       }
