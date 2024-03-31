@@ -38,12 +38,6 @@ interface SettingManager {
 const DOMAIN = 'https://www.ariston-net.remotethermo.com'
 const LOGIN_URL = '/R2/Account/Login'
 
-const throwIfRequested = (error: unknown, raise: boolean): void => {
-  if (raise) {
-    throw new Error(error instanceof Error ? error.message : String(error))
-  }
-}
-
 export default class AristonAPI {
   #retry = true
 
@@ -75,20 +69,22 @@ export default class AristonAPI {
     this.#setupAxiosInterceptors()
   }
 
-  public async applyLogin(
-    { password, username }: LoginCredentials = {
+  public async applyLogin(data?: LoginCredentials): Promise<boolean> {
+    const { password, username } = data ?? {
       password: this.#settingManager.get('password') ?? '',
       username: this.#settingManager.get('username') ?? '',
-    },
-    raise = false,
-  ): Promise<boolean> {
+    }
     if (username && password) {
       try {
         return (
           await this.login({ email: username, password, rememberMe: true })
         ).data.ok
       } catch (error) {
-        throwIfRequested(error, raise)
+        if (typeof data !== 'undefined') {
+          throw new Error(
+            error instanceof Error ? error.message : String(error),
+          )
+        }
       }
     }
     return false
