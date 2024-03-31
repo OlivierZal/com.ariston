@@ -21,6 +21,15 @@ export = class NuosDriver extends Driver {
   }
 
   public async onPair(session: PairSession): Promise<void> {
+    session.setHandler('showView', async (view: string) => {
+      if (view === 'loading') {
+        if (await this.#applyLogin()) {
+          await session.showView('list_devices')
+          return
+        }
+        await session.showView('login')
+      }
+    })
     session.setHandler('login', async (data: LoginCredentials) =>
       this.#applyLogin(data),
     )
@@ -35,7 +44,7 @@ export = class NuosDriver extends Driver {
     return Promise.resolve()
   }
 
-  async #applyLogin(data: LoginCredentials): Promise<boolean> {
+  async #applyLogin(data?: LoginCredentials): Promise<boolean> {
     return this.#aristonAPI.applyLogin(data)
   }
 
