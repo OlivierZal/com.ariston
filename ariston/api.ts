@@ -101,7 +101,7 @@ export default class AristonAPI {
 
   public async plantData(
     id: string,
-    postData: PostData | null = null,
+    postData?: PostData,
   ): Promise<{ data: GetData }> {
     return this.#api<GetData>({
       method: postData ? 'POST' : 'GET',
