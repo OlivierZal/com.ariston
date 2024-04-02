@@ -152,10 +152,10 @@ class NuosDevice extends Device {
   }
 
   readonly #diff = new Map<
-    keyof Capabilities,
+    keyof SetCapabilities,
     {
-      initialValue: Capabilities[keyof Capabilities]
-      value: Capabilities[keyof Capabilities]
+      initialValue: SetCapabilities[keyof SetCapabilities]
+      value: SetCapabilities[keyof SetCapabilities]
     }
   >()
 
