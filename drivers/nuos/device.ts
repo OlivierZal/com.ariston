@@ -2,6 +2,9 @@ import type {
   Capabilities,
   CapabilityOptionsEntries,
   DeviceDetails,
+  PostDataCapabilities,
+  SetCapabilities,
+  SettingCapabilities,
   Settings,
 } from '../../types'
 import { DateTime, Duration } from 'luxon'
@@ -23,13 +26,33 @@ const ENERGY_REFRESH_INTERVAL = Duration.fromObject({ hours: 2 })
 const ENERGY_REFRESH_HOURS = ENERGY_REFRESH_INTERVAL.as('hours')
 const K_MULTIPLIER = 1000
 const NUMBER_0 = 0
-const SETTINGS: Record<string, keyof PostSettings> = {
+
+const POST_DATA: Record<
+  Exclude<keyof PostDataCapabilities, 'onoff.auto'>,
+  keyof PostData['plantData'] & keyof PostData['viewModel']
+> = {
+  onoff: 'on',
+  'onoff.boost': 'boostOn',
+  operation_mode: 'opMode',
+  target_temperature: 'comfortTemp',
+  vacation: 'holidayUntil',
+}
+const PLANT_DATA: Partial<
+  Record<keyof Capabilities, keyof PostData['plantData']>
+> = {
+  ...POST_DATA,
+  'onoff.auto': 'mode',
+}
+const VIEW_MODEL: Partial<
+  Record<keyof Capabilities, keyof PostData['viewModel']>
+> = {
+  ...POST_DATA,
+  'onoff.auto': 'plantMode',
+}
+const SETTINGS: Record<keyof SettingCapabilities, keyof PostSettings> = {
   'onoff.legionella': 'SlpAntilegionellaOnOff',
   'onoff.preheating': 'SlpPreHeatingOnOff',
 }
-
-const convertToMode = (value: boolean): Mode =>
-  value ? Mode.auto : Mode.manual
 
 const convertToDate = (days: number): string | null =>
   days
@@ -73,13 +96,68 @@ const getPower = (energyData: HistogramData | undefined): number => {
 class NuosDevice extends Device {
   public declare driver: NuosDriver
 
-  #postData: PostData = { plantData: {}, viewModel: {} }
-
-  #postSettings: PostSettings = {}
-
   #syncTimeout!: NodeJS.Timeout
 
   readonly #aristonAPI = (this.homey.app as AristonApp).aristonAPI
+
+  readonly #convertToPlantData: Record<
+    keyof PostDataCapabilities,
+    (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => PostData['plantData'][keyof PostData['plantData']]
+  > = {
+    onoff: ((value: boolean) => value) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => boolean,
+    'onoff.auto': ((value: boolean) => (value ? Mode.auto : Mode.manual)) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => Mode,
+    'onoff.boost': ((value: boolean) => value) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => boolean,
+    operation_mode: ((value: keyof typeof OperationMode) =>
+      OperationMode[value]) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => OperationMode,
+    target_temperature: ((value: number) => value) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => number,
+    vacation: ((value: number) => convertToDate(value)) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => string | null,
+  }
+
+  readonly #convertToSettings: Record<
+    keyof SettingCapabilities,
+    (value: SettingCapabilities[keyof SettingCapabilities]) => number
+  > = {
+    'onoff.legionella': ((value: boolean) => Number(value)) as (
+      value: SettingCapabilities[keyof SettingCapabilities],
+    ) => number,
+    'onoff.preheating': ((value: boolean) => Number(value)) as (
+      value: SettingCapabilities[keyof SettingCapabilities],
+    ) => number,
+  }
+
+  readonly #convertToViewModel: Record<
+    keyof PostDataCapabilities,
+    (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => PostData['viewModel'][keyof PostData['viewModel']]
+  > = {
+    ...this.#convertToPlantData,
+    onoff: ((value: boolean) => this.getSetting('always_on') || value) as (
+      value: PostDataCapabilities[keyof PostDataCapabilities],
+    ) => boolean,
+  }
+
+  readonly #diff = new Map<
+    keyof Capabilities,
+    {
+      initialValue: Capabilities[keyof Capabilities]
+      value: Capabilities[keyof Capabilities]
+    }
+  >()
 
   readonly #id = (this.getData() as DeviceDetails['data']).id
 
@@ -105,53 +183,6 @@ class NuosDevice extends Device {
     setting: K,
   ): NonNullable<Settings[K]> {
     return super.getSetting(setting) as NonNullable<Settings[K]>
-  }
-
-  public async onCapability<K extends keyof Capabilities>(
-    capability: K,
-    value: Capabilities[K],
-  ): Promise<void> {
-    const oldValue = this.getCapabilityValue(capability)
-    switch (capability) {
-      case 'onoff':
-        if (this.getSetting('always_on') && !(value as boolean)) {
-          await this.setWarning(this.homey.__('warnings.always_on'))
-        } else {
-          this.#postData.plantData.on = oldValue as boolean
-          this.#postData.viewModel.on = value as boolean
-        }
-        break
-      case 'onoff.auto':
-        this.#postData.plantData.mode = convertToMode(oldValue as boolean)
-        this.#postData.viewModel.plantMode = convertToMode(value as boolean)
-        break
-      case 'onoff.boost':
-        this.#postData.plantData.boostOn = oldValue as boolean
-        this.#postData.viewModel.boostOn = value as boolean
-        break
-      case 'onoff.legionella':
-      case 'onoff.preheating':
-        this.#postSettings[SETTINGS[capability]] = {
-          new: Number(value),
-          old: Number(oldValue),
-        }
-        break
-      case 'operation_mode':
-        this.#postData.plantData.opMode =
-          OperationMode[oldValue as keyof typeof OperationMode]
-        this.#postData.viewModel.opMode =
-          OperationMode[value as keyof typeof OperationMode]
-        break
-      case 'target_temperature':
-        this.#postData.plantData.comfortTemp = oldValue as number
-        this.#postData.viewModel.comfortTemp = value as number
-        break
-      case 'vacation':
-        this.#postData.plantData.holidayUntil = convertToDate(Number(oldValue))
-        this.#postData.viewModel.holidayUntil = convertToDate(Number(value))
-        break
-      default:
-    }
   }
 
   public onDeleted(): void {
@@ -196,17 +227,18 @@ class NuosDevice extends Device {
     ) {
       await this.triggerCapabilityListener('onoff', true)
     }
+    const postSettings: PostSettings = {}
     if (changedKeys.includes('min') && typeof newSettings.min !== 'undefined') {
-      this.#postSettings.SlpMinSetpointTemperature = { new: newSettings.min }
+      postSettings.SlpMinSetpointTemperature = { new: newSettings.min }
     }
     if (changedKeys.includes('max') && typeof newSettings.max !== 'undefined') {
-      this.#postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
+      postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
     if (
-      (await this.#plantSettings()) &&
+      (await this.#plantSettings(postSettings)) &&
       changedKeys.some((key) => ['min', 'max'].includes(key))
     ) {
-      await this.#updateTargetTemperatureMinMax(newSettings)
+      await this.#setTargetTemperatureMinMax(newSettings)
     }
   }
 
@@ -249,7 +281,7 @@ class NuosDevice extends Device {
       if (
         ['min', 'max'].some((key) => Object.keys(newSettings).includes(key))
       ) {
-        await this.#updateTargetTemperatureMinMax()
+        await this.#setTargetTemperatureMinMax()
       }
     }
   }
@@ -273,11 +305,69 @@ class NuosDevice extends Device {
   #applySyncToDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.#plantSettings()
-        await this.#sync(true)
+        await this.#plantSettings(this.#buildPostSettings())
+        await this.#sync(this.#buildPostData())
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),
     )
+  }
+
+  #buildPlantData(): PostData['plantData'] {
+    return Object.fromEntries(
+      Array.from(this.#diff.entries())
+        .filter(([capability]) => Object.keys(PLANT_DATA).includes(capability))
+        .map(([capability, diff]) => [
+          PLANT_DATA[capability],
+          this.#convertToPlantData[capability as keyof PostDataCapabilities](
+            diff.initialValue,
+          ),
+        ]),
+    ) as PostData['plantData']
+  }
+
+  #buildPostData(): PostData {
+    this.#setAlwaysOnWarning()
+    return {
+      plantData: this.#buildPlantData(),
+      viewModel: this.#buildViewModel(),
+    }
+  }
+
+  #buildPostSettings(): PostSettings {
+    return Object.fromEntries(
+      Array.from(this.#diff.entries())
+        .filter(([capability]) => Object.keys(SETTINGS).includes(capability))
+        .map(([capability, diff]) => {
+          this.#diff.delete(capability)
+          return [
+            SETTINGS[capability as keyof SettingCapabilities],
+            {
+              new: this.#convertToSettings[
+                capability as keyof SettingCapabilities
+              ](diff.value as boolean),
+              old: this.#convertToSettings[
+                capability as keyof SettingCapabilities
+              ](diff.initialValue as boolean),
+            },
+          ]
+        }),
+    ) as PostSettings
+  }
+
+  #buildViewModel(): PostData['viewModel'] {
+    return Object.fromEntries(
+      Array.from(this.#diff.entries())
+        .filter(([capability]) => Object.keys(VIEW_MODEL).includes(capability))
+        .map(([capability, diff]) => {
+          this.#diff.delete(capability)
+          return [
+            VIEW_MODEL[capability],
+            this.#convertToViewModel[capability as keyof PostDataCapabilities](
+              diff.value,
+            ),
+          ]
+        }),
+    ) as PostData['viewModel']
   }
 
   async #handleCapabilities(): Promise<void> {
@@ -299,19 +389,29 @@ class NuosDevice extends Device {
       }, Promise.resolve())
   }
 
-  async #plantData(post = false): Promise<GetData['data'] | null> {
-    if (!post || Object.keys(this.#postData.viewModel).length) {
+  #onCapability<K extends Extract<keyof SetCapabilities, string>>(
+    capability: K,
+    value: SetCapabilities[K],
+  ): void {
+    if (this.#diff.has(capability)) {
+      const diff = this.#diff.get(capability)
+      if (value === diff?.initialValue) {
+        this.#diff.delete(capability)
+      } else if (diff) {
+        diff.value = value
+      }
+      return
+    }
+    this.#diff.set(capability, {
+      initialValue: this.getCapabilityValue(capability),
+      value,
+    })
+  }
+
+  async #plantData(postData?: PostData): Promise<GetData['data'] | null> {
+    if (!postData || Object.keys(postData.viewModel).length) {
       try {
-        const { data } = (
-          await this.#aristonAPI.plantData(
-            this.#id,
-            post ? this.#postData : null,
-          )
-        ).data
-        if (post) {
-          this.#postData = { plantData: {}, viewModel: {} }
-        }
-        return data
+        return (await this.#aristonAPI.plantData(this.#id, postData)).data.data
       } catch (error) {
         return null
       }
@@ -337,15 +437,14 @@ class NuosDevice extends Device {
     }
   }
 
-  async #plantSettings(): Promise<boolean> {
-    if (Object.keys(this.#postSettings).length) {
+  async #plantSettings(postSettings: PostSettings): Promise<boolean> {
+    if (Object.keys(postSettings).length) {
       try {
         const { success } = (
-          await this.#aristonAPI.plantSettings(this.#id, this.#postSettings)
+          await this.#aristonAPI.plantSettings(this.#id, postSettings)
         ).data
         if (success) {
-          await this.#setSettingCapabilityValues()
-          this.#postSettings = {}
+          await this.#setSettingCapabilities(postSettings)
         }
         return success
       } catch (error) {
@@ -355,21 +454,36 @@ class NuosDevice extends Device {
     return false
   }
 
-  #registerCapabilityListeners<K extends keyof Capabilities>(): void {
+  #registerCapabilityListeners<K extends keyof SetCapabilities>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     ;(this.driver.manifest.capabilities as K[]).forEach((capability) => {
       this.registerCapabilityListener(
         capability,
-        async (value: Capabilities[K]): Promise<void> => {
+        (value: SetCapabilities[K]) => {
           this.homey.clearTimeout(this.#syncTimeout)
-          await this.onCapability(capability, value)
+          this.#onCapability(capability, value)
           this.#applySyncToDevice()
         },
       )
     })
   }
 
-  async #setDataValues(plantData: GetData['data']['plantData']): Promise<void> {
+  #setAlwaysOnWarning(): void {
+    if (
+      this.getSetting('always_on') &&
+      this.#diff.get('onoff')?.value === false
+    ) {
+      this.setWarning(this.homey.__('warnings.always_on')).catch(
+        (error: unknown) => {
+          this.error(error instanceof Error ? error.message : String(error))
+        },
+      )
+    }
+  }
+
+  async #setCapabilities(
+    plantData: GetData['data']['plantData'],
+  ): Promise<void> {
     await this.setCapabilityValue('measure_temperature', plantData.waterTemp)
     await this.setCapabilityValue(
       'measure_temperature.required',
@@ -397,6 +511,14 @@ class NuosDevice extends Device {
     )
   }
 
+  async #setCapabilitiesAndSettings(postData?: PostData): Promise<void> {
+    const data = await this.#plantData(postData)
+    if (data) {
+      await this.#setSettings(data.plantSettings)
+      await this.#setCapabilities(data.plantData)
+    }
+  }
+
   async #setEnergyValues(
     energyHp: number,
     energyResistor: number,
@@ -412,22 +534,22 @@ class NuosDevice extends Device {
     await this.setCapabilityValue('measure_power.resistor', powerResistor)
   }
 
-  async #setSettingCapabilityValues(): Promise<void> {
-    if (this.#postSettings.SlpAntilegionellaOnOff) {
+  async #setSettingCapabilities(postSettings: PostSettings): Promise<void> {
+    if (postSettings.SlpAntilegionellaOnOff) {
       await this.setCapabilityValue(
         'onoff.legionella',
-        Boolean(this.#postSettings.SlpAntilegionellaOnOff.new),
+        Boolean(postSettings.SlpAntilegionellaOnOff.new),
       )
     }
-    if (this.#postSettings.SlpPreHeatingOnOff) {
+    if (postSettings.SlpPreHeatingOnOff) {
       await this.setCapabilityValue(
         'onoff.preheating',
-        Boolean(this.#postSettings.SlpPreHeatingOnOff.new),
+        Boolean(postSettings.SlpPreHeatingOnOff.new),
       )
     }
   }
 
-  async #setSettingValues(
+  async #setSettings(
     plantSettings: GetData['data']['plantSettings'],
   ): Promise<void> {
     if (plantSettings) {
@@ -446,20 +568,7 @@ class NuosDevice extends Device {
     }
   }
 
-  async #sync(post = false): Promise<void> {
-    await this.#updateCapabilities(post)
-    this.#applySyncFromDevice()
-  }
-
-  async #updateCapabilities(post: boolean): Promise<void> {
-    const data = await this.#plantData(post)
-    if (data) {
-      await this.#setSettingValues(data.plantSettings)
-      await this.#setDataValues(data.plantData)
-    }
-  }
-
-  async #updateTargetTemperatureMinMax(
+  async #setTargetTemperatureMinMax(
     settings: Settings = this.getSettings() as Settings,
   ): Promise<void> {
     const { min, max } = settings
@@ -472,6 +581,11 @@ class NuosDevice extends Device {
       })
       await this.setWarning(this.homey.__('warnings.settings'))
     }
+  }
+
+  async #sync(postData?: PostData): Promise<void> {
+    await this.#setCapabilitiesAndSettings(postData)
+    this.#applySyncFromDevice()
   }
 }
 

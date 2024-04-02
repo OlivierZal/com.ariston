@@ -1,7 +1,25 @@
 import type NuosDevice from './drivers/nuos/device'
 import type { OperationMode } from './ariston/types'
 
-export interface Capabilities {
+export interface SettingCapabilities {
+  readonly 'onoff.legionella': boolean
+  readonly 'onoff.preheating': boolean
+}
+
+export interface PostDataCapabilities {
+  readonly onoff: boolean
+  readonly 'onoff.auto': boolean
+  readonly 'onoff.boost': boolean
+  readonly operation_mode: keyof typeof OperationMode
+  readonly target_temperature: number
+  readonly vacation: string
+}
+
+export interface SetCapabilities
+  extends SettingCapabilities,
+    PostDataCapabilities {}
+
+export interface Capabilities extends SetCapabilities {
   readonly measure_power: number
   readonly 'measure_power.hp': number
   readonly 'measure_power.resistor': number
@@ -10,14 +28,6 @@ export interface Capabilities {
   readonly meter_power: number
   readonly 'meter_power.hp': number
   readonly 'meter_power.resistor': number
-  readonly onoff: boolean
-  readonly 'onoff.auto': boolean
-  readonly 'onoff.boost': boolean
-  readonly 'onoff.legionella': boolean
-  readonly 'onoff.preheating': boolean
-  readonly operation_mode: keyof typeof OperationMode
-  readonly target_temperature: number
-  readonly vacation: string
 }
 
 export interface CapabilityOptionsEntries {
