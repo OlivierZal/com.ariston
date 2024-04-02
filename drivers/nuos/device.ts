@@ -389,7 +389,7 @@ class NuosDevice extends Device {
       }, Promise.resolve())
   }
 
-  #onCapability<K extends Extract<keyof SetCapabilities, string>>(
+  #onCapability<K extends keyof SetCapabilities>(
     capability: K,
     value: SetCapabilities[K],
   ): void {
