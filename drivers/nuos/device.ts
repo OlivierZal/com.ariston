@@ -31,11 +31,11 @@ const POST_DATA: Record<
   Exclude<keyof PostDataCapabilities, 'onoff.auto'>,
   keyof PostData['plantData'] & keyof PostData['viewModel']
 > = {
-  onoff: 'on',
+  'onoff': 'on',
   'onoff.boost': 'boostOn',
-  operation_mode: 'opMode',
-  target_temperature: 'comfortTemp',
-  vacation: 'holidayUntil',
+  'operation_mode': 'opMode',
+  'target_temperature': 'comfortTemp',
+  'vacation': 'holidayUntil',
 }
 const PLANT_DATA: Partial<
   Record<keyof Capabilities, keyof PostData['plantData']>
@@ -57,8 +57,8 @@ const SETTINGS: Record<keyof SettingCapabilities, keyof PostSettings> = {
 const convertToDate = (days: number): string | null =>
   days
     ? DateTime.now()
-        .plus({ days: days - Duration.fromObject({ days: 1 }).as('days') })
-        .toISODate()
+      .plus({ days: days - Duration.fromObject({ days: 1 }).as('days') })
+      .toISODate()
     : null
 
 const getEnergyData = (
@@ -75,20 +75,21 @@ const getEnergyData = (
 const getEnergy = (energyData: HistogramData | undefined): number =>
   energyData
     ? energyData.items.reduce<number>(
-        (acc, { y: yNumber }) => acc + yNumber,
-        NUMBER_0,
-      )
+      (acc, { y: yNumber }) => acc + yNumber,
+      NUMBER_0,
+    )
     : NUMBER_0
 
 const getPower = (energyData: HistogramData | undefined): number => {
   const { hour } = DateTime.now()
   return (
-    ((energyData?.items.find(({ x: xString }) => {
-      const xNumber = Number(xString)
-      return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_HOURS
-    })?.y ?? NUMBER_0) *
-      K_MULTIPLIER) /
-    ENERGY_REFRESH_HOURS
+    (
+      (energyData?.items.find(({ x: xString }) => {
+        const xNumber = Number(xString)
+        return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_HOURS
+      })?.y ?? NUMBER_0)
+      * K_MULTIPLIER
+    ) / ENERGY_REFRESH_HOURS
   )
 }
 
@@ -106,38 +107,38 @@ class NuosDevice extends Device {
       value: PostDataCapabilities[keyof PostDataCapabilities],
     ) => PostData['plantData'][keyof PostData['plantData']]
   > = {
-    onoff: ((value: boolean) => value) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => boolean,
-    'onoff.auto': ((value: boolean) => (value ? Mode.auto : Mode.manual)) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => Mode,
-    'onoff.boost': ((value: boolean) => value) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => boolean,
-    operation_mode: ((value: keyof typeof OperationMode) =>
-      OperationMode[value]) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => OperationMode,
-    target_temperature: ((value: number) => value) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => number,
-    vacation: ((value: number) => convertToDate(value)) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => string | null,
-  }
+      'onoff': ((value: boolean) => value) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => boolean,
+      'onoff.auto': ((value: boolean) => (value ? Mode.auto : Mode.manual)) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => Mode,
+      'onoff.boost': ((value: boolean) => value) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => boolean,
+      'operation_mode': ((value: keyof typeof OperationMode) =>
+        OperationMode[value]) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => OperationMode,
+      'target_temperature': ((value: number) => value) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => number,
+      'vacation': ((value: number) => convertToDate(value)) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => string | null,
+    }
 
   readonly #convertToSettings: Record<
     keyof SettingCapabilities,
     (value: SettingCapabilities[keyof SettingCapabilities]) => number
   > = {
-    'onoff.legionella': ((value: boolean) => Number(value)) as (
-      value: SettingCapabilities[keyof SettingCapabilities],
-    ) => number,
-    'onoff.preheating': ((value: boolean) => Number(value)) as (
-      value: SettingCapabilities[keyof SettingCapabilities],
-    ) => number,
-  }
+      'onoff.legionella': ((value: boolean) => Number(value)) as (
+        value: SettingCapabilities[keyof SettingCapabilities],
+      ) => number,
+      'onoff.preheating': ((value: boolean) => Number(value)) as (
+        value: SettingCapabilities[keyof SettingCapabilities],
+      ) => number,
+    }
 
   readonly #convertToViewModel: Record<
     keyof PostDataCapabilities,
@@ -145,11 +146,11 @@ class NuosDevice extends Device {
       value: PostDataCapabilities[keyof PostDataCapabilities],
     ) => PostData['viewModel'][keyof PostData['viewModel']]
   > = {
-    ...this.#convertToPlantData,
-    onoff: ((value: boolean) => this.getSetting('always_on') || value) as (
-      value: PostDataCapabilities[keyof PostDataCapabilities],
-    ) => boolean,
-  }
+      ...this.#convertToPlantData,
+      onoff: ((value: boolean) => this.getSetting('always_on') || value) as (
+        value: PostDataCapabilities[keyof PostDataCapabilities],
+      ) => boolean,
+    }
 
   readonly #diff = new Map<
     keyof SetCapabilities,
@@ -221,9 +222,9 @@ class NuosDevice extends Device {
     newSettings: Settings
   }): Promise<void> {
     if (
-      changedKeys.includes('always_on') &&
-      newSettings.always_on === true &&
-      !this.getCapabilityValue('onoff')
+      changedKeys.includes('always_on')
+      && newSettings.always_on === true
+      && !this.getCapabilityValue('onoff')
     ) {
       await this.triggerCapabilityListener('onoff', true)
     }
@@ -235,8 +236,8 @@ class NuosDevice extends Device {
       postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
     if (
-      (await this.#plantSettings(postSettings)) &&
-      changedKeys.some((key) => ['min', 'max'].includes(key))
+      (await this.#plantSettings(postSettings))
+      && changedKeys.some(key => ['min', 'max'].includes(key))
     ) {
       await this.#setTargetTemperatureMinMax(newSettings)
     }
@@ -279,7 +280,7 @@ class NuosDevice extends Device {
     if (Object.keys(newSettings).length) {
       await super.setSettings(newSettings)
       if (
-        ['min', 'max'].some((key) => Object.keys(newSettings).includes(key))
+        ['min', 'max'].some(key => Object.keys(newSettings).includes(key))
       ) {
         await this.#setTargetTemperatureMinMax()
       }
@@ -371,9 +372,9 @@ class NuosDevice extends Device {
   }
 
   async #handleCapabilities(): Promise<void> {
-    const requiredCapabilities =
+    const requiredCapabilities
       // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      this.driver.manifest.capabilities as string[]
+      = this.driver.manifest.capabilities as string[]
     await requiredCapabilities.reduce<Promise<void>>(
       async (acc, capability) => {
         await acc
@@ -382,7 +383,7 @@ class NuosDevice extends Device {
       Promise.resolve(),
     )
     await this.getCapabilities()
-      .filter((capability) => !requiredCapabilities.includes(capability))
+      .filter(capability => !requiredCapabilities.includes(capability))
       .reduce<Promise<void>>(async (acc, capability) => {
         await acc
         await this.removeCapability(capability)
@@ -397,7 +398,8 @@ class NuosDevice extends Device {
       const diff = this.#diff.get(capability)
       if (value === diff?.initialValue) {
         this.#diff.delete(capability)
-      } else if (diff) {
+      }
+      else if (diff) {
         diff.value = value
       }
       return
@@ -412,7 +414,8 @@ class NuosDevice extends Device {
     if (!postData || Object.keys(postData.viewModel).length) {
       try {
         return (await this.#aristonAPI.plantData(this.#id, postData)).data.data
-      } catch (error) {
+      }
+      catch (error) {
         return null
       }
     }
@@ -432,7 +435,8 @@ class NuosDevice extends Device {
         getEnergy(energyHpData),
         getEnergy(energyResistorData),
       )
-    } catch (error) {
+    }
+    catch (error) {
       this.error(error instanceof Error ? error.message : error)
     }
   }
@@ -447,7 +451,8 @@ class NuosDevice extends Device {
           await this.#setSettingCapabilities(postSettings)
         }
         return success
-      } catch (error) {
+      }
+      catch (error) {
         // Error handling is delegated to the interceptor
       }
     }
@@ -456,7 +461,7 @@ class NuosDevice extends Device {
 
   #registerCapabilityListeners<K extends keyof SetCapabilities>(): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    ;(this.driver.manifest.capabilities as K[]).forEach((capability) => {
+    (this.driver.manifest.capabilities as K[]).forEach((capability) => {
       this.registerCapabilityListener(
         capability,
         (value: SetCapabilities[K]) => {
@@ -470,8 +475,8 @@ class NuosDevice extends Device {
 
   #setAlwaysOnWarning(): void {
     if (
-      this.getSetting('always_on') &&
-      this.#diff.get('onoff')?.value === false
+      this.getSetting('always_on')
+      && this.#diff.get('onoff')?.value === false
     ) {
       this.setWarning(this.homey.__('warnings.always_on')).catch(
         (error: unknown) => {
@@ -503,10 +508,10 @@ class NuosDevice extends Device {
         plantData.holidayUntil === null
           ? NUMBER_0
           : Math.ceil(
-              DateTime.fromISO(plantData.holidayUntil)
-                .plus({ days: 1 })
-                .diffNow('days').days,
-            ),
+            DateTime.fromISO(plantData.holidayUntil)
+              .plus({ days: 1 })
+              .diffNow('days').days,
+          ),
       ),
     )
   }

@@ -97,7 +97,7 @@ export interface GetSettings {
 }
 
 export interface HistogramData {
-  readonly items: readonly { readonly x: string; readonly y: number }[]
+  readonly items: readonly { readonly x: string, readonly y: number }[]
   readonly period: string
   readonly series: 'DhwHp' | 'DhwResistor'
   readonly tab: string

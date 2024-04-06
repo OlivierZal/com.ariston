@@ -9,10 +9,10 @@ export = class NuosDriver extends Driver {
 
   readonly #deviceType = WheType.nuos
 
-  readonly #onoffCapabilities =
+  readonly #onoffCapabilities
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (this.manifest.capabilities as (keyof Capabilities)[]).filter(
-      (capability) => capability.startsWith('onoff.'),
+    = (this.manifest.capabilities as (keyof Capabilities)[]).filter(
+      capability => capability.startsWith('onoff.'),
     )
 
   public async onInit(): Promise<void> {
@@ -48,11 +48,14 @@ export = class NuosDriver extends Driver {
     try {
       return (
         (await this.#aristonAPI.plants()).data
-          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+          /* eslint-disable-next-line
+            @typescript-eslint/no-unnecessary-condition
+          */
           .filter(({ wheType }) => wheType === this.#deviceType)
           .map(({ gw, name }) => ({ data: { id: gw }, name }))
       )
-    } catch (error) {
+    }
+    catch (error) {
       return []
     }
   }
@@ -62,8 +65,8 @@ export = class NuosDriver extends Driver {
       .getConditionCard('operation_mode_condition')
       .registerRunListener(
         (args: FlowArgs) =>
-          args.device.getCapabilityValue('operation_mode') ===
-          args.operation_mode,
+          args.device.getCapabilityValue('operation_mode')
+          === args.operation_mode,
       )
     this.homey.flow
       .getActionCard('operation_mode_action')
