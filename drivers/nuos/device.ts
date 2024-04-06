@@ -132,12 +132,8 @@ class NuosDevice extends Device {
     keyof SettingCapabilities,
     (value: SettingCapabilities[keyof SettingCapabilities]) => number
   > = {
-      'onoff.legionella': ((value: boolean) => Number(value)) as (
-        value: SettingCapabilities[keyof SettingCapabilities],
-      ) => number,
-      'onoff.preheating': ((value: boolean) => Number(value)) as (
-        value: SettingCapabilities[keyof SettingCapabilities],
-      ) => number,
+      'onoff.legionella': (value: boolean) => Number(value),
+      'onoff.preheating': (value: boolean) => Number(value),
     }
 
   readonly #convertToViewModel: Record<
@@ -352,7 +348,7 @@ class NuosDevice extends Device {
             },
           ]
         }),
-    ) as PostSettings
+    )
   }
 
   #buildViewModel(): PostData['viewModel'] {
