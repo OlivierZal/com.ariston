@@ -9,7 +9,7 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@eslint/js": "^8.57.0",
+    "@eslint/js": "^9.0.0",
     "@stylistic/eslint-plugin": "^1.7.0",
     "@tsconfig/node21": "^21.0.3",
     "@types/homey": "npm:homey-apps-sdk-v3-types@^0.3.5",
