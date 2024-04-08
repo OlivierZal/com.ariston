@@ -84,12 +84,13 @@ const getPower = (energyData: HistogramData | undefined): number => {
   const { hour } = DateTime.now()
   return (
     (
-      energyData?.items.find(({ x: xString }) => {
+      (energyData?.items.find(({ x: xString }) => {
         const xNumber = Number(xString)
         return xNumber <= hour && hour < xNumber + ENERGY_REFRESH_HOURS
-      })?.y ?? NUMBER_0
-    ) * K_MULTIPLIER
-  ) / ENERGY_REFRESH_HOURS
+      })?.y ?? NUMBER_0)
+      * K_MULTIPLIER
+    ) / ENERGY_REFRESH_HOURS
+  )
 }
 
 @addToLogs('getName()')
