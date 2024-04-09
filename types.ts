@@ -7,25 +7,25 @@ export interface SettingCapabilities {
 }
 
 export interface PostDataCapabilities {
-  readonly 'onoff': boolean
+  readonly onoff: boolean
   readonly 'onoff.auto': boolean
   readonly 'onoff.boost': boolean
-  readonly 'operation_mode': keyof typeof OperationMode
-  readonly 'target_temperature': number
-  readonly 'vacation': string
+  readonly operation_mode: keyof typeof OperationMode
+  readonly target_temperature: number
+  readonly vacation: string
 }
 
 export interface SetCapabilities
   extends SettingCapabilities,
-  PostDataCapabilities {}
+    PostDataCapabilities {}
 
 export interface Capabilities extends SetCapabilities {
-  readonly 'measure_power': number
+  readonly measure_power: number
   readonly 'measure_power.hp': number
   readonly 'measure_power.resistor': number
-  readonly 'measure_temperature': number
+  readonly measure_temperature: number
   readonly 'measure_temperature.required': number
-  readonly 'meter_power': number
+  readonly meter_power: number
   readonly 'meter_power.hp': number
   readonly 'meter_power.resistor': number
 }

@@ -78,8 +78,7 @@ export default class AristonAPI {
         return (
           await this.login({ email: username, password, rememberMe: true })
         ).data.ok
-      }
-      catch (error) {
+      } catch (error) {
         if (typeof data !== 'undefined') {
           throw new Error(
             error instanceof Error ? error.message : String(error),
@@ -117,10 +116,6 @@ export default class AristonAPI {
     return this.#api.post<ReportData>(`/R2/PlantMetering/GetData/${id}`)
   }
 
-  public async plants(): Promise<{ data: Plant[] }> {
-    return this.#api.get<Plant[]>('/api/v2/velis/plants')
-  }
-
   public async plantSettings(
     id: string,
     settings: PostSettings,
@@ -131,13 +126,17 @@ export default class AristonAPI {
     )
   }
 
+  public async plants(): Promise<{ data: Plant[] }> {
+    return this.#api.get<Plant[]>('/api/v2/velis/plants')
+  }
+
   async #handleError(error: AxiosError): Promise<AxiosError> {
     const apiCallData = createAPICallErrorData(error)
     this.#errorLogger(String(apiCallData))
     if (
-      error.response?.status === axios.HttpStatusCode.MethodNotAllowed
-      && this.#retry
-      && error.config?.url !== LOGIN_URL
+      error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
+      this.#retry &&
+      error.config?.url !== LOGIN_URL
     ) {
       this.#handleRetry()
       if ((await this.applyLogin()) && error.config) {
@@ -164,9 +163,9 @@ export default class AristonAPI {
     this.#logger(String(new APICallResponseData(response)))
     if (
       // @ts-expect-error: `axios` is partially typed
-      response.headers.hasContentType('application/json') !== true
-      && this.#retry
-      && response.config.url !== LOGIN_URL
+      response.headers.hasContentType('application/json') !== true &&
+      this.#retry &&
+      response.config.url !== LOGIN_URL
     ) {
       this.#handleRetry()
       if (await this.applyLogin()) {
@@ -197,7 +196,7 @@ export default class AristonAPI {
         return
       }
       const aspNetCookie = cookies.find(
-        cookie => cookie.key === '.AspNet.ApplicationCookie',
+        (cookie) => cookie.key === '.AspNet.ApplicationCookie',
       )
       if (aspNetCookie) {
         const expiresDate = new Date(String(aspNetCookie.expires))
