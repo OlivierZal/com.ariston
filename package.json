@@ -2,11 +2,16 @@
   "name": "com.ariston",
   "version": "7.0.0",
   "main": "app.ts",
+  "prettier": {
+    "semi": false,
+    "singleQuote": true
+  },
   "scripts": {
     "build": "homey app validate --level publish",
+    "format": "prettier . --check",
+    "format:fix": "prettier . --write",
     "lint": "eslint .",
-    "lint:fix": "npm run lint -- --fix",
-    "test": "jest"
+    "lint:fix": "npm run lint -- --fix"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
@@ -17,10 +22,12 @@
     "@types/node": "^20.12.6",
     "@types/tough-cookie": "^4.0.5",
     "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
     "eslint-import-resolver-typescript": "^3.6.1",
     "eslint-plugin-import": "^2.29.1",
     "globals": "^15.0.0",
     "homey": "^3.2.3",
+    "prettier": "^3.2.5",
     "typescript": "^5.4.4",
     "typescript-eslint": "^7.6.0"
   },
