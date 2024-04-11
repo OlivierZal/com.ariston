@@ -163,7 +163,6 @@ module.exports = tsEslint.config(
         'error',
         { allow: ['^operation_mode$', '^target_temperature$'] },
       ],
-      'max-lines': 'off',
       'no-ternary': 'off',
       'no-underscore-dangle': ['error', { allow: ['__'] }],
       'one-var': 'off',
