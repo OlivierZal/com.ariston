@@ -56,11 +56,11 @@ const SETTINGS: Record<keyof SettingCapabilities, keyof PostSettings> = {
 }
 
 const convertToDate = (days: number): string | null =>
-  days
-    ? DateTime.now()
-        .plus({ days: days - Duration.fromObject({ days: 1 }).as('days') })
-        .toISODate()
-    : null
+  days ?
+    DateTime.now()
+      .plus({ days: days - Duration.fromObject({ days: 1 }).as('days') })
+      .toISODate()
+  : null
 
 const getEnergyData = (
   data: ReportData,
@@ -74,12 +74,12 @@ const getEnergyData = (
 }
 
 const getEnergy = (energyData: HistogramData | undefined): number =>
-  energyData
-    ? energyData.items.reduce<number>(
-        (acc, { y: yNumber }) => acc + yNumber,
-        NUMBER_0,
-      )
-    : NUMBER_0
+  energyData ?
+    energyData.items.reduce<number>(
+      (acc, { y: yNumber }) => acc + yNumber,
+      NUMBER_0,
+    )
+  : NUMBER_0
 
 const getPower = (energyData: HistogramData | undefined): number => {
   const { hour } = DateTime.now()
@@ -497,13 +497,13 @@ class NuosDevice extends Device {
     await this.setCapabilityValue(
       'vacation',
       String(
-        plantData.holidayUntil === null
-          ? NUMBER_0
-          : Math.ceil(
-              DateTime.fromISO(plantData.holidayUntil)
-                .plus({ days: 1 })
-                .diffNow('days').days,
-            ),
+        plantData.holidayUntil === null ?
+          NUMBER_0
+        : Math.ceil(
+            DateTime.fromISO(plantData.holidayUntil)
+              .plus({ days: 1 })
+              .diffNow('days').days,
+          ),
       ),
     )
   }

@@ -107,9 +107,9 @@ export default class AristonAPI {
       method: postData ? 'POST' : 'GET',
       url: `/R2/PlantHomeSlp/${postData ? 'SetData' : 'GetData'}/${id}`,
       ...(postData ? { data: postData } : {}),
-      ...(postData
-        ? {}
-        : { params: { fetchSettings: 'false', fetchTimeProg: 'false' } }),
+      ...(postData ?
+        {}
+      : { params: { fetchSettings: 'false', fetchTimeProg: 'false' } }),
     })
   }
 
