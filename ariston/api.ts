@@ -144,7 +144,7 @@ export default class AristonAPI {
         return this.#api.request(error.config)
       }
     }
-    return Promise.reject(error)
+    throw error
   }
 
   async #handleRequest(
