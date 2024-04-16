@@ -3,6 +3,7 @@ import type {
   Capabilities,
   CapabilityOptionsEntries,
   DeviceDetails,
+  ManifestDriver,
   PostDataCapabilities,
   SetCapabilities,
   SettingCapabilities,
@@ -368,9 +369,8 @@ class NuosDevice extends Device {
   }
 
   async #handleCapabilities(): Promise<void> {
-    const requiredCapabilities =
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-      this.driver.manifest.capabilities as string[]
+    const requiredCapabilities = (this.driver.manifest as ManifestDriver)
+      .capabilities as string[]
     await requiredCapabilities.reduce<Promise<void>>(
       async (acc, capability) => {
         await acc
@@ -452,8 +452,12 @@ class NuosDevice extends Device {
   }
 
   #registerCapabilityListeners<K extends keyof SetCapabilities>(): void {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    ;(this.driver.manifest.capabilities as K[]).forEach((capability) => {
+    ;(
+      (this.driver.manifest as ManifestDriver).capabilities.filter(
+        (capability) =>
+          !capability.startsWith('measure') && !capability.startsWith('meter'),
+      ) as K[]
+    ).forEach((capability) => {
       this.registerCapabilityListener(
         capability,
         (value: SetCapabilities[K]) => {

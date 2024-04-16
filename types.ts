@@ -53,3 +53,7 @@ export interface FlowArgs {
   readonly onoff: boolean
   readonly operation_mode: keyof typeof OperationMode
 }
+
+export type ManifestDriver = object & {
+  readonly capabilities: readonly (keyof Capabilities)[]
+}

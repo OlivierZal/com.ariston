@@ -1,4 +1,4 @@
-import type { Capabilities, DeviceDetails, FlowArgs } from '../../types'
+import type { DeviceDetails, FlowArgs, ManifestDriver } from '../../types'
 import { type LoginCredentials, WheType } from '../../ariston/types'
 import type AristonApp from '../../app'
 import { Driver } from 'homey'
@@ -9,11 +9,9 @@ export = class NuosDriver extends Driver {
 
   readonly #deviceType = WheType.nuos
 
-  readonly #onoffCapabilities =
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    (this.manifest.capabilities as (keyof Capabilities)[]).filter(
-      (capability) => capability.startsWith('onoff.'),
-    )
+  readonly #onoffCapabilities = (
+    this.manifest as ManifestDriver
+  ).capabilities.filter((capability) => capability.startsWith('onoff.'))
 
   public async onInit(): Promise<void> {
     this.#registerRunListeners()
