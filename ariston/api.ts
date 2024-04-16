@@ -127,8 +127,7 @@ export default class AristonAPI {
   }
 
   async #handleError(error: AxiosError): Promise<AxiosError> {
-    const apiCallErrorData = createAPICallErrorData(error)
-    this.#logger.error(String(apiCallErrorData))
+    this.#logger.error(String(createAPICallErrorData(error)))
     if (
       error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
       this.#retry &&
