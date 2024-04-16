@@ -78,9 +78,7 @@ export default class AristonAPI {
         ).data.ok
       } catch (error) {
         if (typeof data !== 'undefined') {
-          throw new Error(
-            error instanceof Error ? error.message : String(error),
-          )
+          throw error
         }
       }
     }
@@ -129,8 +127,8 @@ export default class AristonAPI {
   }
 
   async #handleError(error: AxiosError): Promise<AxiosError> {
-    const apiCallData = createAPICallErrorData(error)
-    this.#logger.error(String(apiCallData))
+    const apiCallErrorData = createAPICallErrorData(error)
+    this.#logger.error(String(apiCallErrorData))
     if (
       error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
       this.#retry &&
