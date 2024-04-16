@@ -28,6 +28,11 @@ interface APISettings {
   readonly username?: string | null
 }
 
+interface Logger {
+  readonly error: Console['error']
+  readonly log: Console['log']
+}
+
 interface SettingManager {
   get: <K extends keyof APISettings>(
     key: K,
@@ -45,21 +50,13 @@ export default class AristonAPI {
 
   readonly #api: AxiosInstance
 
-  readonly #errorLogger
-
-  readonly #logger
+  readonly #logger: Logger
 
   readonly #settingManager: SettingManager
 
-  public constructor(
-    settingManager: SettingManager,
-    // eslint-disable-next-line no-console
-    logger = console.log,
-    errorLogger = logger,
-  ) {
+  public constructor(settingManager: SettingManager, logger: Logger = console) {
     this.#settingManager = settingManager
     this.#logger = logger
-    this.#errorLogger = errorLogger
     wrapper(axios)
     this.#api = axios.create({
       baseURL: DOMAIN,
@@ -133,7 +130,7 @@ export default class AristonAPI {
 
   async #handleError(error: AxiosError): Promise<AxiosError> {
     const apiCallData = createAPICallErrorData(error)
-    this.#errorLogger(String(apiCallData))
+    this.#logger.error(String(apiCallData))
     if (
       error.response?.status === axios.HttpStatusCode.MethodNotAllowed &&
       this.#retry &&
@@ -156,12 +153,12 @@ export default class AristonAPI {
         await this.applyLogin()
       }
     }
-    this.#logger(String(new APICallRequestData(config)))
+    this.#logger.log(String(new APICallRequestData(config)))
     return config
   }
 
   async #handleResponse(response: AxiosResponse): Promise<AxiosResponse> {
-    this.#logger(String(new APICallResponseData(response)))
+    this.#logger.log(String(new APICallResponseData(response)))
     if (
       // @ts-expect-error: `axios` is partially typed
       response.headers.hasContentType('application/json') !== true &&
@@ -193,7 +190,7 @@ export default class AristonAPI {
   #setCookieExpiration(jar: CookieJar): void {
     jar.getCookies(DOMAIN, (error, cookies): void => {
       if (error) {
-        this.#errorLogger(error.message)
+        this.#logger.error(error.message)
         return
       }
       const aspNetCookie = cookies.find(
