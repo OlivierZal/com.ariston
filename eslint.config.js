@@ -157,9 +157,14 @@ module.exports = tsEslint.config(
       'sort-keys': ['error', 'asc', { natural: true }],
     },
   },
+  /*
+   * {
+   *   rules: importPlugin.configs.recommended.rules,
+   * },
+   */
   {
+    files: ['**/*.ts'],
     rules: {
-      // ...importPlugin.configs.recommended.rules,
       ...importPlugin.configs.typescript.rules,
       'import/no-duplicates': ['error', { 'prefer-inline': true }],
     },
