@@ -1,4 +1,5 @@
 export enum WheType {
+  lydos = 3,
   nuos = 4,
 }
 

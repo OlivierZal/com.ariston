@@ -44,14 +44,9 @@ export = class NuosDriver extends Driver {
 
   async #discoverDevices(): Promise<DeviceDetails[]> {
     try {
-      return (
-        (await this.#aristonAPI.plants()).data
-          /* eslint-disable-next-line
-            @typescript-eslint/no-unnecessary-condition
-          */
-          .filter(({ wheType }) => wheType === this.#deviceType)
-          .map(({ gw, name }) => ({ data: { id: gw }, name }))
-      )
+      return (await this.#aristonAPI.plants()).data
+        .filter(({ wheType }) => wheType === this.#deviceType)
+        .map(({ gw, name }) => ({ data: { id: gw }, name }))
     } catch (error) {
       return []
     }
