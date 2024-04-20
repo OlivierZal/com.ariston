@@ -168,9 +168,7 @@ export default class AristonAPI {
         return this.#api.request(response.config)
       }
     }
-    if (response.config.jar) {
-      this.#setCookieExpiration(response.config.jar)
-    }
+    this.#setCookieExpiration(response.config.jar)
     return response
   }
 
@@ -185,20 +183,22 @@ export default class AristonAPI {
     )
   }
 
-  #setCookieExpiration(jar: CookieJar): void {
-    jar.getCookies(DOMAIN, (error, cookies): void => {
-      if (error) {
-        this.#logger.error(error.message)
-        return
-      }
-      const aspNetCookie = cookies.find(
-        (cookie) => cookie.key === '.AspNet.ApplicationCookie',
-      )
-      if (aspNetCookie) {
-        const expiresDate = new Date(String(aspNetCookie.expires))
-        this.#settingManager.set('expires', expiresDate.toISOString())
-      }
-    })
+  #setCookieExpiration(jar?: CookieJar): void {
+    if (jar) {
+      jar.getCookies(DOMAIN, (error, cookies): void => {
+        if (error) {
+          this.#logger.error(error.message)
+          return
+        }
+        const aspNetCookie = cookies.find(
+          (cookie) => cookie.key === '.AspNet.ApplicationCookie',
+        )
+        if (aspNetCookie) {
+          const expiresDate = new Date(String(aspNetCookie.expires))
+          this.#settingManager.set('expires', expiresDate.toISOString())
+        }
+      })
+    }
   }
 
   #setupAxiosInterceptors(): void {
