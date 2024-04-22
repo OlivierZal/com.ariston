@@ -436,13 +436,13 @@ class NuosDevice extends Device {
   async #plantSettings(postSettings: PostSettings): Promise<boolean> {
     if (Object.keys(postSettings).length) {
       try {
-        const { success } = (
+        const { success: isSuccess } = (
           await this.#aristonAPI.plantSettings(this.#id, postSettings)
         ).data
-        if (success) {
+        if (isSuccess) {
           await this.#setSettingCapabilities(postSettings)
         }
-        return success
+        return isSuccess
       } catch (error) {
         // Error handling is delegated to the interceptor
       }
