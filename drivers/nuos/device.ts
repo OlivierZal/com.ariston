@@ -159,35 +159,35 @@ class NuosDevice extends Device {
 
   readonly #id = (this.getData() as DeviceDetails['data']).id
 
-  public async addCapability(capability: string): Promise<void> {
+  public override async addCapability(capability: string): Promise<void> {
     if (!this.hasCapability(capability)) {
       await super.addCapability(capability)
     }
   }
 
-  public getCapabilityOptions<K extends keyof CapabilityOptionsEntries>(
-    capability: K,
-  ): CapabilityOptionsEntries[K] {
+  public override getCapabilityOptions<
+    K extends keyof CapabilityOptionsEntries,
+  >(capability: K): CapabilityOptionsEntries[K] {
     return super.getCapabilityOptions(capability) as CapabilityOptionsEntries[K]
   }
 
-  public getCapabilityValue<K extends keyof Capabilities>(
+  public override getCapabilityValue<K extends keyof Capabilities>(
     capability: K,
   ): Capabilities[K] {
     return super.getCapabilityValue(capability) as Capabilities[K]
   }
 
-  public getSetting<K extends keyof Settings>(
+  public override getSetting<K extends keyof Settings>(
     setting: K,
   ): NonNullable<Settings[K]> {
     return super.getSetting(setting) as NonNullable<Settings[K]>
   }
 
-  public onDeleted(): void {
+  public override onDeleted(): void {
     this.homey.clearTimeout(this.#syncTimeout)
   }
 
-  public async onInit(): Promise<void> {
+  public override async onInit(): Promise<void> {
     await this.setWarning(null)
     await this.#handleCapabilities()
     this.#registerCapabilityListeners()
@@ -211,7 +211,7 @@ class NuosDevice extends Device {
     )
   }
 
-  public async onSettings({
+  public override async onSettings({
     changedKeys,
     newSettings,
   }: {
@@ -240,25 +240,24 @@ class NuosDevice extends Device {
     }
   }
 
-  public async onUninit(): Promise<void> {
+  public override async onUninit(): Promise<void> {
     this.onDeleted()
     return Promise.resolve()
   }
 
-  public async removeCapability(capability: string): Promise<void> {
+  public override async removeCapability(capability: string): Promise<void> {
     if (this.hasCapability(capability)) {
       await super.removeCapability(capability)
     }
   }
 
-  public async setCapabilityOptions<K extends keyof CapabilityOptionsEntries>(
-    capability: K,
-    options: CapabilityOptionsEntries[K],
-  ): Promise<void> {
+  public override async setCapabilityOptions<
+    K extends keyof CapabilityOptionsEntries,
+  >(capability: K, options: CapabilityOptionsEntries[K]): Promise<void> {
     await super.setCapabilityOptions(capability, options)
   }
 
-  public async setCapabilityValue<K extends keyof Capabilities>(
+  public override async setCapabilityValue<K extends keyof Capabilities>(
     capability: K,
     value: Capabilities[K],
   ): Promise<void> {
@@ -268,7 +267,7 @@ class NuosDevice extends Device {
     }
   }
 
-  public async setSettings(settings: Settings): Promise<void> {
+  public override async setSettings(settings: Settings): Promise<void> {
     const newSettings = Object.fromEntries(
       Object.entries(settings).filter(
         ([key, value]) => value !== this.getSetting(key as keyof Settings),
@@ -284,7 +283,7 @@ class NuosDevice extends Device {
     }
   }
 
-  public async setWarning(warning: string | null): Promise<void> {
+  public override async setWarning(warning: string | null): Promise<void> {
     if (warning !== null) {
       await super.setWarning(warning)
     }
