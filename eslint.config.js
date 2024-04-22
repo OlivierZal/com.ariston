@@ -146,7 +146,7 @@ module.exports = tsEslint.config(
         {
           filter: {
             match: true,
-            regex: '^[a-z]+(?:_[a-z0-9]+)*\\.[a-z]+(?:_[a-z0-9]+)*$',
+            regex: '^[a-z]+(?:_[a-z]+)*(?:\\.[a-z]+(?:_[a-z]+)*)?$',
           },
           format: null,
           selector: [
@@ -156,11 +156,11 @@ module.exports = tsEslint.config(
           ],
         },
         {
-          format: ['camelCase', 'snake_case'],
-          selector: 'objectLiteralProperty',
-        },
-        {
-          format: ['camelCase', 'PascalCase', 'snake_case'],
+          filter: {
+            match: true,
+            regex: '^Slp',
+          },
+          format: ['PascalCase'],
           selector: 'typeProperty',
         },
         {
