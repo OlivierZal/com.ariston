@@ -569,15 +569,14 @@ class NuosDevice extends Device {
   }
 
   async #setTargetTemperatureMinMax(
-    settings: Settings = this.getSettings() as Settings,
+    { min, max }: Settings = this.getSettings() as Settings,
   ): Promise<void> {
-    const { min, max } = settings
     const options = this.getCapabilityOptions('target_temperature')
     if (min !== options.min || max !== options.max) {
       await this.setCapabilityOptions('target_temperature', {
         ...options,
-        ...(typeof max === 'undefined' ? {} : { max }),
         ...(typeof min === 'undefined' ? {} : { min }),
+        ...(typeof max === 'undefined' ? {} : { max }),
       })
       await this.setWarning(this.homey.__('warnings.settings'))
     }
