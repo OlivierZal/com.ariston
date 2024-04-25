@@ -17,7 +17,6 @@ import {
   OperationMode,
   type PostData,
   type PostSettings,
-  type ReportData,
 } from '../../ariston/types'
 import type AristonApp from '../../app'
 import { Device } from 'homey'
@@ -64,15 +63,15 @@ const convertToDate = (days: number): string | null =>
   : null
 
 const getEnergyData = (
-  data: ReportData,
+  histogramData: readonly HistogramData[],
   seriesName: HistogramData['series'],
-): HistogramData | undefined => {
-  const histogramData = data.data.asKwhRaw.histogramData.filter(
-    ({ tab, period }) =>
-      tab === 'ConsumedElectricity' && period === 'CurrentDay',
-  )
-  return histogramData.find(({ series }) => series === seriesName)
-}
+): HistogramData | undefined =>
+  histogramData
+    .filter(
+      ({ tab, period }) =>
+        tab === 'ConsumedElectricity' && period === 'CurrentDay',
+    )
+    .find(({ series }) => series === seriesName)
 
 const getEnergy = (energyData: HistogramData | undefined): number =>
   energyData ?
@@ -417,9 +416,10 @@ class NuosDevice extends Device {
 
   async #plantMetering(): Promise<void> {
     try {
-      const { data } = await this.#aristonAPI.plantMetering(this.#id)
-      const energyHpData = getEnergyData(data, 'DhwHp')
-      const energyResistorData = getEnergyData(data, 'DhwResistor')
+      const { histogramData } = (await this.#aristonAPI.plantMetering(this.#id))
+        .data.data.asKwhRaw
+      const energyHpData = getEnergyData(histogramData, 'DhwHp')
+      const energyResistorData = getEnergyData(histogramData, 'DhwResistor')
       await this.#setPowerValues(
         getPower(energyHpData),
         getPower(energyResistorData),
