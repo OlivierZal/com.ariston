@@ -185,7 +185,7 @@ export default class AristonAPI {
 
   #setCookieExpiration(jar?: CookieJar): void {
     if (jar) {
-      jar.getCookies(DOMAIN, (error, cookies): void => {
+      jar.getCookies(DOMAIN, (error, cookies) => {
         if (error) {
           this.#logger.error(error.message)
           return
