@@ -1,5 +1,5 @@
 import type { DeviceDetails, FlowArgs, ManifestDriver } from '../../types'
-import { type LoginCredentials, WheType } from 'ariston-api'
+import { type LoginCredentials, WheType } from '@olivierzal/ariston-api'
 import type AristonApp from '../..'
 import { Driver } from 'homey'
 import type PairSession from 'homey/lib/PairSession'

@@ -1,5 +1,5 @@
 import type NuosDevice from './drivers/nuos/device'
-import type { OperationMode } from 'ariston-api'
+import type { OperationMode } from '@olivierzal/ariston-api'
 
 export interface SettingCapabilities {
   readonly 'onoff.legionella': boolean

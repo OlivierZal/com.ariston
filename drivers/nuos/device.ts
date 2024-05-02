@@ -17,7 +17,7 @@ import {
   OperationMode,
   type PostData,
   type PostSettings,
-} from 'ariston-api'
+} from '@olivierzal/ariston-api'
 import type AristonApp from '../..'
 import { Device } from 'homey'
 import type NuosDriver from './driver'
