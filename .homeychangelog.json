@@ -19,5 +19,8 @@
   },
   "7.0.0": {
     "en": "Various improvements."
+  },
+  "8.0.0": {
+    "en": "Modularized API management."
   }
 }
