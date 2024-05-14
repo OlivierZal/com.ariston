@@ -10,10 +10,11 @@ import type {
 } from '../../types'
 import { DateTime, Duration } from 'luxon'
 import {
-  type GetData,
   type HistogramData,
   Mode,
   OperationMode,
+  type PlantData,
+  type PlantSettings,
   type PostData,
   type PostSettings,
 } from '@olivierzal/ariston-api'
@@ -189,7 +190,7 @@ class NuosDevice extends Device {
     await this.setWarning(null)
     await this.#handleCapabilities()
     this.#registerCapabilityListeners()
-    await this.#sync()
+    await this.#syncFromDevice()
     await this.#plantMetering()
     const now = DateTime.now()
     this.homey.setTimeout(
@@ -291,7 +292,7 @@ class NuosDevice extends Device {
   #applySyncFromDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.#sync()
+        await this.#syncFromDevice()
       },
       Duration.fromObject({ minutes: 1 }).as('milliseconds'),
     )
@@ -301,7 +302,7 @@ class NuosDevice extends Device {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
         await this.#plantSettings(this.#buildPostSettings())
-        await this.#sync(this.#buildPostData())
+        await this.#syncToDevice(this.#buildPostData())
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),
     )
@@ -402,17 +403,6 @@ class NuosDevice extends Device {
     })
   }
 
-  async #plantData(postData?: PostData): Promise<GetData['data'] | null> {
-    if (!postData || Object.keys(postData.viewModel).length) {
-      try {
-        return (await this.#aristonAPI.plantData(this.#id, postData)).data.data
-      } catch (_error) {
-        return null
-      }
-    }
-    return null
-  }
-
   async #plantMetering(): Promise<void> {
     try {
       const { histogramData } = (await this.#aristonAPI.plantMetering(this.#id))
@@ -480,9 +470,7 @@ class NuosDevice extends Device {
     }
   }
 
-  async #setCapabilities(
-    plantData: GetData['data']['plantData'],
-  ): Promise<void> {
+  async #setCapabilities(plantData: PlantData): Promise<void> {
     await this.setCapabilityValue('measure_temperature', plantData.waterTemp)
     await this.setCapabilityValue(
       'measure_temperature.required',
@@ -508,14 +496,6 @@ class NuosDevice extends Device {
           ),
       ),
     )
-  }
-
-  async #setCapabilitiesAndSettings(postData?: PostData): Promise<void> {
-    const data = await this.#plantData(postData)
-    if (data) {
-      await this.#setSettings(data.plantSettings)
-      await this.#setCapabilities(data.plantData)
-    }
   }
 
   async #setEnergyValues(
@@ -548,23 +528,19 @@ class NuosDevice extends Device {
     }
   }
 
-  async #setSettings(
-    plantSettings: GetData['data']['plantSettings'],
-  ): Promise<void> {
-    if (plantSettings) {
-      await this.setCapabilityValue(
-        'onoff.legionella',
-        plantSettings.antilegionellaOnOff,
-      )
-      await this.setCapabilityValue(
-        'onoff.preheating',
-        plantSettings.preHeatingOnOff,
-      )
-      await this.setSettings({
-        max: plantSettings.maxSetpointTemp.value,
-        min: plantSettings.minSetpointTemp.value,
-      })
-    }
+  async #setSettings(plantSettings: PlantSettings): Promise<void> {
+    await this.setCapabilityValue(
+      'onoff.legionella',
+      plantSettings.antilegionellaOnOff,
+    )
+    await this.setCapabilityValue(
+      'onoff.preheating',
+      plantSettings.preHeatingOnOff,
+    )
+    await this.setSettings({
+      max: plantSettings.maxSetpointTemp.value,
+      min: plantSettings.minSetpointTemp.value,
+    })
   }
 
   async #setTargetTemperatureMinMax(
@@ -581,9 +557,31 @@ class NuosDevice extends Device {
     }
   }
 
-  async #sync(postData?: PostData): Promise<void> {
-    await this.#setCapabilitiesAndSettings(postData)
-    this.#applySyncFromDevice()
+  async #syncFromDevice(): Promise<void> {
+    try {
+      const { plantData, plantSettings } = (
+        await this.#aristonAPI.getDataWithSettings(this.#id)
+      ).data.data
+      await this.#setSettings(plantSettings)
+      await this.#setCapabilities(plantData)
+    } catch (_error) {
+    } finally {
+      this.#applySyncFromDevice()
+    }
+  }
+
+  async #syncToDevice(postData: PostData): Promise<void> {
+    try {
+      if (Object.keys(postData.viewModel).length) {
+        await this.#setCapabilities(
+          (await this.#aristonAPI.setData(this.#id, postData)).data.data
+            .plantData,
+        )
+      }
+    } catch (_error) {
+    } finally {
+      this.#applySyncFromDevice()
+    }
   }
 }
 
