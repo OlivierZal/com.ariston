@@ -406,7 +406,7 @@ class NuosDevice extends Device {
     if (!postData || Object.keys(postData.viewModel).length) {
       try {
         return (await this.#aristonAPI.plantData(this.#id, postData)).data.data
-      } catch (error) {
+      } catch (_error) {
         return null
       }
     }
@@ -442,7 +442,7 @@ class NuosDevice extends Device {
           await this.#setSettingCapabilities(postSettings)
         }
         return isSuccess
-      } catch (error) {
+      } catch (_error) {
         return false
       }
     }

@@ -47,7 +47,7 @@ export = class NuosDriver extends Driver {
       return (await this.#aristonAPI.plants()).data
         .filter(({ wheType }) => wheType === this.#deviceType)
         .map(({ gw, name }) => ({ data: { id: gw }, name }))
-    } catch (error) {
+    } catch (_error) {
       return []
     }
   }
