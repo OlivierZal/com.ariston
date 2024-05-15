@@ -180,14 +180,6 @@ module.exports = tsEslint.config(
           ],
         },
         {
-          filter: {
-            match: true,
-            regex: '^Slp',
-          },
-          format: ['PascalCase'],
-          selector: 'typeProperty',
-        },
-        {
           format: ['camelCase', 'PascalCase'],
           selector: 'import',
         },
