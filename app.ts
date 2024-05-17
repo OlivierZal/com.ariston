@@ -2,7 +2,7 @@ import { App } from 'homey'
 import AristonAPI from '@olivierzal/ariston-api'
 import { Settings as LuxonSettings } from 'luxon'
 
-export = class AristonApp extends App {
+export = class extends App {
   public readonly aristonAPI = new AristonAPI(this.homey.settings, {
     error: (...args): void => {
       this.error(...args)

@@ -4,7 +4,7 @@ import type AristonApp from '../..'
 import { Driver } from 'homey'
 import type PairSession from 'homey/lib/PairSession'
 
-export = class NuosDriver extends Driver {
+export = class extends Driver {
   readonly #aristonAPI = (this.homey.app as AristonApp).aristonAPI
 
   readonly #deviceType = WheType.nuos
