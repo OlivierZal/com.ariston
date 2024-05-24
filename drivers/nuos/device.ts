@@ -190,7 +190,7 @@ class NuosDevice extends Device {
     await this.setWarning(null)
     await this.#handleCapabilities()
     this.#registerCapabilityListeners()
-    await this.#syncFromDevice()
+    await this.#syncDevice()
     await this.#plantMetering()
     const now = DateTime.now()
     this.homey.setTimeout(
@@ -292,7 +292,7 @@ class NuosDevice extends Device {
   #applySyncFromDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.#syncFromDevice()
+        await this.#syncDevice()
       },
       Duration.fromObject({ minutes: 1 }).as('milliseconds'),
     )
@@ -302,7 +302,7 @@ class NuosDevice extends Device {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
         await this.#plantSettings(this.#buildPostSettings())
-        await this.#syncToDevice(this.#buildPostData())
+        await this.#syncDevice(this.#buildPostData())
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),
     )
@@ -418,7 +418,9 @@ class NuosDevice extends Device {
         getEnergy(energyResistorData),
       )
     } catch (error) {
-      this.error(error instanceof Error ? error.message : error)
+      await this.setWarning(
+        error instanceof Error ? error.message : String(error),
+      )
     }
   }
 
@@ -432,8 +434,10 @@ class NuosDevice extends Device {
           await this.#setSettingCapabilities(postSettings)
         }
         return isSuccess
-      } catch (_error) {
-        return false
+      } catch (error) {
+        await this.setWarning(
+          error instanceof Error ? error.message : String(error),
+        )
       }
     }
     return false
@@ -557,28 +561,26 @@ class NuosDevice extends Device {
     }
   }
 
-  async #syncFromDevice(): Promise<void> {
+  async #syncDevice(postData?: PostData): Promise<void> {
     try {
-      const { plantData, plantSettings } = (
-        await this.#aristonAPI.getDataWithSettings(this.#id)
-      ).data.data
-      await this.#setSettings(plantSettings)
-      await this.#setCapabilities(plantData)
-    } catch (_error) {
-    } finally {
-      this.#applySyncFromDevice()
-    }
-  }
-
-  async #syncToDevice(postData: PostData): Promise<void> {
-    try {
-      if (Object.keys(postData.viewModel).length) {
-        await this.#setCapabilities(
-          (await this.#aristonAPI.setData(this.#id, postData)).data.data
-            .plantData,
-        )
+      if (postData) {
+        if (Object.keys(postData.viewModel).length) {
+          const { plantData } = (
+            await this.#aristonAPI.setData(this.#id, postData)
+          ).data.data
+          await this.#setCapabilities(plantData)
+        }
+      } else {
+        const { plantData, plantSettings } = (
+          await this.#aristonAPI.getDataWithSettings(this.#id)
+        ).data.data
+        await this.#setSettings(plantSettings)
+        await this.#setCapabilities(plantData)
       }
-    } catch (_error) {
+    } catch (error) {
+      await this.setWarning(
+        error instanceof Error ? error.message : String(error),
+      )
     } finally {
       this.#applySyncFromDevice()
     }
