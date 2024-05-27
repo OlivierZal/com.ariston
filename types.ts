@@ -20,6 +20,8 @@ export interface SetCapabilities
     PostDataCapabilities {}
 
 export interface Capabilities extends SetCapabilities {
+  readonly alarm_generic: boolean
+  readonly error_status: string
   readonly measure_power: number
   readonly 'measure_power.hp': number
   readonly 'measure_power.resistor': number

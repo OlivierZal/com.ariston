@@ -557,6 +557,8 @@
         "target_temperature",
         "operation_mode",
         "vacation",
+        "alarm_generic",
+        "error_status",
         "measure_power",
         "measure_power.hp",
         "measure_power.resistor",
@@ -722,6 +724,17 @@
     }
   ],
   "capabilities": {
+    "error_status": {
+      "type": "string",
+      "title": {
+        "en": "Error status",
+        "fr": "Statut d'erreur"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/error_status.svg"
+    },
     "operation_mode": {
       "type": "enum",
       "title": {

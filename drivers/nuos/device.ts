@@ -102,7 +102,7 @@ class NuosDevice extends Device {
 
   readonly #aristonAPI = (this.homey.app as AristonApp).aristonAPI
 
-  readonly #convertToPlantData: Record<
+  readonly #convertToData: Record<
     keyof PostDataCapabilities,
     (
       value: PostDataCapabilities[keyof PostDataCapabilities],
@@ -143,7 +143,7 @@ class NuosDevice extends Device {
       value: PostDataCapabilities[keyof PostDataCapabilities],
     ) => PostData['viewModel'][keyof PostData['viewModel']]
   > = {
-    ...this.#convertToPlantData,
+    ...this.#convertToData,
     onoff: ((value: boolean) => this.getSetting('always_on') || value) as (
       value: PostDataCapabilities[keyof PostDataCapabilities],
     ) => boolean,
@@ -315,7 +315,7 @@ class NuosDevice extends Device {
         .filter(([capability]) => Object.keys(PLANT_DATA).includes(capability))
         .map(([capability, diff]) => [
           PLANT_DATA[capability],
-          this.#convertToPlantData[capability as keyof PostDataCapabilities](
+          this.#convertToData[capability as keyof PostDataCapabilities](
             diff.initialValue,
           ),
         ]),
@@ -368,12 +368,14 @@ class NuosDevice extends Device {
   }
 
   async #getErrors(): Promise<void> {
-    const { errorText } = (await this.#aristonAPI.errors(this.#id)).data.data
-    if (errorText !== null) {
-      const [, errorCode, errorMessage] = errorText.split(':')
-      await this.setWarning(`${errorCode}:${errorMessage}`)
+    const { errorType, errorText } = (await this.#aristonAPI.errors(this.#id))
+      .data.data
+      await this.setCapabilityValue('alarm_generic', Boolean(errorType))
+      await this.setCapabilityValue('error_status', errorText)
+      if (errorType) {
+        await this.setWarning(errorText)
+      }
     }
-  }
 
   async #handleCapabilities(): Promise<void> {
     const requiredCapabilities = (this.driver.manifest as ManifestDriver)
