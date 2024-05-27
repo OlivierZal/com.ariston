@@ -10,6 +10,7 @@ import type {
 } from '../../types'
 import { DateTime, Duration } from 'luxon'
 import {
+  type GetData,
   type HistogramData,
   Mode,
   OperationMode,
@@ -191,13 +192,13 @@ class NuosDevice extends Device {
     await this.#handleCapabilities()
     this.#registerCapabilityListeners()
     await this.#syncDevice()
-    await this.#plantMetering()
+    await this.#report()
     const now = DateTime.now()
     this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.#plantMetering()
+        await this.#report()
         this.homey.setInterval(async (): Promise<void> => {
-          await this.#plantMetering()
+          await this.#report()
         }, ENERGY_REFRESH_INTERVAL.as('milliseconds'))
       },
       now
@@ -232,7 +233,7 @@ class NuosDevice extends Device {
       postSettings.SlpMaxSetpointTemperature = { new: newSettings.max }
     }
     if (
-      (await this.#plantSettings(postSettings)) &&
+      (await this.#setSettingsToDevice(postSettings)) &&
       changedKeys.some((key) => ['min', 'max'].includes(key))
     ) {
       await this.#setTargetTemperatureMinMax(newSettings)
@@ -301,7 +302,7 @@ class NuosDevice extends Device {
   #applySyncToDevice(): void {
     this.#syncTimeout = this.homey.setTimeout(
       async (): Promise<void> => {
-        await this.#plantSettings(this.#buildPostSettings())
+        await this.#setSettingsToDevice(this.#buildPostSettings())
         await this.#syncDevice(this.#buildPostData())
       },
       Duration.fromObject({ seconds: 1 }).as('milliseconds'),
@@ -366,6 +367,14 @@ class NuosDevice extends Device {
     ) as PostData['viewModel']
   }
 
+  async #getErrors(): Promise<void> {
+    const { errorText } = (await this.#aristonAPI.errors(this.#id)).data.data
+    if (errorText !== null) {
+      const [, errorCode, errorMessage] = errorText.split(':')
+      await this.setWarning(`${errorCode}:${errorMessage}`)
+    }
+  }
+
   async #handleCapabilities(): Promise<void> {
     const requiredCapabilities = (this.driver.manifest as ManifestDriver)
       .capabilities as string[]
@@ -403,46 +412,6 @@ class NuosDevice extends Device {
     })
   }
 
-  async #plantMetering(): Promise<void> {
-    try {
-      const { histogramData } = (await this.#aristonAPI.plantMetering(this.#id))
-        .data.data.asKwhRaw
-      const energyHpData = getEnergyData(histogramData, 'DhwHp')
-      const energyResistorData = getEnergyData(histogramData, 'DhwResistor')
-      await this.#setPowerValues(
-        getPower(energyHpData),
-        getPower(energyResistorData),
-      )
-      await this.#setEnergyValues(
-        getEnergy(energyHpData),
-        getEnergy(energyResistorData),
-      )
-    } catch (error) {
-      await this.setWarning(
-        error instanceof Error ? error.message : String(error),
-      )
-    }
-  }
-
-  async #plantSettings(postSettings: PostSettings): Promise<boolean> {
-    if (Object.keys(postSettings).length) {
-      try {
-        const { success: isSuccess } = (
-          await this.#aristonAPI.plantSettings(this.#id, postSettings)
-        ).data
-        if (isSuccess) {
-          await this.#setSettingCapabilities(postSettings)
-        }
-        return isSuccess
-      } catch (error) {
-        await this.setWarning(
-          error instanceof Error ? error.message : String(error),
-        )
-      }
-    }
-    return false
-  }
-
   #registerCapabilityListeners<K extends keyof SetCapabilities>(): void {
     ;(
       (this.driver.manifest as ManifestDriver).capabilities.filter(
@@ -461,6 +430,27 @@ class NuosDevice extends Device {
     })
   }
 
+  async #report(): Promise<void> {
+    try {
+      const { histogramData } = (await this.#aristonAPI.report(this.#id)).data
+        .data.asKwhRaw
+      const energyHpData = getEnergyData(histogramData, 'DhwHp')
+      const energyResistorData = getEnergyData(histogramData, 'DhwResistor')
+      await this.#setPowerValues(
+        getPower(energyHpData),
+        getPower(energyResistorData),
+      )
+      await this.#setEnergyValues(
+        getEnergy(energyHpData),
+        getEnergy(energyResistorData),
+      )
+    } catch (error) {
+      await this.setWarning(
+        error instanceof Error ? error.message : String(error),
+      )
+    }
+  }
+
   #setAlwaysOnWarning(): void {
     if (
       this.getSetting('always_on') &&
@@ -476,10 +466,6 @@ class NuosDevice extends Device {
 
   async #setCapabilities(plantData: PlantData): Promise<void> {
     await this.setCapabilityValue('measure_temperature', plantData.waterTemp)
-    await this.setCapabilityValue(
-      'measure_temperature.required',
-      plantData.procReqTemp,
-    )
     await this.setCapabilityValue('onoff', plantData.on)
     await this.setCapabilityValue('onoff.auto', plantData.mode === Mode.auto)
     await this.setCapabilityValue('onoff.boost', plantData.boostOn)
@@ -511,6 +497,21 @@ class NuosDevice extends Device {
     await this.setCapabilityValue('meter_power.resistor', energyResistor)
   }
 
+  async #setOrGetData(postData?: PostData): Promise<void> {
+    let data: GetData<null> | GetData<PlantSettings> | null = null
+    if (postData) {
+      if (Object.keys(postData.viewModel).length) {
+        ;({ data } = await this.#aristonAPI.setData(this.#id, postData))
+      }
+    } else {
+      ;({ data } = await this.#aristonAPI.getDataWithSettings(this.#id))
+    }
+    if (typeof data?.ok !== 'undefined' && data.ok) {
+      await this.#setCapabilities(data.data.plantData)
+      await this.#setSettingsFromDevice(data.data.plantSettings)
+    }
+  }
+
   async #setPowerValues(powerHp: number, powerResistor: number): Promise<void> {
     await this.setCapabilityValue('measure_power', powerHp + powerResistor)
     await this.setCapabilityValue('measure_power.hp', powerHp)
@@ -532,19 +533,42 @@ class NuosDevice extends Device {
     }
   }
 
-  async #setSettings(plantSettings: PlantSettings): Promise<void> {
-    await this.setCapabilityValue(
-      'onoff.legionella',
-      plantSettings.antilegionellaOnOff,
-    )
-    await this.setCapabilityValue(
-      'onoff.preheating',
-      plantSettings.preHeatingOnOff,
-    )
-    await this.setSettings({
-      max: plantSettings.maxSetpointTemp.value,
-      min: plantSettings.minSetpointTemp.value,
-    })
+  async #setSettingsFromDevice(
+    plantSettings: PlantSettings | null,
+  ): Promise<void> {
+    if (plantSettings) {
+      await this.setCapabilityValue(
+        'onoff.legionella',
+        plantSettings.antilegionellaOnOff,
+      )
+      await this.setCapabilityValue(
+        'onoff.preheating',
+        plantSettings.preHeatingOnOff,
+      )
+      await this.setSettings({
+        max: plantSettings.maxSetpointTemp.value,
+        min: plantSettings.minSetpointTemp.value,
+      })
+    }
+  }
+
+  async #setSettingsToDevice(postSettings: PostSettings): Promise<boolean> {
+    if (Object.keys(postSettings).length) {
+      try {
+        const { success: isSuccess } = (
+          await this.#aristonAPI.setSettings(this.#id, postSettings)
+        ).data
+        if (isSuccess) {
+          await this.#setSettingCapabilities(postSettings)
+        }
+        return isSuccess
+      } catch (error) {
+        await this.setWarning(
+          error instanceof Error ? error.message : String(error),
+        )
+      }
+    }
+    return false
   }
 
   async #setTargetTemperatureMinMax(
@@ -563,25 +587,13 @@ class NuosDevice extends Device {
 
   async #syncDevice(postData?: PostData): Promise<void> {
     try {
-      if (postData) {
-        if (Object.keys(postData.viewModel).length) {
-          const { plantData } = (
-            await this.#aristonAPI.setData(this.#id, postData)
-          ).data.data
-          await this.#setCapabilities(plantData)
-        }
-      } else {
-        const { plantData, plantSettings } = (
-          await this.#aristonAPI.getDataWithSettings(this.#id)
-        ).data.data
-        await this.#setSettings(plantSettings)
-        await this.#setCapabilities(plantData)
-      }
+      await this.#setOrGetData(postData)
     } catch (error) {
       await this.setWarning(
         error instanceof Error ? error.message : String(error),
       )
     } finally {
+      await this.#getErrors()
       this.#applySyncFromDevice()
     }
   }

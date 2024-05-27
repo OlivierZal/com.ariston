@@ -4,6 +4,7 @@ import { Settings as LuxonSettings } from 'luxon'
 
 export = class AristonApp extends App {
   public readonly aristonAPI = new AristonAPI({
+    language: this.homey.i18n.getLanguage(),
     logger: {
       error: (...args): void => {
         this.error(...args)

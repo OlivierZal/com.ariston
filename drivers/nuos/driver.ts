@@ -44,7 +44,7 @@ export = class extends Driver {
 
   async #discoverDevices(): Promise<DeviceDetails[]> {
     try {
-      return (await this.#aristonAPI.plants()).data
+      return (await this.#aristonAPI.list()).data
         .filter(({ wheType }) => wheType === this.#deviceType)
         .map(({ gw, name }) => ({ data: { id: gw }, name }))
     } catch (_error) {

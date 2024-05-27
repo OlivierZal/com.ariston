@@ -19,8 +19,7 @@
     "measure_power.resistor",
     "meter_power",
     "meter_power.hp",
-    "meter_power.resistor",
-    "measure_temperature.required"
+    "meter_power.resistor"
   ],
   "capabilitiesOptions": {
     "onoff.auto": {
@@ -77,12 +76,6 @@
       "insightsTitleFalse": {
         "en": "Preheating turned off",
         "fr": "Préchauffage désactivé"
-      }
-    },
-    "measure_temperature.required": {
-      "title": {
-        "en": "Process required temperature",
-        "fr": "Température requise pour le processus"
       }
     },
     "measure_power": {
