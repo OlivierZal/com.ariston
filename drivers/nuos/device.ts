@@ -370,12 +370,12 @@ class NuosDevice extends Device {
   async #getErrors(): Promise<void> {
     const { errorType, errorText } = (await this.#aristonAPI.errors(this.#id))
       .data.data
-      await this.setCapabilityValue('alarm_generic', Boolean(errorType))
-      await this.setCapabilityValue('error_status', errorText)
-      if (errorType) {
-        await this.setWarning(errorText)
-      }
+    await this.setCapabilityValue('alarm_generic', Boolean(errorType))
+    await this.setCapabilityValue('error_status', errorText)
+    if (errorType) {
+      await this.setWarning(errorText)
     }
+  }
 
   async #handleCapabilities(): Promise<void> {
     const requiredCapabilities = (this.driver.manifest as ManifestDriver)
