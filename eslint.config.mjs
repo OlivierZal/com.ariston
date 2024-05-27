@@ -18,7 +18,7 @@ export default tsEslint.config(
     ],
     languageOptions: {
       parserOptions: {
-        project: true,
+        project: 'tsconfig.json',
       },
     },
     linterOptions: {
@@ -277,5 +277,10 @@ export default tsEslint.config(
   {
     files: ['**/*.mjs'],
     ...tsEslint.configs.disableTypeChecked,
+    languageOptions: {
+      parserOptions: {
+        project: 'tsconfig.checkjs.json',
+      },
+    },
   },
 )
