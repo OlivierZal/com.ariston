@@ -506,7 +506,7 @@ class NuosDevice extends Device {
         ;({ data } = await this.#aristonAPI.setData(this.#id, postData))
       }
     } else {
-      ;({ data } = await this.#aristonAPI.getDataWithSettings(this.#id))
+      ;({ data } = await this.#aristonAPI.get(this.#id))
     }
     if (typeof data?.ok !== 'undefined' && data.ok) {
       await this.#setCapabilities(data.data.plantData)

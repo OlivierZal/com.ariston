@@ -34,7 +34,7 @@
     "typescript-eslint": "^8.0.0-alpha.21"
   },
   "dependencies": {
-    "@olivierzal/ariston-api": "^3.0.1",
+    "@olivierzal/ariston-api": "^3.0.0",
     "luxon": "^3.4.4",
     "source-map-support": "^0.5.21"
   }
