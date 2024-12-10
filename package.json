@@ -31,7 +31,7 @@
     "homey": "^3.7.12",
     "prettier": "^3.4.2",
     "typescript": "^5.7.2",
-    "typescript-eslint": "^8.17.0"
+    "typescript-eslint": "^8.18.0"
   },
   "dependencies": {
     "@olivierzal/ariston-api": "^3.0.0",
