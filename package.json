@@ -17,7 +17,7 @@
     "publish": "homey app publish"
   },
   "devDependencies": {
-    "@eslint/js": "^9.29.0",
+    "@eslint/js": "^9.30.0",
     "@stylistic/eslint-plugin": "^5.0.0",
     "@types/eslint__js": "^9.14.0",
     "@types/eslint-config-prettier": "^6.11.3",
